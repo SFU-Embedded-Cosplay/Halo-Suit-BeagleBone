@@ -116,22 +116,6 @@ void parser_parse(char* json_text)
 		}
 	    }
 	}
-    /*
-	else if (strcmp (object->u.object.values[i].name,"water fan") == 0) {
-	    if (strcmp(object->u.object.values[i].value->u.string.ptr, "on") == 0) {
-		// turn on water cooling fan
-		if (halosuit_relay_switch(WATER_FAN, HIGH) != 0) {
-		    printf("ERROR: WATER_FAN RELAY FAILURE\n");
-		}
-	    }
-	    else if (strcmp(object->u.object.values[i].value->u.string.ptr, "off") == 0) {
-		// turn off water cooling fan
-		if (halosuit_relay_switch(WATER_FAN, LOW) != 0) {
-		    printf("ERROR: WATER_FAN RELAY FAILURE\n");
-		}
-	    } 
-	}
-    */
 	else if (strcmp (object->u.object.values[i].name,"peltier") == 0) {
 	    if (strcmp(object->u.object.values[i].value->u.string.ptr, "on") == 0) {
 		// turn on peltier
@@ -150,10 +134,19 @@ void parser_parse(char* json_text)
 		json_value* config = object->u.object.values[i].value;
 		int j = 0;
 		for (j = 0; j < config->u.object.length; j++) {
+            char* address = config->u.object.values[j].value->u.string.ptr;
 			if (strcmp(config->u.object.values[j].name, "android") == 0) {
-				config_set_string("Bluetooth", "android", config->u.object.values[j].value->u.string.ptr);
+                if (strcmp(address, "delete") == 0) {
+                    config_remove_key("Bluetooth", "android");
+                } else {
+				    config_set_string("Bluetooth", "android", address);
+                }
 			} else if (strcmp(config->u.object.values[j].name, "glass") == 0) {
-				config_set_string("Bluetooth", "glass", config->u.object.values[j].value->u.string.ptr);
+				if (strcmp(address, "delete") == 0) {
+                    config_remove_key("Bluetooth", "glass");
+                } else {
+				    config_set_string("Bluetooth", "glass", address);
+                }
 			}
 		}
 		config_save();
