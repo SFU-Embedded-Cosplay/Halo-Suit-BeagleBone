@@ -1,4 +1,5 @@
 # This is the Makefile for the beaglebone server for the Mjonir armour
+# the makefile is ignored by git so that we don't thrash each others git files
 
 #-----Macros---------------------
 
@@ -13,6 +14,9 @@ CFLAGS = -Wall -g -std=c99 -pthread -Werror -D_POSIX_C_SOURCE=200809L
 
 
 all: host target
+
+add: 
+	git add -f Makefile
 
 host: 
 	$(COMPILER) $(CFLAGS) $(INFILES) -o $(OUTDIR)/$(OUTFILE)_Host -lm
