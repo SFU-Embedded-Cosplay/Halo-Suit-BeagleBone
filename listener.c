@@ -9,7 +9,7 @@
 #include "listener.h"
 
 #define PORT_NUMBER 12345 
-#define BUFFER_SIZE 10000 
+#define MESSAGE_SIZE 10000 
 
 void* Listener_thread()
 {
@@ -18,7 +18,7 @@ void* Listener_thread()
 	int socket_fd;
 	struct sockaddr_in name;
 
-	char buffer[BUFFER_SIZE]; 
+	char buffer[MESSAGE_SIZE]; 
 
 	// creating socket
 	socket_fd = socket(PF_INET, SOCK_STREAM, 0);
@@ -29,7 +29,7 @@ void* Listener_thread()
 	unsigned int length = sizeof(name);
 
 	while (1) {
-		recvfrom(socket_fd, buffer, BUFFER_SIZE, 0, 
+		recvfrom(socket_fd, buffer, MESSAGE_SIZE, 0, 
 			(struct sockaddr *) &name, &length);
 		// send to processing buffer
 	}
