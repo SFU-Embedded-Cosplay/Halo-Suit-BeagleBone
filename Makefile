@@ -1,5 +1,8 @@
 # This is the Makefile for the beaglebone server for the Mjonir armour
-# the makefile is ignored by git so that we don't thrash each others git files
+# so that the makefile doesn't get commited use this command
+# $ git update-index --assume-unchanged Makefile
+# use this command to undo the above if there is an important change in the makefile
+# $ git update-index --no-assume-unchanged Makefile
 
 #-----Macros---------------------
 
