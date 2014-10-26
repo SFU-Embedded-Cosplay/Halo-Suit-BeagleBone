@@ -5,18 +5,14 @@
 
 OUTFILE = server
 OUTDIR = .
-INFILES = server.c
+INFILES = server.c listener.c processor.c
 
 CROSS_COMPILE = arm-linux-gnueabi-
 COMPILER = gcc
 CC_C = $(CROSS_COMPILE)$(COMPILER)
 CFLAGS = -Wall -g -std=c99 -pthread -Werror -D_POSIX_C_SOURCE=200809L 
 
-
 all: host target
-
-add: 
-	git add -f Makefile
 
 host: 
 	$(COMPILER) $(CFLAGS) $(INFILES) -o $(OUTDIR)/$(OUTFILE)_Host -lm
