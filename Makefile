@@ -5,7 +5,7 @@
 
 OUTFILE = server
 OUTDIR = .
-INFILES = server.c listener.c processor.c
+INFILES = server.c listener.c processor.c queue.c watchdog.c
 
 CROSS_COMPILE = arm-linux-gnueabi-
 COMPILER = gcc

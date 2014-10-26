@@ -8,10 +8,12 @@
 
 #include "listener.h"
 #include "processor.h"
+#include "watchdog.h"
 
-#define NUMBER_OF_THREADS 2
-#define LISTENER_ID 1
-#define PROCESSOR_ID 2
+#define NUMBER_OF_THREADS 3
+#define WATCHDOG_ID 1 
+#define LISTENER_ID 2
+#define PROCESSOR_ID 3
 
 int main (int argc, char* argv[])
 {
@@ -19,9 +21,11 @@ int main (int argc, char* argv[])
 
 	pthread_t threads[NUMBER_OF_THREADS]; 
 	
+	pthread_create(&threads[WATCHDOG_ID], NULL, Watchdog_thread, NULL);
 	pthread_create(&threads[LISTENER_ID], NULL, Listener_thread, NULL); 
 	pthread_create(&threads[PROCESSOR_ID], NULL, Processor_thread, NULL);
 
+	pthread_join(threads[WATCHDOG_ID], NULL);
 	pthread_join(threads[LISTENER_ID], NULL);
 	pthread_join(threads[PROCESSOR_ID], NULL);
 	
