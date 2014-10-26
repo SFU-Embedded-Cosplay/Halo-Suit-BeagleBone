@@ -1,5 +1,6 @@
 /*
 	queue.h
+	a implementation of a circular queue that can enqueue and dequeue
 */
 #ifndef QUEUE
 #define QUEUE

@@ -4,7 +4,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <pthread.h>
 #include <semaphore.h>
 
@@ -47,7 +46,14 @@ void Queue_enqueue(circularQueue* jobQueue, char* element)
 	pthread_mutex_unlock(&jobQueue->queueMutex);
 } 
 
-void Queue_dequeue(circularQueue* jobQueue, char* element)
+void Queue_dequeue(circularQueue* jobQueue, char** element)
 {
-
+	sem_wait(&jobQueue->queueSemaphore);
+	pthread_mutex_lock(&jobQueue->queueMutex);
+	{
+		*element = jobQueue->queue[jobQueue->firstPosition];
+		jobQueue->queue[jobQueue->firstPosition] = NULL;
+		jobQueue->firstPosition = (jobQueue->firstPosition + 1) % QUEUE_SIZE;
+	}
+	pthread_mutex_unlock(&jobQueue->queueMutex);
 }
