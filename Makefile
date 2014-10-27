@@ -7,7 +7,7 @@
 #-----Macros---------------------
 
 OUTFILE = server
-OUTDIR = .
+OUTDIR = ~/cmpt433/public/myApps
 INFILES = server.c listener.c processor.c queue.c watchdog.c
 
 CROSS_COMPILE = arm-linux-gnueabi-

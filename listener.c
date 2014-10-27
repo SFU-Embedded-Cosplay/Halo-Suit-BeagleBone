@@ -7,9 +7,10 @@
 #include <unistd.h>
 
 #include "listener.h"
+#include "processor.h"
 
 #define PORT_NUMBER 12345 
-#define MESSAGE_SIZE 10000 
+#define MESSAGE_SIZE 512
 
 void* Listener_thread()
 {
@@ -17,21 +18,20 @@ void* Listener_thread()
 
 	int socket_fd;
 	struct sockaddr_in name;
+	struct sockaddr_in client;
 
 	char buffer[MESSAGE_SIZE]; 
 
 	// creating socket
-	socket_fd = socket(PF_INET, SOCK_STREAM, 0);
-	name.sin_family = AF_INET;
+	socket_fd = socket(PF_INET, SOCK_DGRAM, 0);
 	name.sin_port = htons(PORT_NUMBER);
 	bind(socket_fd, (struct sockaddr*) &name, sizeof(name));
 	
 	unsigned int length = sizeof(name);
-
 	while (1) {
 		recvfrom(socket_fd, buffer, MESSAGE_SIZE, 0, 
-			(struct sockaddr *) &name, &length);
-		// send to processing buffer
+			(struct sockaddr*) &client, &length);
+		Processor_enqueue(buffer);
 	}
 
 	close(socket_fd);
