@@ -13,9 +13,9 @@ typedef struct circularQueue Queue;
 Queue Queue_create();
 
 // adds a message to the back of the queue if full message is dropped
-void Queue_enqueue(Queue jobQueue, char* element);
+void Queue_enqueue(Queue* jobQueue, const char* element);
 
 // takes the first element of the queue if empty thread sleeps
-void Queue_dequeue(Queue jobQueue, char* element);
+void Queue_dequeue(Queue* jobQueue, char* element);
 
 #endif

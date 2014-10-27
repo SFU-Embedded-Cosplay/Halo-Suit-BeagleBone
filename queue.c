@@ -4,19 +4,21 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <pthread.h>
 #include <semaphore.h>
 
+#include "queue.h"
+
 #define QUEUE_SIZE 100
 
-struct circularQueue{
+struct circularQueue {
 	char* queue[QUEUE_SIZE]; 
 	int firstPosition;
 	int lastPosition;
 	pthread_mutex_t queueMutex;
 	sem_t queueSemaphore;	
 };
-typedef struct circularQueue Queue;
 
 Queue Queue_create()
 {
@@ -29,14 +31,14 @@ Queue Queue_create()
 	return jobQueue;
 }
 
-void Queue_enqueue(Queue* jobQueue, char* element) 
+void Queue_enqueue(Queue* jobQueue, const char* element) 
 {
 	int semValue = 0;
 	pthread_mutex_lock(&jobQueue->queueMutex);
 	{		
 		sem_getvalue(&jobQueue->queueSemaphore, &semValue);
 		if (semValue < QUEUE_SIZE) {	
-			jobQueue->queue[jobQueue->lastPosition] = element;
+			strcpy(jobQueue->queue[jobQueue->lastPosition], element);
 			jobQueue->lastPosition = (jobQueue->lastPosition + 1) % QUEUE_SIZE;
 			sem_post(&jobQueue->queueSemaphore);
 		}
@@ -47,12 +49,13 @@ void Queue_enqueue(Queue* jobQueue, char* element)
 	pthread_mutex_unlock(&jobQueue->queueMutex);
 } 
 
-void Queue_dequeue(Queue* jobQueue, char** element)
+void Queue_dequeue(Queue* jobQueue, char* element)
 {
 	sem_wait(&jobQueue->queueSemaphore);
 	pthread_mutex_lock(&jobQueue->queueMutex);
 	{
-		*element = jobQueue->queue[jobQueue->firstPosition];
+		const char* queueElement = jobQueue->queue[jobQueue->firstPosition];
+		strcpy(element, queueElement);
 		jobQueue->queue[jobQueue->firstPosition] = NULL;
 		jobQueue->firstPosition = (jobQueue->firstPosition + 1) % QUEUE_SIZE;
 	}
