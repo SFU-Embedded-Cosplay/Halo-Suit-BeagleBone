@@ -8,7 +8,7 @@
 
 OUTFILE = server
 OUTDIR = ~/cmpt433/public/myApps
-INFILES = server.c listener.c processor.c queue.c watchdog.c
+INFILES = server.c bluetoothlistener.c processor.c queue.c watchdog.c json.c
 
 CROSS_COMPILE = arm-linux-gnueabi-
 COMPILER = gcc
@@ -18,10 +18,10 @@ CFLAGS = -Wall -g -std=c99 -pthread -Werror -D_POSIX_C_SOURCE=200809L
 all: host target
 
 host: 
-	$(COMPILER) $(CFLAGS) $(INFILES) -o $(OUTDIR)/$(OUTFILE)_Host -lm
+	$(COMPILER) $(CFLAGS) $(INFILES) -o $(OUTDIR)/$(OUTFILE)_Host -lm -lbluetooth
 
 target: 
-	$(CC_C) $(CFLAGS) $(INFILES) -o $(OUTDIR)/$(OUTFILE)_Target -lm
+	$(CC_C) $(CFLAGS) $(INFILES) -o $(OUTDIR)/$(OUTFILE)_Target -lm -lbluetooth
 
 clean: 
 	rm $(OUTDIR)/$(OUTFILE)_Host
