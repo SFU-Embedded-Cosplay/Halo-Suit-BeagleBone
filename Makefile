@@ -13,8 +13,8 @@ INFILES = main.c serializer.c parser.c ../beagleblue/beagleblue.c json/json.c js
 CROSS_COMPILE = arm-linux-gnueabi-
 COMPILER = gcc
 CC_C = $(CROSS_COMPILE)$(COMPILER)
-CFLAGS = -Wall -g -std=c99 -pthread -Werror -D_POSIX_C_SOURCE=200809L 
-INCLUDES = -I../includes
+CFLAGS = -g -pthread -D_POSIX_C_SOURCE=200809L #-Werror -Wall
+INCLUDE = -I../includes
 
 all: host target
 

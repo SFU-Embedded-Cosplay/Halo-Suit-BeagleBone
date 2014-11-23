@@ -17,13 +17,13 @@
 
 #define WATCHDOG_SLEEP_TIME 1 // in seconds
 #define WATCHDOG_PATH "/dev/watchdog"
-#define SERIALIZER_THREAD 1
 
 int main(int argc, char* argv[])
 {
     beagleblue_init(&Parser_parse);    
 
-    pthread_create(SERIALIZER_THREAD, NULL, Serialize_serialize, NULL);
+    pthread_t serializer_thread;
+    pthread_create(&serializer_thread, NULL, Serializer_serialize, NULL);
 
     int fd = open(WATCHDOG_PATH, O_RDWR);
     if (fd < -1) {
@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
     } 
     close(fd); 
     
-    pthread_join(SERIALIZER_THREAD, NULL);
+    pthread_join(serializer_thread, NULL);
 
     beagleblue_exit();
     beagleblue_join();

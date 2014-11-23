@@ -3,14 +3,16 @@
 */
 
 #include <stdlib.h>
+#include <stdio.h> 
+#include <string.h>
 
 #include <serializer.h>
-#include <json-h>
-#include <json-bulider.h>
+#include <json.h>
+#include <json-builder.h>
 #include <beagleblue.h>
 
 
-void Serializer_serialize()
+void* Serializer_serialize()
 { 
     while(1) {
 	json_value *object = json_object_new(0);

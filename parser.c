@@ -16,7 +16,8 @@ void Parser_parse(char* json_text)
 
     object = json_parse(json_text, strlen(json_text));
     length = object->u.object.length;
-    for (int i = 0; i < length; i++) {
+    int i = 0; // here until we get c99 working
+    for (i = 0; i < length; i++) {
 	if (strcmp (object->u.object.values[i].name,"lights")) {
 	    if (strcmp(object->u.object.values[i].value->u.string.ptr, "on")) {
 		// turn on lights
