@@ -20,7 +20,7 @@ void* Serializer_serialize()
 	// push values into object
 
 	char *buf = malloc(json_measure(object));
-	json_serializer(buf, object);
+	json_serialize(buf, object);
 
 	if (beagleblue_glass_send(buf) < strlen(buf)) {
 	    printf("MESSAGE TO GLASS INCOMPLETE");
