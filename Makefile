@@ -6,22 +6,24 @@
 
 #-----Macros---------------------
 
-OUTFILE = server
+OUTFILE = suitcontroller
 OUTDIR = ~/cmpt433/public/myApps
-INFILES = server.c bluetoothlistener.c processor.c queue.c watchdog.c json.c
+INFILES = main.c serializer.c parser.c ../beagleblue/beagleblue.c json/json.c json/json-builder.c
 
 CROSS_COMPILE = arm-linux-gnueabi-
 COMPILER = gcc
 CC_C = $(CROSS_COMPILE)$(COMPILER)
 CFLAGS = -Wall -g -std=c99 -pthread -Werror -D_POSIX_C_SOURCE=200809L 
+INCLUDES = -I../includes
 
 all: host target
 
 host: 
-	$(COMPILER) $(CFLAGS) $(INFILES) -o $(OUTDIR)/$(OUTFILE)_Host -lm -lbluetooth
+	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(OUTDIR)/$(OUTFILE)_Host -lm -lbluetooth
 
+# doesn't work yet
 target: 
-	$(CC_C) $(CFLAGS) $(INFILES) -o $(OUTDIR)/$(OUTFILE)_Target -lm -lbluetooth
+	$(CC_C) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(OUTDIR)/$(OUTFILE)_Target -lm -lbluetooth
 
 clean: 
 	rm $(OUTDIR)/$(OUTFILE)_Host
