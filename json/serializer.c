@@ -6,11 +6,11 @@
 #include <stdio.h> 
 #include <string.h>
 
-#include <serializer.h>
-#include <json.h>
-#include <json-builder.h>
-#include <beagleblue.h>
-#include <halosuit.h>
+#include <json/serializer.h>
+#include <json/json.h>
+#include <json/json-builder.h>
+#include <beagleblue/beagleblue.h>
+#include <halosuit/halosuit.h>
 
 #define ON "on"
 #define OFF "off"

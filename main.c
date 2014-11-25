@@ -11,10 +11,10 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 
-#include <beagleblue.h>
-#include <parser.h>
-#include <serializer.h>
-#include <halosuit.h>
+#include <beagleblue/beagleblue.h>
+#include <json/parser.h>
+#include <json/serializer.h>
+#include <halosuit/halosuit.h>
 
 #define WATCHDOG_PATH "/dev/watchdog"
 
@@ -35,7 +35,6 @@ int main(int argc, char* argv[])
     while (1) {	
 	// sends status information to android phone and google glass
 	serializer_serialize();
-
 	// kick watchdog
 	ioctl(fd, WDIOC_KEEPALIVE, NULL);
 	

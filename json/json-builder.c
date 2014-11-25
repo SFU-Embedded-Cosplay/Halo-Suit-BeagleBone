@@ -28,7 +28,7 @@
  * SUCH DAMAGE.
  */
 
-#include <json-builder.h>
+#include <json/json-builder.h>
 
 #include <string.h>
 #include <assert.h>

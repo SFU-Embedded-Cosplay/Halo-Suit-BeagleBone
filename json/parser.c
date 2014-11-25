@@ -6,9 +6,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <parser.h>
-#include <json.h>
-#include <halosuit.h>
+#include <json/parser.h>
+#include <json/json.h>
+#include <halosuit/halosuit.h>
 
 void parser_parse(char* json_text)
 {
