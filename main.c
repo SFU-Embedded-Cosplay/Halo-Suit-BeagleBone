@@ -14,16 +14,16 @@
 #include <beagleblue.h>
 #include <parser.h>
 #include <serializer.h>
+#include <halosuit.h>
 
-#define WATCHDOG_SLEEP_TIME 1 // in seconds
 #define WATCHDOG_PATH "/dev/watchdog"
+
+#define SERIALIZE_DELAY 1 // second
 
 int main(int argc, char* argv[])
 {
-    beagleblue_init(&Parser_parse);    
-
-    pthread_t serializer_thread;
-    pthread_create(&serializer_thread, NULL, Serializer_serialize, NULL);
+    beagleblue_init(&parser_parse);    
+    halosuit_init();
 
     int fd = open(WATCHDOG_PATH, O_RDWR);
     if (fd < -1) {
@@ -31,14 +31,21 @@ int main(int argc, char* argv[])
 	exit(EXIT_FAILURE);
     }
 
-    while (1) {
+    // if loop takes longer than 45 secs watchdog will reboot the system
+    while (1) {	
+	// sends status information to android phone and google glass
+	serializer_serialize();
+
+	// kick watchdog
 	ioctl(fd, WDIOC_KEEPALIVE, NULL);
-	sleep(WATCHDOG_SLEEP_TIME);
+	
+	sleep(SERIALIZE_DELAY);
     } 
+
     close(fd); 
     
-    pthread_join(serializer_thread, NULL);
-
+    halosuit_exit();    
+    
     beagleblue_exit();
     beagleblue_join();
 
