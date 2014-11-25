@@ -26,17 +26,17 @@ static void serializer_buildjson(json_value *object)
     if (value == 1) {
 	json_object_push(object, "lights", json_string_new(ON));
     }
-    else if (value == 0) {
+    // auto lights
+    else if (halosuit_relay_value(LIGHTS_AUTO, &value) != 0) {
+	printf("ERROR: LIGHTS_AUTO READ VALUE FAILURE\n");
+    }	
+    else if (value == 1) {
+	json_object_push(object, "lights", json_string_new(AUTO));
+    }
+    else {
 	json_object_push(object, "lights", json_string_new(OFF));
     }
     
-    // auto lights
-    if (halosuit_relay_value(LIGHTS_AUTO, &value) != 0) {
-	printf("ERROR: LIGHTS_AUTO READ VALUE FAILURE\n");
-    }	
-    if (value == 1) {
-	json_object_push(object, "lights", json_string_new(AUTO));
-    }
     
     // head lights white
     if (halosuit_relay_value(HEADLIGHTS_WHITE, &value) != 0) {
