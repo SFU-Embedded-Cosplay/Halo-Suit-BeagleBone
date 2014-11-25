@@ -142,11 +142,11 @@ void serializer_serialize()
     char *buf = malloc(json_measure(object));
     json_serialize(buf, object);
 
-    if (beagleblue_glass_send(buf) < strlen(buf)) {
-        printf("MESSAGE TO GLASS INCOMPLETE\n");
+    if (beagleblue_glass_send(buf) != 0) {
+        printf("ERROR: GLASS SEND FAILURE\n");
     }
-    if (beagleblue_android_send(buf) < strlen(buf)) {
-        printf("MESSAGE TO ANDROID INCOMPLETE\n");
+    if (beagleblue_android_send(buf) != 0) {
+        printf("ERROR: ANDROID SEND FAILURE\n");
     }	
 
     free(buf);
