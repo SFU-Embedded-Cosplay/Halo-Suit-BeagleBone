@@ -7,8 +7,8 @@
 #-----Macros---------------------
 
 OUTFILE = suitcontroller
-OUTDIR = ~/cmpt433/public/myApps
-INFILES = main.c serializer.c parser.c ../beagleblue/beagleblue.c json/json.c json/json-builder.c
+OUTDIR = ~/
+INFILES = main.c serializer.c parser.c ../beagleblue/beagleblue.c json/json.c json/json-builder.c ../halosuit/halosuit.c
 
 CROSS_COMPILE = arm-linux-gnueabi-
 COMPILER = gcc
