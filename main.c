@@ -22,15 +22,15 @@
 
 int main(int argc, char* argv[])
 {
-    char buf[1024];
-    beagleblue_init(&parser_parse);    
-    halosuit_init();
-
     int fd = open(WATCHDOG_PATH, O_RDWR);
     if (fd < -1) {
 	printf("Cannot open watchdog\n");
 	exit(EXIT_FAILURE);
     }
+
+    char buf[1024];
+    beagleblue_init(&parser_parse);    
+    halosuit_init();  
 
     // if loop takes longer than 45 secs watchdog will reboot the system
     while (1) {	
