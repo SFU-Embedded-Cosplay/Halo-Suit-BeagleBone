@@ -22,6 +22,7 @@
 
 int main(int argc, char* argv[])
 {
+    char buf[1024];
     beagleblue_init(&parser_parse);    
     halosuit_init();
 
@@ -33,12 +34,14 @@ int main(int argc, char* argv[])
 
     // if loop takes longer than 45 secs watchdog will reboot the system
     while (1) {	
-	// sends status information to android phone and google glass
-	serializer_serialize();
-	// kick watchdog
-	ioctl(fd, WDIOC_KEEPALIVE, NULL);
+	   // sends status information to android phone and google glass
+	   serializer_serialize(buf);
+        beagleblue_android_send(buf);
+        beagleblue_glass_send(buf);
+	   // kick watchdog
+	   ioctl(fd, WDIOC_KEEPALIVE, NULL);
 	
-	sleep(SERIALIZE_DELAY);
+	   sleep(SERIALIZE_DELAY);
     } 
 
     close(fd); 

@@ -13,9 +13,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include <pthread.h>
-#include <sys/time.h>
-#include <sys/types.h>
-
 
 #include <beagleblue/beagleblue.h>
 //this is hard coded on both ends
@@ -100,7 +97,7 @@ static void *android_recv_thread(void *callback)
 		while(android_is_connected) {
 			memset(android_recv_buffer, 0, BUFFER_SIZE); //clear the buffer
 
-			if (recv(android_client, android_recv_buffer, 16, MSG_DONTWAIT) != -1) {
+			if (recv(android_client, android_recv_buffer, BUFFER_SIZE, MSG_DONTWAIT) != -1) {
 				on_receive(android_recv_buffer);
 			}
 		}

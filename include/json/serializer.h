@@ -6,6 +6,6 @@
 #ifndef SERIALIZER
 #define SERIALIZER
 
-void serializer_serialize();
+void serializer_serialize(char *);
 
 #endif

@@ -132,23 +132,14 @@ static void serializer_buildjson(json_value *object)
     json_object_push(object, "water temperature", json_double_new(temperature));
 }
 
-void serializer_serialize()
+void serializer_serialize(char *buf)
 { 
     json_value *object = json_object_new(0);
 
     // push suit status values into object
     serializer_buildjson(object);
 
-    char *buf = malloc(json_measure(object));
     json_serialize(buf, object);
 
-    if (beagleblue_glass_send(buf) != 0) {
-        printf("ERROR: GLASS SEND FAILURE\n");
-    }
-    if (beagleblue_android_send(buf) != 0) {
-        printf("ERROR: ANDROID SEND FAILURE\n");
-    }	
-
-    free(buf);
     json_builder_free(object);
 }
