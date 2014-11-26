@@ -32,8 +32,10 @@ static bool beagleblue_is_done;
 static bool android_is_connected = false;
 static bool glass_is_connected = false;
 
+static pthread_t android_connect_thread_id;
 static pthread_t android_recv_thread_id;
 static pthread_t android_send_thread_id;
+static pthread_t glass_connect_thread_id;
 static pthread_t glass_recv_thread_id;
 static pthread_t glass_send_thread_id;
 
@@ -88,13 +90,30 @@ static void beagleblue_connect(int *sock, int *client, uint8_t channel)
     fflush(stdout);
 }
 
+static void *android_connect_thread()
+{
+	beagleblue_connect(&android_sock, &android_client, ANDROID_PORT);
+	android_is_connected = true;
+	if (glass_is_connected) {
+		set_bluetooth_mode(SCAN_DISABLED);
+	}
+}
+
+static void *glass_connect_thread()
+{
+	beagleblue_connect(&glass_sock, &glass_client, GLASS_PORT);
+	glass_is_connected = true;
+	if (android_is_connected) {
+		set_bluetooth_mode(SCAN_DISABLED);
+	}
+}
+
 static void *android_recv_thread(void *callback)
 {
 	void (*on_receive)(char *) = callback;
-	fd_set file_descriptors;
 	//init up here
 	while(!beagleblue_is_done) {
-		while(android_is_connected) {
+		if (android_is_connected) {
 			memset(android_recv_buffer, 0, BUFFER_SIZE); //clear the buffer
 
 			if (recv(android_client, android_recv_buffer, BUFFER_SIZE, MSG_DONTWAIT) != -1) {
@@ -108,7 +127,7 @@ static void *android_recv_thread(void *callback)
 static void *android_send_thread()
 {
 	while(!beagleblue_is_done) {
-		while(android_is_connected) {
+		if (android_is_connected) {
 			if (android_is_sending) {
 				int start_time = time(NULL);
 				int current_time = start_time;
@@ -126,9 +145,7 @@ static void *android_send_thread()
 					close(android_sock);
 					close(android_client);
 					set_bluetooth_mode(SCAN_PAGE);
-					beagleblue_connect(&android_sock, &android_client, ANDROID_PORT);
-					set_bluetooth_mode(SCAN_DISABLED);
-					android_is_connected = true;
+					pthread_create(&android_connect_thread_id, NULL, &android_connect_thread, NULL);
 				}
 				android_is_sending = false;
 				pthread_mutex_unlock(&android_send_mutex);
@@ -141,10 +158,9 @@ static void *android_send_thread()
 static void *glass_recv_thread(void *callback)
 {
 	void (*on_receive)(char *) = callback;
-	fd_set file_descriptors;
 	//init up here
 	while(!beagleblue_is_done) {
-		while(glass_is_connected) {
+		if (glass_is_connected) {
 			memset(glass_recv_buffer, 0, BUFFER_SIZE); //clear the buffer
 
 			if (recv(glass_client, glass_recv_buffer, BUFFER_SIZE, MSG_DONTWAIT) != -1) {
@@ -158,7 +174,7 @@ static void *glass_recv_thread(void *callback)
 static void *glass_send_thread()
 {
 	while(!beagleblue_is_done) {
-		while(android_is_connected) {
+		if (android_is_connected) {
 			if (glass_is_sending) {
 				int start_time = time(NULL);
 				int current_time = start_time;
@@ -176,9 +192,7 @@ static void *glass_send_thread()
 					close(glass_sock);
 					close(glass_client);
 					set_bluetooth_mode(SCAN_PAGE);
-					beagleblue_connect(&glass_sock, &glass_client, GLASS_PORT);
-					set_bluetooth_mode(SCAN_DISABLED);
-					glass_is_connected = true;
+					pthread_create(&glass_connect_thread_id, NULL, &glass_connect_thread, NULL);
 				}
 				glass_is_sending = false;
 				pthread_mutex_unlock(&glass_send_mutex);
@@ -193,21 +207,23 @@ void beagleblue_init(void (*on_receive)(char *))
 	beagleblue_is_done = false;
 	set_bluetooth_mode(SCAN_INQUIRY | SCAN_PAGE);
 	printf("Bluetooth Discoverable\n");
-	beagleblue_connect(&android_sock, &android_client, ANDROID_PORT);
-	android_is_connected = true;
-	//beagleblue_connect(&glass_sock, &glass_client, GLASS_PORT);
+	pthread_create(&android_connect_thread_id, NULL, &android_connect_thread, NULL);
+	pthread_create(&glass_connect_thread_id, NULL, &glass_connect_thread, NULL);
 	pthread_create(&android_send_thread_id, NULL, &android_send_thread, NULL);
 	pthread_create(&android_recv_thread_id, NULL, &android_recv_thread, on_receive);
-	// pthread_create(&glass_send_thread_id, NULL, &glass_send_thread, NULL);
-	// pthread_create(&glass_recv_thread_id, NULL, &glass_recv_thread, on_receive);
-	//beagleblue_connect(&glass_sock, &glass_client, GLASS_PORT);
-	set_bluetooth_mode(SCAN_DISABLED);
+	pthread_create(&glass_send_thread_id, NULL, &glass_send_thread, NULL);
+	pthread_create(&glass_recv_thread_id, NULL, &glass_recv_thread, on_receive);
 	return;
 }
 
 void beagleblue_exit()
 {
 	beagleblue_is_done = true;
+	beagleblue_join();
+	close(android_client);
+	close(android_sock);
+	close(glass_client);
+	close(glass_sock);
 	return;
 }
 
