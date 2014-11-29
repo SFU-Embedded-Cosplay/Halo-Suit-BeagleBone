@@ -27,11 +27,11 @@ void halosuit_init(); //sets up the file descriptors
 void halosuit_exit(); //closes the file descriptors
 
 //on success returns 0, -1 on failure
-int halosuit_relay_switch(int relay, int state);
+int halosuit_relay_switch(unsigned int relay, int state);
 
 //changes value to relays value and returns 0 on success and -1 on failure
-int halosuit_relay_value(int relay, int *value);
+int halosuit_relay_value(unsigned int relay, int *value);
 
-int halosuit_temperature_value(int location, double *temp);
+int halosuit_temperature_value(unsigned int location, double *temp);
 
 #endif

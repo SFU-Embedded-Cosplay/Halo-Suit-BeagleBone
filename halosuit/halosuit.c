@@ -17,6 +17,8 @@ static int relay[NUMBER_OF_RELAYS];
 //analog in file descriptors
 static int temperature[NUMBER_OF_TEMP_SENSORS];
 
+//
+
 //protects against using other functions early
 static bool is_initialized = false;
 
@@ -125,9 +127,9 @@ void halosuit_exit()
 	}
 }
 
-int halosuit_relay_switch(int r, int ps)
+int halosuit_relay_switch(unsigned int r, int ps)
 {
-	if (is_initialized) {
+	if (is_initialized && r < NUMBER_OF_RELAYS) {
 		if (ps == HIGH) {
 			write(relay[r], "1", 1);
 			lseek(relay[r], 0, 0);
@@ -142,9 +144,9 @@ int halosuit_relay_switch(int r, int ps)
 	return -1;
 }
 
-int halosuit_relay_value(int r, int *value)
+int halosuit_relay_value(unsigned int r, int *value)
 {
-	if (is_initialized) {
+	if (is_initialized && r < NUMBER_OF_RELAYS) {
 		char buf[2] = { 0 };
 		read(relay[r], buf, 1);
 		*value = atoi(buf);
@@ -154,9 +156,9 @@ int halosuit_relay_value(int r, int *value)
 	return -1;
 }
 
-int halosuit_temperature_value(int location, double *temp)
+int halosuit_temperature_value(unsigned int location, double *temp)
 {
-	if (is_initialized) {
+	if (is_initialized && location < NUMBER_OF_TEMP_SENSORS) {
 		char buf[5] = { 0 };
 		read(temperature[location], buf, 4);
 		*temp = analog_to_temperature(buf);
