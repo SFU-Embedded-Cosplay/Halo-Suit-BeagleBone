@@ -12,7 +12,7 @@
 #define NUMBER_OF_TEMP_SENSORS 4
 
 //file descriptors
-static int relay[NUMBER_OF_RELAYS];
+static int relays[NUMBER_OF_RELAYS];
 
 //analog in file descriptors
 static int temperature[NUMBER_OF_TEMP_SENSORS];
@@ -46,44 +46,44 @@ void halosuit_init()
 	close(export_fd);
 
 	//open the files for the gpio pins direction
-	relay[LIGHTS] = open("/sys/class/gpio/gpio66/direction", O_WRONLY);
-	relay[LIGHTS_AUTO] = open("/sys/class/gpio/gpio67/direction", O_WRONLY);
-	relay[HEADLIGHTS_WHITE] = open("/sys/class/gpio/gpio68/direction", O_WRONLY);
-	relay[HEADLIGHTS_RED] = open("/sys/class/gpio/gpio69/direction", O_WRONLY);
-    relay[HEAD_FANS] = open("/sys/class/gpio/gpio44/direction", O_WRONLY);
-    relay[WATER_PUMP] = open("/sys/class/gpio/gpio45/direction", O_WRONLY);
-    relay[WATER_FAN] = open("/sys/class/gpio/gpio26/direction", O_WRONLY);
-    relay[PELTIER] = open("/sys/class/gpio/gpio46/direction", O_WRONLY);
+	relays[LIGHTS] = open("/sys/class/gpio/gpio66/direction", O_WRONLY);
+	relays[LIGHTS_AUTO] = open("/sys/class/gpio/gpio67/direction", O_WRONLY);
+	relays[HEADLIGHTS_WHITE] = open("/sys/class/gpio/gpio68/direction", O_WRONLY);
+	relays[HEADLIGHTS_RED] = open("/sys/class/gpio/gpio69/direction", O_WRONLY);
+    relays[HEAD_FANS] = open("/sys/class/gpio/gpio44/direction", O_WRONLY);
+    relays[WATER_PUMP] = open("/sys/class/gpio/gpio45/direction", O_WRONLY);
+    relays[WATER_FAN] = open("/sys/class/gpio/gpio26/direction", O_WRONLY);
+    relays[PELTIER] = open("/sys/class/gpio/gpio46/direction", O_WRONLY);
 
     //initialize them to be output pins initialized to zero
-    write(relay[LIGHTS], "low", 3);
-    write(relay[LIGHTS_AUTO], "low", 3);
-    write(relay[HEADLIGHTS_WHITE], "low", 3);
-    write(relay[HEADLIGHTS_RED], "low", 3);
-    write(relay[HEAD_FANS], "low", 3);
-    write(relay[WATER_PUMP], "low", 3);
-    write(relay[WATER_FAN], "low", 3);
-    write(relay[PELTIER], "low", 3);
+    write(relays[LIGHTS], "low", 3);
+    write(relays[LIGHTS_AUTO], "low", 3);
+    write(relays[HEADLIGHTS_WHITE], "low", 3);
+    write(relays[HEADLIGHTS_RED], "low", 3);
+    write(relays[HEAD_FANS], "low", 3);
+    write(relays[WATER_PUMP], "low", 3);
+    write(relays[WATER_FAN], "low", 3);
+    write(relays[PELTIER], "low", 3);
 
     //we want open the value file so close this one
-    close(relay[LIGHTS]);
-    close(relay[LIGHTS_AUTO]);
-    close(relay[HEADLIGHTS_WHITE]);
-    close(relay[HEADLIGHTS_RED]);
-    close(relay[HEAD_FANS]);
-    close(relay[WATER_PUMP]);
-    close(relay[WATER_FAN]);
-    close(relay[PELTIER]);
+    close(relays[LIGHTS]);
+    close(relays[LIGHTS_AUTO]);
+    close(relays[HEADLIGHTS_WHITE]);
+    close(relays[HEADLIGHTS_RED]);
+    close(relays[HEAD_FANS]);
+    close(relays[WATER_PUMP]);
+    close(relays[WATER_FAN]);
+    close(relays[PELTIER]);
 
     //open the values on read/write
-    relay[LIGHTS] = open("/sys/class/gpio/gpio66/value", O_RDWR);
-    relay[LIGHTS_AUTO] = open("/sys/class/gpio/gpio67/value", O_RDWR);
-    relay[HEADLIGHTS_WHITE] = open("/sys/class/gpio/gpio68/value", O_RDWR);
-    relay[HEADLIGHTS_RED] = open("/sys/class/gpio/gpio69/value", O_RDWR);
-    relay[HEAD_FANS] = open("/sys/class/gpio/gpio44/value", O_RDWR);
-    relay[WATER_PUMP] = open("/sys/class/gpio/gpio45/value", O_RDWR);
-    relay[WATER_FAN] = open("/sys/class/gpio/gpio26/value", O_RDWR);
-    relay[PELTIER] = open("/sys/class/gpio/gpio46/value", O_RDWR);
+    relays[LIGHTS] = open("/sys/class/gpio/gpio66/value", O_RDWR);
+    relays[LIGHTS_AUTO] = open("/sys/class/gpio/gpio67/value", O_RDWR);
+    relays[HEADLIGHTS_WHITE] = open("/sys/class/gpio/gpio68/value", O_RDWR);
+    relays[HEADLIGHTS_RED] = open("/sys/class/gpio/gpio69/value", O_RDWR);
+    relays[HEAD_FANS] = open("/sys/class/gpio/gpio44/value", O_RDWR);
+    relays[WATER_PUMP] = open("/sys/class/gpio/gpio45/value", O_RDWR);
+    relays[WATER_FAN] = open("/sys/class/gpio/gpio26/value", O_RDWR);
+    relays[PELTIER] = open("/sys/class/gpio/gpio46/value", O_RDWR);
 
     //open analog pins
     temperature[HEAD] = open("/sys/bus/iio/devices/iio:device0/in_voltage0_raw", O_RDONLY);
@@ -98,14 +98,14 @@ void halosuit_exit()
 	if (is_initialized) {
 		is_initialized = false;
 
-		close(relay[LIGHTS]);
-    	close(relay[LIGHTS_AUTO]);
-    	close(relay[HEADLIGHTS_WHITE]);
-    	close(relay[HEADLIGHTS_RED]);
-    	close(relay[HEAD_FANS]);
-    	close(relay[WATER_PUMP]);
-    	close(relay[WATER_FAN]);
-    	close(relay[PELTIER]);
+		close(relays[LIGHTS]);
+    	close(relays[LIGHTS_AUTO]);
+    	close(relays[HEADLIGHTS_WHITE]);
+    	close(relays[HEADLIGHTS_RED]);
+    	close(relays[HEAD_FANS]);
+    	close(relays[WATER_PUMP]);
+    	close(relays[WATER_FAN]);
+    	close(relays[PELTIER]);
 
     	int unexport_fd = open("/sys/class/gpio/unexport", O_WRONLY);
 		//export gpio pins
@@ -127,15 +127,15 @@ void halosuit_exit()
 	}
 }
 
-int halosuit_relay_switch(unsigned int r, int ps)
+int halosuit_relay_switch(unsigned int relay, int ps)
 {
-	if (is_initialized && r < NUMBER_OF_RELAYS) {
+	if (is_initialized && relay < NUMBER_OF_RELAYS) {
 		if (ps == HIGH) {
-			write(relay[r], "1", 1);
-			lseek(relay[r], 0, 0);
+			write(relays[relay], "1", 1);
+			lseek(relays[relay], 0, 0);
 		} else if (ps == LOW) {
-			write(relay[r], "0", 1);
-			lseek(relay[r], 0, 0);
+			write(relays[relay], "0", 1);
+			lseek(relays[relay], 0, 0);
 		} else {
 			return -1;
 		}
@@ -144,13 +144,13 @@ int halosuit_relay_switch(unsigned int r, int ps)
 	return -1;
 }
 
-int halosuit_relay_value(unsigned int r, int *value)
+int halosuit_relay_value(unsigned int relay, int *value)
 {
-	if (is_initialized && r < NUMBER_OF_RELAYS) {
+	if (is_initialized && relay < NUMBER_OF_RELAYS) {
 		char buf[2] = { 0 };
-		read(relay[r], buf, 1);
+		read(relays[relay], buf, 1);
 		*value = atoi(buf);
-		lseek(relay[r], 0, 0);
+		lseek(relays[relay], 0, 0);
 		return 0;
 	}
 	return -1;
