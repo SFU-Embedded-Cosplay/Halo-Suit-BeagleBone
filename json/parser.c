@@ -128,7 +128,7 @@ void parser_parse(char* json_text)
 	    }
 	    else if (strcmp(object->u.object.values[i].value->u.string.ptr, "off") == 0) {
 		// turn off peltier
-		if (halosuit_relay_switch(PELTIER, HIGH) != 0) {
+		if (halosuit_relay_switch(PELTIER, LOW) != 0) {
 		    printf("ERROR: PELTIER RELAY FAILURE\n");
 		}
 	    }
