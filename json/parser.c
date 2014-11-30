@@ -15,7 +15,7 @@ void parser_parse(char* json_text)
     json_value* object = NULL;
     int length = 0;
     
-    printf("%s\n", json_text); 
+    printf("printing this string: %s\n", json_text); 
 
     object = json_parse(json_text, strlen(json_text));
     

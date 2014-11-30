@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
 	   sleep(SERIALIZE_DELAY);
     } 
 
-    close(fd); 
+    // close(fd); 
     
     halosuit_exit();    
     

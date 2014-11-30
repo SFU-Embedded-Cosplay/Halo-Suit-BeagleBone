@@ -174,10 +174,12 @@ static void *glass_recv_thread(void *callback)
 static void *glass_send_thread()
 {
 	while(!beagleblue_is_done) {
-		if (android_is_connected) {
+		if (glass_is_connected) {
 			if (glass_is_sending) {
+				
 				int start_time = time(NULL);
 				int current_time = start_time;
+				
 				while (current_time - start_time < TIMEOUT) {
 					if(send(glass_client, glass_send_buffer, strlen(glass_send_buffer), MSG_DONTWAIT) == -1) {
 						current_time = time(NULL);
@@ -185,6 +187,7 @@ static void *glass_send_thread()
 						break;
 					}
 				}
+
 				if (current_time - start_time == TIMEOUT) {
 					printf("Glass Timed Out\n");
 					fflush(stdout);
@@ -194,6 +197,7 @@ static void *glass_send_thread()
 					set_bluetooth_mode(SCAN_PAGE);
 					pthread_create(&glass_connect_thread_id, NULL, &glass_connect_thread, NULL);
 				}
+
 				glass_is_sending = false;
 				pthread_mutex_unlock(&glass_send_mutex);
 			}
