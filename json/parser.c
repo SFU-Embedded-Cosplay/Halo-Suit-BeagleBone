@@ -18,13 +18,15 @@ void parser_parse(char* json_text)
     printf("%s\n", json_text); 
 
     object = json_parse(json_text, strlen(json_text));
+    
+    if (object == NULL) {
+		printf("ERROR: MESSAGE NOT JSONi\n");
+		return;
+    }
+
     length = object->u.object.length;
     
     // in case of incorrect json
-    if (object == NULL) {
-	printf("ERROR: MESSAGE NOT JSONi\n");
-	return;
-    }
 
     int i = 0; // here until we get c99 working
     for (i = 0; i < length; i++) {
