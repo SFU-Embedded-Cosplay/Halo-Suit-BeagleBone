@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <pthread.h>
+#include <time.h>
 
 #include <halosuit/halosuit.h>
 
@@ -17,10 +19,20 @@ static int relays[NUMBER_OF_RELAYS];
 //analog in file descriptors
 static int temperature[NUMBER_OF_TEMP_SENSORS];
 
-//
-
 //protects against using other functions early
 static bool is_initialized = false;
+
+//stuff for flow sensor
+// static int flow_sensor;
+// static pthread_t flow_sensor_thread_id;
+// static void *flow_sensor_thread(void *)
+// {
+// 	while (is_initialized) {
+// 		int start_time = time(NULL);
+
+// 	}
+// }
+
 
 static double analog_to_temperature(char *string)  
 {  
@@ -42,6 +54,9 @@ void halosuit_init()
 	write(export_fd, "45", 2);
 	write(export_fd, "46", 2);
 	write(export_fd, "26", 2);
+
+	//flow sensor
+	//write(export_fd, "65", 2);
 	//close the export file descriptor for export
 	close(export_fd);
 

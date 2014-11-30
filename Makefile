@@ -7,7 +7,7 @@
 #-----Macros---------------------
 
 OUTFILE = suitcontroller
-OUTDIR = ~/
+OUTDIR = /usr/bin
 INFILES = main.c json/serializer.c json/parser.c beagleblue/beagleblue.c json/json.c json/json-builder.c halosuit/halosuit.c
 
 CROSS_COMPILE = arm-linux-gnueabi-
