@@ -1,14 +1,19 @@
 /*
-    homeostasis.c
+    automation.c
 */
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <pthread.h>
 
-#include <homestasis.h>
+#include <automation.h>
 #include <halosuit.h>
+
+static pthread_t automation_id;
+
+static bool automation_is_done;
 
 // this checks if the temperature value is an anomaly
 bool isTempSpike(double current, double previous)
@@ -92,8 +97,9 @@ void checkBodyTemp(double temp, double lastTemp)
     }
 }
 
-void* homeostasis_thread()
+void* automationThread()
 { 
+    automation_is_done = false;
     double headTemp = 0;
     double armpitTemp = 0;
     double crotchTemp = 0;
@@ -104,13 +110,13 @@ void* homeostasis_thread()
 
     sleep(START_DELAY); // to prevent the suit from reading startup values
 
-        halosuit_temperature_value(HEAD, &lastHeadTemp);
-        halosuit_temperature_value(ARMPITS, &armpitTemp);
-        halosuit_temperature_value(CROTCH, &crotchTemp);
+    halosuit_temperature_value(HEAD, &lastHeadTemp);
+    halosuit_temperature_value(ARMPITS, &armpitTemp);
+    halosuit_temperature_value(CROTCH, &crotchTemp);
 
-        lastAverageTemp = (armpitTemp + crotchTemp) / 2;
+    lastAverageTemp = (armpitTemp + crotchTemp) / 2;
 
-    while (1) {
+    while (!automation_is_done) {
         halosuit_temperature_value(HEAD, &headTemp);
         halosuit_temperature_value(ARMPITS, &armpitTemp);
         halosuit_temperature_value(CROTCH, &crotchTemp);
@@ -122,5 +128,20 @@ void* homeostasis_thread()
 
         lastHeadTemp = headTemp;
         lastAverageTemp = averageTemp;
+        
+        sleep(READ_DELAY);
     }
+
+    return NULL;
+}
+
+void automation_init()
+{
+    pthread_create(&automation_id, NULL, &automationThread, NULL);
+}
+
+void automation_exit()
+{
+    automation_is_done = true;
+    pthread_join(&automation_id, NULL);
 }

@@ -15,6 +15,7 @@
 #include <json/parser.h>
 #include <json/serializer.h>
 #include <halosuit/halosuit.h>
+#include <halosuit/automation.h>
 
 #define WATCHDOG_PATH "/dev/watchdog"
 
@@ -31,21 +32,24 @@ int main(int argc, char* argv[])
     char buf[1024];
     beagleblue_init(&parser_parse);    
     halosuit_init();  
+    automation_init();
 
     // if loop takes longer than 45 secs watchdog will reboot the system
     while (1) {	
-	   // sends status information to android phone and google glass
-	   serializer_serialize(buf);
+	    // sends status information to android phone and google glass
+        serializer_serialize(buf);
         beagleblue_android_send(buf);
         beagleblue_glass_send(buf);
-	   // kick watchdog
-	   ioctl(fd, WDIOC_KEEPALIVE, NULL);
+
+	    // kick watchdog
+	    ioctl(fd, WDIOC_KEEPALIVE, NULL);
 	
-	   sleep(SERIALIZE_DELAY);
+	    sleep(SERIALIZE_DELAY);
     } 
 
     // close(fd); 
-    
+
+    automation_exit(); 
     halosuit_exit();    
     
     beagleblue_exit();
