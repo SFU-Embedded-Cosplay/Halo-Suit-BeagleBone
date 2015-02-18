@@ -5,14 +5,29 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-
+#include <stdbool.h>
 
 #include <homestasis.h>
 #include <halosuit.h>
 
-void checkHeadTemp(int temp)
+// this checks if the temperature value is an anomaly
+bool isTempSpike(double current, double previous)
 {
-    if (temp >= HIGH_TEMP) {
+    if (current > previous) {
+        return ((current - previous) > TEMP_VARIANCE);
+    }
+    else {
+        return ((previous - current) > TEMP_VARIANCE);
+    }
+}
+
+void checkHeadTemp(double temp, double lastTemp)
+{
+    if (isTempSpike(temp, lastTemp)) {
+        return;
+    }
+    
+    else if (temp >= HIGH_TEMP) {
         if (halosuit_relay_switch(HEAD_FANS, HIGH)) {
             printf("ERROR: HEAD_FANS READ FAILURE");
         }
@@ -38,9 +53,12 @@ void checkHeadTemp(int temp)
     }
 }
 
-void checkBodyTemp(int temp)
+void checkBodyTemp(double temp, double lastTemp)
 {
-    if (tempemp >= HIGH_TEMP) {
+    if (isTempSpike(temp, lastTemp)) {
+        return;
+    }
+    else if (tempemp >= HIGH_TEMP) {
         if (halosuit_relay_switch(WATER_PUMP, HIGH)) {
             printf("ERROR: WATER_FANS READ FAILURE");
         }
@@ -69,24 +87,40 @@ void checkBodyTemp(int temp)
             // send warning
         }
     }
+    else {
+        // unset all flags
+    }
 }
 
 void* homeostasis_thread()
 { 
     double headTemp = 0;
-    double armpitsTemp = 0;
+    double armpitTemp = 0;
     double crotchTemp = 0;
+    double averageBodyTemp = 0;
+
+    double lastHeadTemp = 0;
+    double lastAverageTemp = 0;
+
+    sleep(START_DELAY); // to prevent the suit from reading startup values
+
+        halosuit_temperature_value(HEAD, &lastHeadTemp);
+        halosuit_temperature_value(ARMPITS, &armpitTemp);
+        halosuit_temperature_value(CROTCH, &crotchTemp);
+
+        lastAverageTemp = (armpitTemp + crotchTemp) / 2;
 
     while (1) {
         halosuit_temperature_value(HEAD, &headTemp);
-        halosuit_temperature_value(ARMPITS, &armpitsTemp);
+        halosuit_temperature_value(ARMPITS, &armpitTemp);
         halosuit_temperature_value(CROTCH, &crotchTemp);
 
-        averageBodyTemp = (armpitsTemp + crotchTemp) / 2; 
+        averageBodyTemp = (armpitTemp + crotchTemp) / 2; 
         
-        checkHeadTemp(headTemp);
-        checkBodyTemp(averageBodyTemp); 
+        checkHeadTemp(headTemp, lastHeadTemp);
+        checkBodyTemp(averageBodyTemp, lastAverageTemp); 
+
+        lastHeadTemp = headTemp;
+        lastAverageTemp = averageTemp;
     }
 }
-
-

@@ -6,6 +6,10 @@
 #ifndef HOMEOSTASIS
 #define HOMEOSTASIS
 
+#define START_DELAY 10000    // 10 seconds
+
+#define TEMP_VARIANCE 5.00   // degree of difference between two readings for it to be ignored
+
 #define MAX_TEMP 40.00       // degrees celsius
 #define HIGH_TEMP 37.60      // degrees celsius 
 #define LOW_TEMP 29.00       // degrees celsius
