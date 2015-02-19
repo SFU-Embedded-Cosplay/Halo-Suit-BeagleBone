@@ -8,8 +8,8 @@
 #include <stdbool.h>
 #include <pthread.h>
 
-#include <automation.h>
-#include <halosuit.h>
+#include <halosuit/automation.h>
+#include <halosuit/halosuit.h>
 
 static pthread_t automation_id;
 
@@ -69,7 +69,7 @@ void checkBodyTemp(double temp, double lastTemp)
     if (isTempSpike(temp, lastTemp)) {
         return;
     }
-    else if (tempemp >= HIGH_TEMP) {
+    else if (temp >= HIGH_TEMP) {
         if (halosuit_relay_switch(WATER_PUMP, HIGH)) {
             printf("ERROR: WATER_FANS READ FAILURE");
         }
@@ -136,7 +136,7 @@ void* automationThread()
         checkBodyTemp(averageBodyTemp, lastAverageTemp); 
 
         lastHeadTemp = headTemp;
-        lastAverageTemp = averageTemp;
+        lastAverageTemp = averageBodyTemp;
         
         sleep(READ_DELAY);
     }
@@ -152,7 +152,7 @@ void automation_init()
 void automation_exit()
 {
     automationIsDone = true;
-    pthread_join(&automation_id, NULL);
+    pthread_join(automation_id, NULL);
 }
 
 char automation_getHeadTempWarning()

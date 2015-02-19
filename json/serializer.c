@@ -155,9 +155,9 @@ static void serializer_buildjson(json_value *object)
 
     // Warnings 
     json_value *warnings = json_object_new(0);
-    json_object_push(warnings, "head temperature", json_string_new(getTempWarningString(automation_getHeadTempWarning()));
-    json_object_push(warnings, "body temperature", json_string_new(getTempWarningString(automation_getBodyTempWarning()));
-    json_object_push(objects, "warnings", json_object_new(warnings));
+    json_object_push(warnings, "head temperature", json_string_new(getTempWarningString(automation_getHeadTempWarning())));
+    json_object_push(warnings, "body temperature", json_string_new(getTempWarningString(automation_getBodyTempWarning())));
+    json_object_push(object, "warnings", warnings);
     
 }
 

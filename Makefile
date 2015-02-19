@@ -8,12 +8,13 @@
 
 OUTFILE = suitcontroller
 OUTDIR = /usr/bin
-INFILES = main.c json/serializer.c json/parser.c beagleblue/beagleblue.c json/json.c json/json-builder.c halosuit/halosuit.c
+INFILES = main.c json/serializer.c json/parser.c beagleblue/beagleblue.c json/json.c json/json-builder.c halosuit/halosuit.c halosuit/automation.c
 
 CROSS_COMPILE = arm-linux-gnueabi-
 COMPILER = gcc
 CC_C = $(CROSS_COMPILE)$(COMPILER)
 CFLAGS = -g -pthread -D_POSIX_C_SOURCE=200809L# -Werror -Wall
+# this will make the compiler look for header files in the include folder
 INCLUDE = -Iinclude
 
 all: host target
@@ -21,7 +22,8 @@ all: host target
 host: 
 	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(OUTDIR)/$(OUTFILE)_Host -lm -lbluetooth
 
-# doesn't work yet
+# doesn't work
+# this is the monument to my Failure to get cross compiling working
 target: 
 	$(CC_C) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(OUTDIR)/$(OUTFILE)_Target -lm -lbluetooth
 
