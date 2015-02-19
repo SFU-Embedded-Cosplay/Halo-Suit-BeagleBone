@@ -11,10 +11,32 @@
 #include <json/json-builder.h>
 #include <beagleblue/beagleblue.h>
 #include <halosuit/halosuit.h>
+#include <halosuit/automation.h>
 
 #define ON "on"
 #define OFF "off"
 #define AUTO "auto"
+
+// todo: replace printf error messages with a log statement
+
+static char *getTempWarningString(char warning)
+{
+    switch (warning) {
+        case CRITICAL_HIGH_TEMP_WARNING:
+            return "Critical High Temperature Warning";
+        case HIGH_TEMP_WARNING:
+            return "High Temperature Warning";
+        case NOMINAL_TEMP:
+            return "Temperature Normal";
+        case LOW_TEMP_WARNING:
+            return "Low Temperature Warning";
+        case CRITICAL_LOW_TEMP_WARNING:
+            return "Critical Low Temperature Warning";
+        default:
+            printf("ERROR: UNKNOWN WARNING CHARACTER: %c\n", warning);
+            return "ERROR: UNKNOWN WARNING CHARACTER";
+    }
+}
 
 static void serializer_buildjson(json_value *object)
 {
@@ -130,6 +152,13 @@ static void serializer_buildjson(json_value *object)
 	    printf("ERROR: WATER TEMPERATURE READ FAILURE\n");
     }
     json_object_push(object, "water temperature", json_double_new(temperature));
+
+    // Warnings 
+    json_value *warnings = json_object_new(0);
+    json_object_push(warnings, "head temperature", json_string_new(getTempWarningString(automation_getHeadTempWarning()));
+    json_object_push(warnings, "body temperature", json_string_new(getTempWarningString(automation_getBodyTempWarning()));
+    json_object_push(objects, "warnings", json_object_new(warnings));
+    
 }
 
 void serializer_serialize(char *buf)

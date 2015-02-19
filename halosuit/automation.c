@@ -13,7 +13,10 @@
 
 static pthread_t automation_id;
 
-static bool automation_is_done;
+static bool automationIsDone;
+
+static char bodyTempWarning;
+static char headTempWarning;
 
 // this checks if the temperature value is an anomaly
 bool isTempSpike(double current, double previous)
@@ -38,10 +41,10 @@ void checkHeadTemp(double temp, double lastTemp)
         }
 
         if (temp >= MAX_TEMP) {
-            // send warning
+            headTempWarning = CRITICAL_HIGH_TEMP_WARNING;
         }
         else {
-            // send critical warning
+            headTempWarning = HIGH_TEMP_WARNING;
         }
     }
     else if (temp <= LOW_TEMP) {
@@ -50,11 +53,14 @@ void checkHeadTemp(double temp, double lastTemp)
         }
 
         if (temp <= MINIMUM_TEMP) {
-            // send critical warning
+            headTempWarning = CRITICAL_LOW_TEMP_WARNING;
         }
         else {
-            // send warning
+            headTempWarning = LOW_TEMP_WARNING;
         }
+    }
+    else {
+        headTempWarning = NOMINAL_TEMP;
     }
 }
 
@@ -71,10 +77,10 @@ void checkBodyTemp(double temp, double lastTemp)
             printf("ERROR: HEAD_FANS READ FAILURE");
         }
         if (temp >= MAX_TEMP) {
-            // send critical warning
+            bodyTempWarning = CRITICAL_HIGH_TEMP_WARNING;
         }
         else {
-            // send warning
+            bodyTempWarning = HIGH_TEMP_WARNING;
         }
     }
     else if (temp <= LOW_TEMP) {
@@ -86,20 +92,20 @@ void checkBodyTemp(double temp, double lastTemp)
         }
 
         if (temp <= MINIMUM_TEMP) {
-            // send critical warning
+            bodyTempWarning = CRITICAL_LOW_TEMP_WARNING;
         }
         else {
-            // send warning
+            bodyTempWarning = LOW_TEMP_WARNING;
         }
     }
-    else {
-        // unset all flags
+    else { 
+        bodyTempWarning = NOMINAL_TEMP;
     }
 }
 
 void* automationThread()
 { 
-    automation_is_done = false;
+    automationIsDone = false;
     double headTemp = 0;
     double armpitTemp = 0;
     double crotchTemp = 0;
@@ -107,6 +113,9 @@ void* automationThread()
 
     double lastHeadTemp = 0;
     double lastAverageTemp = 0;
+
+    headTempWarning = 'N';
+    bodyTempWarning = 'N';
 
     sleep(START_DELAY); // to prevent the suit from reading startup values
 
@@ -116,7 +125,7 @@ void* automationThread()
 
     lastAverageTemp = (armpitTemp + crotchTemp) / 2;
 
-    while (!automation_is_done) {
+    while (!automationIsDone) {
         halosuit_temperature_value(HEAD, &headTemp);
         halosuit_temperature_value(ARMPITS, &armpitTemp);
         halosuit_temperature_value(CROTCH, &crotchTemp);
@@ -142,6 +151,16 @@ void automation_init()
 
 void automation_exit()
 {
-    automation_is_done = true;
+    automationIsDone = true;
     pthread_join(&automation_id, NULL);
+}
+
+char automation_getHeadTempWarning()
+{
+    return headTempWarning;
+}
+
+char automation_getBodyTempWarning()
+{
+    return bodyTempWarning;
 }
