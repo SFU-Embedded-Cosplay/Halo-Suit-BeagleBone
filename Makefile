@@ -16,17 +16,15 @@ CC_C = $(CROSS_COMPILE)$(COMPILER)
 CFLAGS = -g -pthread -D_POSIX_C_SOURCE=200809L# -Werror -Wall
 INCLUDE = -Iinclude
 
-all: host target
+all: host
 
 host: 
-	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(OUTDIR)/$(OUTFILE)_Host -lm -lbluetooth
-
+	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(OUTDIR)/$(OUTFILE) -lm -lbluetooth
+	cp python_scripts/readflow.py $(OUTDIR)/
 # doesn't work yet
-target: 
-	$(CC_C) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(OUTDIR)/$(OUTFILE)_Target -lm -lbluetooth
+#target: 
+#	$(CC_C) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(OUTDIR)/$(OUTFILE) -lm -lbluetooth
 
 clean: 
-	rm $(OUTDIR)/$(OUTFILE)_Host
-	rm $(OUTDIR)/$(OUTFILE)_Target
-
-
+	rm $(OUTDIR)/$(OUTFILE)
+	rm $(OUTDIR)/readflow.py

@@ -16,7 +16,7 @@
 
 #include <beagleblue/beagleblue.h>
 //this is hard coded on both ends
-#define ANDROID_PORT 1
+#define ANDROID_PORT 3
 #define GLASS_PORT 2
 
 static char android_send_buffer[BUFFER_SIZE];
