@@ -194,7 +194,7 @@ int halosuit_temperature_value(unsigned int location, double *temp)
 	return -1;
 }
 
-int halosuit_flowrate_value(int *flow) {
+int halosuit_flowrate(int *flow) {
 	if (is_initialized) {
 		*flow = flowrate;
 		return 0;

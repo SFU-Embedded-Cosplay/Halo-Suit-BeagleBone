@@ -28,7 +28,7 @@ def loop():
     # Print what was sent:
     #print "Data received:\n  '%s'" % data
     print "%s" % data
-    sys.sdtout.flush()
+    sys.stdout.flush()
     # And write it back to the serial port:
     Serial2.write('A')
   # And a little delay to keep the Beaglebone happy:
