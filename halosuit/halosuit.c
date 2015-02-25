@@ -17,13 +17,14 @@
 static int relays[NUMBER_OF_RELAYS];
 
 //analog in file descriptors
-static int temperature[NUMBER_OF_TEMP_SENSORS];
+static int temperature[NUMBER_OF_TEMP_SENSORS - 1]; //water temperature is taken care of separately
 
 //FILE for pipe from readflow.py
-static FILE* flow_sensor;
-static int flowrate;
-static char flow_sensor_buffer[512];
-static pthread_t flow_sensor_thread_id;
+static FILE* python_pipe;
+static int flowrate = 0;
+static double water_temp = 0.0f;
+static char python_buffer[512];
+static pthread_t python_thread_id;
 
 //protects against using other functions early
 static bool is_initialized = false;
@@ -36,9 +37,11 @@ static double analog_to_temperature(char *string)
 	return temp;  
 }
 
-static void *flow_sensor_thread()
+static void *python_thread()
 {
+	flow_sensor = popen("python /root/readflow.py", "r");
 
+	printf("hello world");
 }
 
 void halosuit_init()
@@ -103,9 +106,9 @@ void halosuit_init()
     temperature[HEAD] = open("/sys/bus/iio/devices/iio:device0/in_voltage0_raw", O_RDONLY);
     temperature[ARMPITS] = open("/sys/bus/iio/devices/iio:device0/in_voltage1_raw", O_RDONLY);
     temperature[CROTCH] = open("/sys/bus/iio/devices/iio:device0/in_voltage2_raw", O_RDONLY);
-    temperature[WATER] = open("/sys/bus/iio/devices/iio:device0/in_voltage3_raw", O_RDONLY);
+    //temperature[WATER] = open("/sys/bus/iio/devices/iio:device0/in_voltage3_raw", O_RDONLY);
 
-    pthread_create(&flow_sensor_thread_id, NULL, &flow_sensor_thread, NULL);
+    pthread_create(&python_thread_id, NULL, &python_thread, NULL);
 
     is_initialized = true;
 } 
@@ -176,10 +179,14 @@ int halosuit_relay_value(unsigned int relay, int *value)
 int halosuit_temperature_value(unsigned int location, double *temp)
 {
 	if (is_initialized && location < NUMBER_OF_TEMP_SENSORS) {
-		char buf[5] = { 0 };
-		read(temperature[location], buf, 4);
-		*temp = analog_to_temperature(buf);
-		lseek(temperature[location], 0, 0);
+		if (location == WATER) {
+			*temp = water_temp;
+		} else {
+			char buf[5] = { 0 };
+			read(temperature[location], buf, 4);
+			*temp = analog_to_temperature(buf);
+			lseek(temperature[location], 0, 0);
+		}
 		return 0;
 	}
 	return -1;
