@@ -6,7 +6,7 @@
 # Serial2 TX = pin 21 on P9 header
 # Serial2 RX = pin 22 on P9 header
 
-
+import sys
 from bbio import *
 
 def setup():
@@ -28,6 +28,7 @@ def loop():
     # Print what was sent:
     #print "Data received:\n  '%s'" % data
     print "%s" % data
+    sys.sdtout.flush()
     # And write it back to the serial port:
     Serial2.write('A')
   # And a little delay to keep the Beaglebone happy:

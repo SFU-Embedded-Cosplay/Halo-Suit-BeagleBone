@@ -23,7 +23,7 @@ static int temperature[NUMBER_OF_TEMP_SENSORS - 1]; //water temperature is taken
 static FILE* python_pipe;
 static int flowrate = 0;
 static double water_temp = 0.0f;
-static char python_buffer[512];
+static char python_buffer[50];
 static pthread_t python_thread_id;
 
 //protects against using other functions early
@@ -40,6 +40,10 @@ static double analog_to_temperature(char *string)
 static void *python_thread()
 {
 	python_pipe = popen("python /root/readflow.py", "r");
+
+	while ( fgets(python_buffer, sizeof(python_buffer), python_pipe) != NULL) {
+		sscanf(python_buffer, "%d %f", &flowrate, &water_temp);
+	}
 }
 
 void halosuit_init()
@@ -190,7 +194,7 @@ int halosuit_temperature_value(unsigned int location, double *temp)
 	return -1;
 }
 
-int halosuit_flowrate(int *flow) {
+int halosuit_flowrate_value(int *flow) {
 	if (is_initialized) {
 		*flow = flowrate;
 		return 0;
