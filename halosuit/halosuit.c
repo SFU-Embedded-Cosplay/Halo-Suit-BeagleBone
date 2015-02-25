@@ -39,9 +39,7 @@ static double analog_to_temperature(char *string)
 
 static void *python_thread()
 {
-	flow_sensor = popen("python /root/readflow.py", "r");
-
-	printf("hello world");
+	python_pipe = popen("python /root/readflow.py", "r");
 }
 
 void halosuit_init()
