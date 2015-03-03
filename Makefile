@@ -17,18 +17,17 @@ CFLAGS = -g -pthread -D_POSIX_C_SOURCE=200809L# -Werror -Wall
 # this will make the compiler look for header files in the include folder
 INCLUDE = -Iinclude
 
-all: host target
+all: host
 
 host: 
-	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(OUTDIR)/$(OUTFILE)_Host -lm -lbluetooth
+	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(OUTDIR)/$(OUTFILE) -lm -lbluetooth
+	cp python_scripts/readflow.py $(OUTDIR)/
 
-# doesn't work
+# doesn't work yet
 # this is the monument to my Failure to get cross compiling working
-target: 
-	$(CC_C) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(OUTDIR)/$(OUTFILE)_Target -lm -lbluetooth
+#target: 
+#	$(CC_C) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(OUTDIR)/$(OUTFILE) -lm -lbluetooth
 
 clean: 
-	rm $(OUTDIR)/$(OUTFILE)_Host
-	rm $(OUTDIR)/$(OUTFILE)_Target
-
-
+	rm $(OUTDIR)/$(OUTFILE)
+	rm $(OUTDIR)/readflow.py

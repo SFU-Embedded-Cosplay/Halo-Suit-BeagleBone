@@ -34,4 +34,6 @@ int halosuit_relay_value(unsigned int relay, int *value);
 
 int halosuit_temperature_value(unsigned int location, double *temp);
 
+int halosuit_flowrate(int *flow);
+
 #endif

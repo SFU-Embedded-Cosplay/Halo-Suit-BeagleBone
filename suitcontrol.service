@@ -3,7 +3,7 @@ Description=runs a server controls pins via bluetooth commands
 
 [Service]
 WorkingDirectory=/root/
-ExecStart=./suitcontroller_Host
+ExecStart=./suitcontroller
 SyslogIdentifier=suitcontroller
 Restart=on-failure
 RestartSec=3

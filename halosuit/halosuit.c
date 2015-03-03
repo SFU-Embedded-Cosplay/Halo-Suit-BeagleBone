@@ -17,22 +17,17 @@
 static int relays[NUMBER_OF_RELAYS];
 
 //analog in file descriptors
-static int temperature[NUMBER_OF_TEMP_SENSORS];
+static int temperature[NUMBER_OF_TEMP_SENSORS - 1]; //water temperature is taken care of separately
+
+//FILE for pipe from readflow.py
+static FILE* python_pipe;
+static int flowrate = 0;
+static double water_temp = 0.0f;
+static char python_buffer[50];
+static pthread_t python_thread_id;
 
 //protects against using other functions early
 static bool is_initialized = false;
-
-//stuff for flow sensor
-// static int flow_sensor;
-// static pthread_t flow_sensor_thread_id;
-// static void *flow_sensor_thread(void *)
-// {
-// 	while (is_initialized) {
-// 		int start_time = time(NULL);
-
-// 	}
-// }
-
 
 static double analog_to_temperature(char *string)  
 {  
@@ -40,6 +35,15 @@ static double analog_to_temperature(char *string)
 	double millivolts = (value / 4096.0) * 1800;  
 	double temp = (millivolts - 500.0) / 10.0;  
 	return temp;  
+}
+
+static void *python_thread()
+{
+	python_pipe = popen("python /root/readflow.py", "r");
+
+	while ( fgets(python_buffer, sizeof(python_buffer), python_pipe) != NULL) {
+		sscanf(python_buffer, "%d %f", &flowrate, &water_temp);
+	}
 }
 
 void halosuit_init()
@@ -104,7 +108,10 @@ void halosuit_init()
     temperature[HEAD] = open("/sys/bus/iio/devices/iio:device0/in_voltage0_raw", O_RDONLY);
     temperature[ARMPITS] = open("/sys/bus/iio/devices/iio:device0/in_voltage1_raw", O_RDONLY);
     temperature[CROTCH] = open("/sys/bus/iio/devices/iio:device0/in_voltage2_raw", O_RDONLY);
-    temperature[WATER] = open("/sys/bus/iio/devices/iio:device0/in_voltage3_raw", O_RDONLY);
+    //temperature[WATER] = open("/sys/bus/iio/devices/iio:device0/in_voltage3_raw", O_RDONLY);
+
+    pthread_create(&python_thread_id, NULL, &python_thread, NULL);
+
     is_initialized = true;
 } 
 
@@ -174,10 +181,22 @@ int halosuit_relay_value(unsigned int relay, int *value)
 int halosuit_temperature_value(unsigned int location, double *temp)
 {
 	if (is_initialized && location < NUMBER_OF_TEMP_SENSORS) {
-		char buf[5] = { 0 };
-		read(temperature[location], buf, 4);
-		*temp = analog_to_temperature(buf);
-		lseek(temperature[location], 0, 0);
+		if (location == WATER) {
+			*temp = water_temp;
+		} else {
+			char buf[5] = { 0 };
+			read(temperature[location], buf, 4);
+			*temp = analog_to_temperature(buf);
+			lseek(temperature[location], 0, 0);
+		}
+		return 0;
+	}
+	return -1;
+}
+
+int halosuit_flowrate(int *flow) {
+	if (is_initialized) {
+		*flow = flowrate;
 		return 0;
 	}
 	return -1;
