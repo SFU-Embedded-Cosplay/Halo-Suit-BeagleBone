@@ -8,6 +8,7 @@
 
 #define START_DELAY 10000               // 10 seconds
 #define READ_DELAY 1000                 // 1 seconds
+#define PELTIER_TIMEOUT 900             // 900 seconds = 15 minutes time for peltier to run
 
 #define TEMP_VARIANCE 5.00              // degree of difference between two readings for it to be ignored
 
@@ -23,6 +24,12 @@ void automation_init();
 
 // closes the automation thread and joins with main thread
 void automation_exit();
+
+// turns on the auto peltier control
+void automation_setAutoPeltierOn();
+
+// turns off auto peltier control
+void automation_setAutoPeltierOff();
 
 /* The two functions below get character values that correspond to 
    various warnings if the temperature is out of nominal ranges.

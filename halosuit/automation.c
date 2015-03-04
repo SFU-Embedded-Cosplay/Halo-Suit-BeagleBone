@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <pthread.h>
+#include <time.h>
 
 #include <halosuit/automation.h>
 #include <halosuit/halosuit.h>
@@ -14,12 +15,50 @@
 static pthread_t automation_id;
 
 static bool automationIsDone;
+static bool peltierAutoOn = true;
+static bool peltierLocked = false;
 
 static char bodyTempWarning;
 static char headTempWarning;
 
+static time_t peltier_timein = 0;
+
+static void peltier_automation()
+{
+    if (peltier_timein == 0) {
+        peltier_timein = time(NULL);
+    }
+
+    time_t current_time = time(NULL);
+
+
+    if ((current_time - peltier_timein) >= TEMP_VARIANCE && peltierAutoOn && !peltierLocked) {
+        int peltierState;
+        // peltierState will be a 1 if it's on and a 0 if off
+        if (halosuit_relay_value(PELTIER, &peltierState)) { 
+            printf("ERROR: PELTIER READ FAILURE");
+            return;
+        }
+        else {
+            if (peltierState) {
+                if (halosuit_relay_switch(PELTIER, LOW)) {
+                    printf("ERROR: PELTIER READ FAILURE");
+                    return;
+                }
+            }
+            else {
+                if (halosuit_relay_switch(PELTIER, LOW)) {
+                    printf("ERROR: PELTIER READ FAILURE");
+                    return;
+                }
+            }
+            peltier_timein = time(NULL);
+        } 
+    }
+}
+
 // this checks if the temperature value is an anomaly
-bool isTempSpike(double current, double previous)
+static bool isTempSpike(double current, double previous)
 {
     if (current > previous) {
         return ((current - previous) > TEMP_VARIANCE);
@@ -29,7 +68,7 @@ bool isTempSpike(double current, double previous)
     }
 }
 
-void checkHeadTemp(double temp, double lastTemp)
+static void checkHeadTemp(double temp, double lastTemp)
 {
     if (isTempSpike(temp, lastTemp)) {
         return;
@@ -64,7 +103,7 @@ void checkHeadTemp(double temp, double lastTemp)
     }
 }
 
-void checkBodyTemp(double temp, double lastTemp)
+static void checkBodyTemp(double temp, double lastTemp)
 {
     if (isTempSpike(temp, lastTemp)) {
         return;
@@ -103,7 +142,7 @@ void checkBodyTemp(double temp, double lastTemp)
     }
 }
 
-void* automationThread()
+static void* automationThread()
 { 
     automationIsDone = false;
     double headTemp = 0;
@@ -137,6 +176,8 @@ void* automationThread()
 
         lastHeadTemp = headTemp;
         lastAverageTemp = averageBodyTemp;
+
+        peltier_automation();
         
         sleep(READ_DELAY);
     }
@@ -153,6 +194,20 @@ void automation_exit()
 {
     automationIsDone = true;
     pthread_join(automation_id, NULL);
+}
+
+void automation_setAutoPeltierOn()
+{
+    if (peltierLocked) {
+        printf("CANNOT TURN AUTOMATION ON PELTIER LOCKED");
+        return;
+    }
+    peltierAutoOn = true;
+}
+
+void automation_setAutoPeltierOff()
+{
+    peltierAutoOff = false;
 }
 
 char automation_getHeadTempWarning()
