@@ -126,7 +126,7 @@ void halosuit_exit()
     	close(relays[HEADLIGHTS_RED]);
     	close(relays[HEAD_FANS]);
     	close(relays[WATER_PUMP]);
-    	close(relays[WATER_FAN]);
+    	close(relays[ON_BUTTON]);
     	close(relays[PELTIER]);
 
     	int unexport_fd = open("/sys/class/gpio/unexport", O_WRONLY);
