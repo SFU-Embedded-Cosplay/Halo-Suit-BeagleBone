@@ -81,8 +81,9 @@ void halosuit_init()
     write(relays[HEADLIGHTS_RED], "low", 3);
     write(relays[HEAD_FANS], "low", 3);
     write(relays[WATER_PUMP], "low", 3);
-    write(relays[ON_BUTTON], "high", 3); // must start at high 
     write(relays[PELTIER], "low", 3);
+    
+    write(relays[ON_BUTTON], "high", 4); // must start at high 
 
     //we want open the value file so close this one
     close(relays[LIGHTS]);
