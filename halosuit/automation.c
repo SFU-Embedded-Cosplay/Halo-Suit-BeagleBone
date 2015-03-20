@@ -110,10 +110,7 @@ static void checkBodyTemp(double temp, double lastTemp)
     }
     else if (temp >= HIGH_TEMP) {
         if (halosuit_relay_switch(WATER_PUMP, HIGH)) {
-            printf("ERROR: WATER_FANS READ FAILURE");
-        }
-        if (halosuit_relay_switch(WATER_FAN, HIGH)) {
-            printf("ERROR: HEAD_FANS READ FAILURE");
+            printf("ERROR: WATER_PUMP READ FAILURE");
         }
         if (temp >= MAX_TEMP) {
             bodyTempWarning = CRITICAL_HIGH_TEMP_WARNING;
@@ -124,10 +121,7 @@ static void checkBodyTemp(double temp, double lastTemp)
     }
     else if (temp <= LOW_TEMP) {
         if (halosuit_relay_switch(WATER_PUMP, LOW)) {
-            printf("ERROR: WATER_FANS READ FAILURE");
-        }
-        if (halosuit_relay_switch(WATER_FAN, LOW)) {
-            printf("ERROR: HEAD_FANS READ FAILURE");
+            printf("ERROR: WATER_PUMP READ FAILURE");
         }
 
         if (temp <= MINIMUM_TEMP) {
