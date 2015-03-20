@@ -201,7 +201,7 @@ void automation_setAutoPeltierOn()
 
 void automation_setAutoPeltierOff()
 {
-    peltierAutoOff = false;
+    peltierAutoOn = false;
 }
 
 char automation_getHeadTempWarning()
