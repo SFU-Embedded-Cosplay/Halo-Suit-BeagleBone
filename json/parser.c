@@ -115,6 +115,7 @@ void parser_parse(char* json_text)
 		}
 	    }
 	}
+    /*
 	else if (strcmp (object->u.object.values[i].name,"water fan") == 0) {
 	    if (strcmp(object->u.object.values[i].value->u.string.ptr, "on") == 0) {
 		// turn on water cooling fan
@@ -129,6 +130,7 @@ void parser_parse(char* json_text)
 		}
 	    } 
 	}
+    */
 	else if (strcmp (object->u.object.values[i].name,"peltier") == 0) {
 	    if (strcmp(object->u.object.values[i].value->u.string.ptr, "on") == 0) {
 		// turn on peltier

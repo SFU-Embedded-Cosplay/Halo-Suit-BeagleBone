@@ -10,7 +10,7 @@
 #define	HEADLIGHTS_RED 	  	3	//GPIO 69
 #define	HEAD_FANS 		  	4   //GPIO 44
 #define	WATER_PUMP 			5   //GPIO 45
-#define	WATER_FAN 		    6	//GPIO 26
+#define	ON_BUTTON 		    6	//GPIO 26
 #define	PELTIER			    7	//GPIO 46
 
 
