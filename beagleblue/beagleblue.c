@@ -68,26 +68,27 @@ static void beagleblue_connect(int *sock, int *client, uint8_t channel)
 	struct sockaddr_rc loc_addr = { 0 }, rem_addr = { 0 };
 	socklen_t opt = sizeof(rem_addr);
 	char buf[20];
+	
+	if (*sock == -1) {
+		//initialize socket
+		*sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+	
+		//bind socket to local bluetooth device
+		loc_addr.rc_family = AF_BLUETOOTH;
+		loc_addr.rc_bdaddr = *BDADDR_ANY;
+		loc_addr.rc_channel = channel;
+		bind(*sock, (struct sockaddr *)&loc_addr, sizeof(loc_addr)); 
+	}
+	// put socket into listening mode
+	listen(*sock, 1);
 
-	//initialize socket
-	*sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 
-	//bind socket to local bluetooth device
-	loc_addr.rc_family = AF_BLUETOOTH;
-    loc_addr.rc_bdaddr = *BDADDR_ANY;
-    loc_addr.rc_channel = channel;
-    bind(*sock, (struct sockaddr *)&loc_addr, sizeof(loc_addr)); 
+	// accept one connection
+	*client = accept(*sock, (struct sockaddr *)&rem_addr, &opt);
 
-    // put socket into listening mode
-    listen(*sock, 1);
-
-
-    // accept one connection
-    *client = accept(*sock, (struct sockaddr *)&rem_addr, &opt);
-
-    ba2str( &rem_addr.rc_bdaddr, buf );
-    fprintf(stdout, "accepted connection from %s\n", buf);
-    fflush(stdout);
+	ba2str( &rem_addr.rc_bdaddr, buf );
+	fprintf(stdout, "accepted connection from %s\n", buf);
+	fflush(stdout);
 }
 
 static void *android_connect_thread()
@@ -142,9 +143,9 @@ static void *android_send_thread()
 					printf("Android Timed Out\n");
 					fflush(stdout);
 					android_is_connected = false;
-					close(android_sock);
+					//close(android_sock);
 					close(android_client);
-					set_bluetooth_mode(SCAN_PAGE);
+					set_bluetooth_mode(SCAN_PAGE | SCAN_INQUIRY);
 					pthread_create(&android_connect_thread_id, NULL, &android_connect_thread, NULL);
 				}
 				android_is_sending = false;
@@ -192,9 +193,9 @@ static void *glass_send_thread()
 					printf("Glass Timed Out\n");
 					fflush(stdout);
 					glass_is_connected = false;
-					close(glass_sock);
+					//close(glass_sock);
 					close(glass_client);
-					set_bluetooth_mode(SCAN_PAGE);
+					set_bluetooth_mode(SCAN_PAGE | SCAN_INQUIRY);
 					pthread_create(&glass_connect_thread_id, NULL, &glass_connect_thread, NULL);
 				}
 
