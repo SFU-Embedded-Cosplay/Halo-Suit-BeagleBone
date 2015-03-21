@@ -18,10 +18,13 @@ static bool automationIsDone;
 
 static bool peltierLocked = false;
 
-static char bodyTempWarning;
-static char headTempWarning;
+static char bodyTempWarning = NOMINAL_TEMP;
+static char headTempWarning = NOMINAL_TEMP;
 
-static double adjustedWaterTemp
+// since 0 is below min temp I set it in between the two water temps
+static double adjustedWaterTemp = (WATER_MAX_TEMP + WATER_MIN_TEMP) / 2; 
+
+static int adjustedFlowRate = 0;
 
 static time_t peltier_timein = 0;
 static time_t pump_timein = 0;
@@ -171,9 +174,9 @@ static void waterTempLogic()
         printf("ERROR: CANNOT READ WATER TEMPERATURE VALUE");
     }
 
-    if (newWaterTemp > (-50)) {
-        // TODO: smooth temp value here
-        adjustedWaterTemp = newWaterTemp;
+    if (newWaterTemp == WATER_TEMP_DEFAULT) {
+        // smooth water temperature with previous values to mitigate outlier data
+        adjustedWaterTemp = (adjustedWaterTemp * SMOOTH_WEIGHT) + (newWaterTemp * (1 - SMOOTH_WEIGHT));
     }
 
     if (adjustedWaterTemp <= WATER_MIN_TEMP) {
@@ -208,15 +211,37 @@ static void waterTempLogic()
 
         if (halosuit_relay_switch(WATER_PUMP, LOW)) {
             printf("ERROR: WATER_PUMP READ FAILURE");
-        }
-        else {
+        } else {
             pump_timein = time(NULL);
         }
     }
 }
 
-// checks if pump is working correctly
-static void checkFlow()
+// checks if pump is working correctly 
+// delays flow check to let water speed to build up
+static void checkFlow() {
+    time_t current_time = time(NULL);
+    int newFlowRate;
+    if (halosuit_flowrate(&newFlowRate)) {
+        printf("ERROR: WATER FLOW READ FAILURE");
+        return;
+    } else {
+        adjustedFlowRate = (adjustedFlowRate * SMOOTH_WEIGHT) + (newFlowRate * (1 - SMOOTH_WEIGHT));
+    }
+
+    int pumpState;
+    if (halosuit_relay_value(WATER_PUMP, &pumpState)) {
+        printf("ERROR: WATER_PUMP READ FAILURE");
+        return;
+    }
+    else {
+        if (pumpState && (current_time - pump_timein) >= PUMP_STARTUP_TIME 
+            && adjustedFlowRate < NOMINAL_FLOW) {
+            // TODO: return error possible leak in pipe
+            printf("WARNING: FLOWRATE LOW POSSIBLE LEAK");
+        }
+    }
+}
 
 static void* automationThread()
 { 

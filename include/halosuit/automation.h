@@ -10,6 +10,7 @@
 #define READ_DELAY 1000                 // 1 seconds
 #define PELTIER_TIMEOUT 1200            // 1200 seconds = 20 minutes time for peltier to run
 #define PUMP_TIMEOUT 1200
+#define PUMP_STARTUP_TIME 5             // 5 seconds for flow to adjust to normal levels
 
 #define TEMP_VARIANCE 5.00              // degree of difference between two readings for it to be ignored
 
@@ -19,6 +20,12 @@
 #define MINIMUM_TEMP 26.00              // degrees celsius
 #define WATER_MAX_TEMP 22.00            // degrees celsius
 #define WATER_MIN_TEMP 1.00             // degrees celsius
+#define WATER_TEMP_DEFAULT 85           // water temperature sensor default temperature 
+                                        // is 85 degrees celsius
+
+#define NOMINAL_FLOW 10                 // normal flow value when pump is on
+
+#define SMOOTH_WEIGHT .8                // value give to past data over new data 
 
 // creates a thread that manages the suit's systems
 void automation_init();
