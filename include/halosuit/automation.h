@@ -31,7 +31,7 @@
 #define WATER_SENSOR_DEFAULT 85         // water temperature sensor default temperature 
                                         // is 85 degrees celsius
 
-#define NOMINAL_FLOW 10                 // normal flow value when pump is on
+#define NOMINAL_FLOW_VALUE 10           // normal flow value when pump is on
 
 #define SMOOTH_WEIGHT .8                // value give to past data over new data 
 

@@ -16,7 +16,8 @@
 #include <time.h>
 
 #include <halosuit/automation.h>
-#include <halosuit/halosuit.h>
+//#include <halosuit/halosuit.h>
+#include <testcode/automationtestdata.h>
 
 static pthread_t automation_id;
 
@@ -171,7 +172,7 @@ static void checkFlow() {
     }
     else {
         if (pumpState && (current_time - pump_timein) >= PUMP_STARTUP_TIME 
-            && adjustedFlowRate < NOMINAL_FLOW) {
+            && adjustedFlowRate < NOMINAL_FLOW_VALUE) {
             waterFlowWarning = LOW_FLOW;
             printf("WARNING: FLOWRATE LOW POSSIBLE LEAK");
         }
@@ -279,8 +280,7 @@ static void bodyTemperatureLogic() {
     averageBodyTemp = (adjustedArmpitTemp + adjustedCrotchTemp) / 2;
 
     checkHeadTemperature(adjustedHeadTemp);
-    checkBodyTemperature(averageBodyTemp);
-     
+    checkBodyTemperature(averageBodyTemp); 
 }
 
 static void* automationThread()
@@ -337,9 +337,7 @@ char automation_getBodyTempWarning()
     return bodyTempWarning;
 }
 
-char automation_getWaterTempWarning()
-{
-    return waterTempWarning;
+char automation_getWaterTempWarning() { return waterTempWarning;
 }
 
 char automation_getWaterFlowWarning()
