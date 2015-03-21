@@ -136,6 +136,60 @@ static void checkBodyTemp(double temp, double lastTemp)
     }
 }
 
+static void waterTempLogic() 
+{
+    double newWaterTemp = 0;
+    if (halosuit_temperature_value(WATER, &newWaterTemp)) {
+        printf("ERROR: CANNOT READ WATER TEMPERATURE VALUE");
+    }
+
+    // TODO: smooth temp value here
+    adjustedWaterTemp = newWaterTemp;
+
+    if (adjustedWaterTemp <= WATER_MIN_TEMP) {
+        
+        // turn off pump turn off peltier
+        int peltierState;
+        if (halosuit_relay_value(PELTIER, &peltierState)) { 
+            printf("ERROR: PELTIER READ FAILURE");
+            return;
+        }
+        else {
+            if (peltierState) {
+                if (halosuit_relay_switch(PELTIER, LOW)) {
+                    printf("ERROR: PELTIER READ FAILURE");
+                    return;
+                }
+            }
+            peltier_timein = time(NULL);
+        }
+        if (halosuit_relay_switch(WATER_PUMP, LOW)) {
+            printf("ERROR: WATER_PUMP READ FAILURE");
+        }
+    }
+    else if (adjustedWaterTemp >= WATER_MAX_TEMP) {
+
+        // turn off pump turn on peltier
+        int peltierState;
+        if (halosuit_relay_value(PELTIER, &peltierState)) { 
+            printf("ERROR: PELTIER READ FAILURE");
+            return;
+        }
+        else {
+            if (!peltierState) {
+                if (halosuit_relay_switch(PELTIER, HIGH)) {
+                    printf("ERROR: PELTIER READ FAILURE");
+                    return;
+                }
+            }
+            peltier_timein = time(NULL);
+        }
+        if (halosuit_relay_switch(WATER_PUMP, LOW)) {
+            printf("ERROR: WATER_PUMP READ FAILURE");
+        }
+    }
+}
+
 static void* automationThread()
 { 
     automationIsDone = false;

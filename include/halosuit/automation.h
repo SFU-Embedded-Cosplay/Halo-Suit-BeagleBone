@@ -8,7 +8,7 @@
 
 #define START_DELAY 10000               // 10 seconds
 #define READ_DELAY 1000                 // 1 seconds
-#define PELTIER_TIMEOUT 900             // 900 seconds = 15 minutes time for peltier to run
+#define PELTIER_TIMEOUT 1200             // 1200 seconds = 20 minutes time for peltier to run
 
 #define TEMP_VARIANCE 5.00              // degree of difference between two readings for it to be ignored
 
