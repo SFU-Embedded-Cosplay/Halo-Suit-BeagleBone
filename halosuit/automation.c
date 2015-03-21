@@ -26,9 +26,12 @@ static bool peltierLocked = false;
 
 static char bodyTempWarning = NOMINAL_TEMP;
 static char headTempWarning = NOMINAL_TEMP;
+static char waterTempWarning = NOMINAL_TEMP;
+static char waterFlowWarning = NOMINAL_FLOW;
 
 // temperatures set to mid range
 static double adjustedWaterTemp = (WATER_MAX_TEMP + WATER_MIN_TEMP) / 2; 
+
 static double adjustedHeadTemp = (BODY_HIGH_TEMP + BODY_LOW_TEMP) / 2;
 static double adjustedArmpitTemp = (BODY_HIGH_TEMP + BODY_LOW_TEMP) / 2;
 static double adjustedCrotchTemp = (BODY_HIGH_TEMP + BODY_LOW_TEMP) / 2;
@@ -112,7 +115,7 @@ static void waterTempLogic()
     if (adjustedWaterTemp <= WATER_MIN_TEMP) {
         
         // turn off pump turn off peltier
-        // TODO: throw warning that water temp is too low
+        waterTempWarning = LOW_TEMP_WARNING;
         if (halosuit_relay_switch(PELTIER, LOW)) {
             printf("ERROR: PELTIER READ FAILURE");
         }
@@ -129,9 +132,8 @@ static void waterTempLogic()
     }
 
     else if (adjustedWaterTemp >= WATER_MAX_TEMP) {
-
         // turn off pump turn on peltier
-        // TODO: throw warning that water temp is too high
+        waterTempWarning = HIGH_TEMP_WARNING;
         if (halosuit_relay_switch(PELTIER, HIGH)) {
             printf("ERROR: PELTIER READ FAILURE");
         }
@@ -144,6 +146,9 @@ static void waterTempLogic()
         } else {
             pump_timein = time(NULL);
         }
+    }
+    else {
+        waterTempWarning = NOMINAL_TEMP;
     }
 }
 
@@ -167,8 +172,11 @@ static void checkFlow() {
     else {
         if (pumpState && (current_time - pump_timein) >= PUMP_STARTUP_TIME 
             && adjustedFlowRate < NOMINAL_FLOW) {
-            // TODO: return error possible leak in pipe
+            waterFlowWarning = LOW_FLOW;
             printf("WARNING: FLOWRATE LOW POSSIBLE LEAK");
+        }
+        else {
+            waterFlowWarning = NOMINAL_FLOW;
         }
     }
 }
@@ -296,6 +304,7 @@ static void* automationThread()
     sleep(START_DELAY); // to prevent the suit from reading weird startup values
 
     while (!automationIsDone) {
+
         peltier_automation();
         pump_automation();
         waterTempLogic();
@@ -326,4 +335,14 @@ char automation_getHeadTempWarning()
 char automation_getBodyTempWarning()
 {
     return bodyTempWarning;
+}
+
+char automation_getWaterTempWarning()
+{
+    return waterTempWarning;
+}
+
+char automation_getWaterFlowWarning()
+{
+    return waterFlowWarning;
 }

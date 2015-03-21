@@ -41,7 +41,7 @@ void automation_init();
 // closes the automation thread and joins with main thread
 void automation_exit();
 
-/* The two functions below get character values that correspond to 
+/* The functions below get character values that correspond to 
    various warnings if the temperature is out of nominal ranges.
    the return values are as follows:
 */
@@ -54,5 +54,18 @@ void automation_exit();
 char automation_getHeadTempWarning();
 
 char automation_getBodyTempWarning();
+
+// returns only 'h', 'N', or 'l'
+char automation_getWaterTempWarning();
+
+/* This function returns a warning for the coolant flow rate, if coolant flows too slow while the 
+    pump is on this will retunr a low flow warning otherwise it will return a nominal flow. Since 
+    there is a delay with the reading of the flowrate this warning may be a bit slow
+*/
+#define NOMINAL_FLOW 'N'
+#define LOW_FLOW 'L'
+
+char automation_getWaterFlowWarning();
+
 
 #endif
