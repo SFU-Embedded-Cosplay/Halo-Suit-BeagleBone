@@ -83,6 +83,7 @@ static void serializer_buildjson(json_value *object)
     }
 
     // water fan
+    /*
     if (halosuit_relay_value(WATER_FAN, &value) != 0) {
 	printf("ERROR: WATER_FAN READ VALUE FAILURE\n");
     }	
@@ -92,6 +93,7 @@ static void serializer_buildjson(json_value *object)
     else if (value == 0) {
 	json_object_push(object, "water fan", json_string_new(OFF));
     }
+    */
     
     // peltier
     if (halosuit_relay_value(PELTIER, &value) != 0) {

@@ -71,7 +71,7 @@ void halosuit_init()
 	relays[HEADLIGHTS_RED] = open("/sys/class/gpio/gpio69/direction", O_WRONLY);
     relays[HEAD_FANS] = open("/sys/class/gpio/gpio44/direction", O_WRONLY);
     relays[WATER_PUMP] = open("/sys/class/gpio/gpio45/direction", O_WRONLY);
-    relays[WATER_FAN] = open("/sys/class/gpio/gpio26/direction", O_WRONLY);
+    relays[ON_BUTTON] = open("/sys/class/gpio/gpio26/direction", O_WRONLY);
     relays[PELTIER] = open("/sys/class/gpio/gpio46/direction", O_WRONLY);
 
     //initialize them to be output pins initialized to zero
@@ -81,8 +81,9 @@ void halosuit_init()
     write(relays[HEADLIGHTS_RED], "low", 3);
     write(relays[HEAD_FANS], "low", 3);
     write(relays[WATER_PUMP], "low", 3);
-    write(relays[WATER_FAN], "low", 3);
     write(relays[PELTIER], "low", 3);
+    
+    write(relays[ON_BUTTON], "high", 4); // must start at high 
 
     //we want open the value file so close this one
     close(relays[LIGHTS]);
@@ -91,7 +92,7 @@ void halosuit_init()
     close(relays[HEADLIGHTS_RED]);
     close(relays[HEAD_FANS]);
     close(relays[WATER_PUMP]);
-    close(relays[WATER_FAN]);
+    close(relays[ON_BUTTON]);
     close(relays[PELTIER]);
 
     //open the values on read/write
@@ -101,7 +102,7 @@ void halosuit_init()
     relays[HEADLIGHTS_RED] = open("/sys/class/gpio/gpio69/value", O_RDWR);
     relays[HEAD_FANS] = open("/sys/class/gpio/gpio44/value", O_RDWR);
     relays[WATER_PUMP] = open("/sys/class/gpio/gpio45/value", O_RDWR);
-    relays[WATER_FAN] = open("/sys/class/gpio/gpio26/value", O_RDWR);
+    relays[ON_BUTTON] = open("/sys/class/gpio/gpio26/value", O_RDWR);
     relays[PELTIER] = open("/sys/class/gpio/gpio46/value", O_RDWR);
 
     //open analog pins
@@ -126,7 +127,7 @@ void halosuit_exit()
     	close(relays[HEADLIGHTS_RED]);
     	close(relays[HEAD_FANS]);
     	close(relays[WATER_PUMP]);
-    	close(relays[WATER_FAN]);
+    	close(relays[ON_BUTTON]);
     	close(relays[PELTIER]);
 
     	int unexport_fd = open("/sys/class/gpio/unexport", O_WRONLY);
