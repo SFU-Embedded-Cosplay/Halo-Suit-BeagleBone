@@ -21,17 +21,15 @@ static bool peltierLocked = false;
 static char bodyTempWarning;
 static char headTempWarning;
 
+static double adjustedWaterTemp
+
 static time_t peltier_timein = 0;
 static time_t pump_timein = 0;
 
+// controlls the peltier cycle
 static void peltier_automation()
 {
-    if (peltier_timein == 0) {
-        peltier_timein = time(NULL);
-    }
-
     time_t current_time = time(NULL);
-
 
     if ((current_time - peltier_timein) >= PELTIER_TIMEOUT && !peltierLocked) {
         int peltierState;
@@ -58,12 +56,9 @@ static void peltier_automation()
     }
 }
 
+// controlls the pump cycle
 static void pump_automation()
 {
-    if (pump_timein == 0) {
-        pump_timein = time(NULL);
-    }
-
     time_t current_time = time(NULL);
 
     if ((current_time - pump_timein) >= PUMP_TIMEOUT) {
@@ -168,6 +163,7 @@ static void checkBodyTemp(double temp, double lastTemp)
     }
 }
 
+// uses values from the water temperature sensor to control the peltier and pump
 static void waterTempLogic() 
 {
     double newWaterTemp = 0;
@@ -175,8 +171,10 @@ static void waterTempLogic()
         printf("ERROR: CANNOT READ WATER TEMPERATURE VALUE");
     }
 
-    // TODO: smooth temp value here
-    double adjustedWaterTemp = newWaterTemp;
+    if (newWaterTemp > (-50)) {
+        // TODO: smooth temp value here
+        adjustedWaterTemp = newWaterTemp;
+    }
 
     if (adjustedWaterTemp <= WATER_MIN_TEMP) {
         
@@ -217,6 +215,9 @@ static void waterTempLogic()
     }
 }
 
+// checks if pump is working correctly
+static void checkFlow()
+
 static void* automationThread()
 { 
     automationIsDone = false;
@@ -231,8 +232,20 @@ static void* automationThread()
     headTempWarning = 'N';
     bodyTempWarning = 'N';
 
-    peltier_timein = time(NULL);
-    pump_timein = time(NULL);
+
+    if (halosuit_relay_switch(PELTIER, HIGH)) {
+            printf("ERROR: PELTIER READ FAILURE");
+    }
+    else {
+        peltier_timein = time(NULL);
+    }
+    
+    if (halosuit_relay_switch(WATER_PUMP, HIGH)) {
+            printf("ERROR: WATER_PUMP READ FAILURE");
+    }
+    else {
+        pump_timein = time(NULL);
+    }
 
     sleep(START_DELAY); // to prevent the suit from reading startup values
 
