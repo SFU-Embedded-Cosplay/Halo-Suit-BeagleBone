@@ -25,12 +25,6 @@ void automation_init();
 // closes the automation thread and joins with main thread
 void automation_exit();
 
-// turns on the auto peltier control
-void automation_setAutoPeltierOn();
-
-// turns off auto peltier control
-void automation_setAutoPeltierOff();
-
 /* The two functions below get character values that correspond to 
    various warnings if the temperature is out of nominal ranges.
    the return values are as follows:

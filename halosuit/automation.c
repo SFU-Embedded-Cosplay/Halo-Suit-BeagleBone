@@ -15,7 +15,7 @@
 static pthread_t automation_id;
 
 static bool automationIsDone;
-static bool peltierAutoOn = true;
+
 static bool peltierLocked = false;
 
 static char bodyTempWarning;
@@ -32,7 +32,7 @@ static void peltier_automation()
     time_t current_time = time(NULL);
 
 
-    if ((current_time - peltier_timein) >= TEMP_VARIANCE && peltierAutoOn && !peltierLocked) {
+    if ((current_time - peltier_timein) >= TEMP_VARIANCE && !peltierLocked) {
         int peltierState;
         // peltierState will be a 1 if it's on and a 0 if off
         if (halosuit_relay_value(PELTIER, &peltierState)) { 
@@ -47,7 +47,7 @@ static void peltier_automation()
                 }
             }
             else {
-                if (halosuit_relay_switch(PELTIER, LOW)) {
+                if (halosuit_relay_switch(PELTIER, HIGH)) {
                     printf("ERROR: PELTIER READ FAILURE");
                     return;
                 }
@@ -150,6 +150,8 @@ static void* automationThread()
     headTempWarning = 'N';
     bodyTempWarning = 'N';
 
+    peltier_timein = time(NULL);
+
     sleep(START_DELAY); // to prevent the suit from reading startup values
 
     halosuit_temperature_value(HEAD, &lastHeadTemp);
@@ -165,6 +167,7 @@ static void* automationThread()
 
         averageBodyTemp = (armpitTemp + crotchTemp) / 2; 
         
+        // will change
         checkHeadTemp(headTemp, lastHeadTemp);
         checkBodyTemp(averageBodyTemp, lastAverageTemp); 
 
@@ -188,20 +191,6 @@ void automation_exit()
 {
     automationIsDone = true;
     pthread_join(automation_id, NULL);
-}
-
-void automation_setAutoPeltierOn()
-{
-    if (peltierLocked) {
-        printf("CANNOT TURN AUTOMATION ON PELTIER LOCKED");
-        return;
-    }
-    peltierAutoOn = true;
-}
-
-void automation_setAutoPeltierOff()
-{
-    peltierAutoOn = false;
 }
 
 char automation_getHeadTempWarning()
