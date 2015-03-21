@@ -1,6 +1,13 @@
 /*
     automation.h
     controls the cooling of the system based on the temperature values 
+    controls the cycling of the peltier and water pump
+*/
+/*
+    DISCLAIMER:
+    Please note that many of the functions in this file can directly affect the health of someone
+    so don't run in production without adequeate testing, I don't want someone getting hurt because 
+    of this on my conscience.
 */
 
 #ifndef AUTOMATION
@@ -14,13 +21,14 @@
 
 #define TEMP_VARIANCE 5.00              // degree of difference between two readings for it to be ignored
 
-#define MAX_TEMP 40.00                  // degrees celsius
-#define HIGH_TEMP 37.60                 // degrees celsius 
-#define LOW_TEMP 29.00                  // degrees celsius
-#define MINIMUM_TEMP 26.00              // degrees celsius
+#define BODY_MAX_TEMP 40.00             // degrees celsius
+#define BODY_HIGH_TEMP 37.60            // degrees celsius 
+#define BODY_LOW_TEMP 29.00             // degrees celsius
+#define BODY_MINIMUM_TEMP 26.00         // degrees celsius
+#define BODY_SENSOR_DEFAULT -5          // body sensors default to -50 degrees
 #define WATER_MAX_TEMP 22.00            // degrees celsius
 #define WATER_MIN_TEMP 1.00             // degrees celsius
-#define WATER_TEMP_DEFAULT 85           // water temperature sensor default temperature 
+#define WATER_SENSOR_DEFAULT 85         // water temperature sensor default temperature 
                                         // is 85 degrees celsius
 
 #define NOMINAL_FLOW 10                 // normal flow value when pump is on

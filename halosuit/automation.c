@@ -1,6 +1,12 @@
 /*
     automation.c
 */
+/*
+    DISCLAIMER:
+    Please note that many of the functions in this file can directly affect the health of someone
+    so don't run in production without adequeate testing, I don't want someone getting hurt because 
+    this on my conscience.
+*/
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -14,15 +20,18 @@
 
 static pthread_t automation_id;
 
-static bool automationIsDone;
+static bool automationIsDone = false;
 
 static bool peltierLocked = false;
 
 static char bodyTempWarning = NOMINAL_TEMP;
 static char headTempWarning = NOMINAL_TEMP;
 
-// since 0 is below min temp I set it in between the two water temps
+// temperatures set to mid range
 static double adjustedWaterTemp = (WATER_MAX_TEMP + WATER_MIN_TEMP) / 2; 
+static double adjustedHeadTemp = (BODY_HIGH_TEMP + BODY_LOW_TEMP) / 2;
+static double adjustedArmpitTemp = (BODY_HIGH_TEMP + BODY_LOW_TEMP) / 2;
+static double adjustedCrotchTemp = (BODY_HIGH_TEMP + BODY_LOW_TEMP) / 2;
 
 static int adjustedFlowRate = 0;
 
@@ -87,85 +96,6 @@ static void pump_automation()
     }
 }
 
-// this checks if the temperature value is an anomaly
-static bool isTempSpike(double current, double previous)
-{
-    if (current > previous) {
-        return ((current - previous) > TEMP_VARIANCE);
-    }
-    else {
-        return ((previous - current) > TEMP_VARIANCE);
-    }
-}
-
-static void checkHeadTemp(double temp, double lastTemp)
-{
-    if (isTempSpike(temp, lastTemp)) {
-        return;
-    }
-    
-    else if (temp >= HIGH_TEMP) {
-        if (halosuit_relay_switch(HEAD_FANS, HIGH)) {
-            printf("ERROR: HEAD_FANS READ FAILURE");
-        }
-
-        if (temp >= MAX_TEMP) {
-            headTempWarning = CRITICAL_HIGH_TEMP_WARNING;
-        }
-        else {
-            headTempWarning = HIGH_TEMP_WARNING;
-        }
-    }
-    else if (temp <= LOW_TEMP) {
-        if (halosuit_relay_switch(HEAD_FANS, LOW)) {
-            printf("ERROR: HEAD_FANS READ FAILURE");
-        }
-
-        if (temp <= MINIMUM_TEMP) {
-            headTempWarning = CRITICAL_LOW_TEMP_WARNING;
-        }
-        else {
-            headTempWarning = LOW_TEMP_WARNING;
-        }
-    }
-    else {
-        headTempWarning = NOMINAL_TEMP;
-    }
-}
-
-static void checkBodyTemp(double temp, double lastTemp)
-{
-    if (isTempSpike(temp, lastTemp)) {
-        return;
-    }
-    else if (temp >= HIGH_TEMP) {
-        if (halosuit_relay_switch(WATER_PUMP, HIGH)) {
-            printf("ERROR: WATER_PUMP READ FAILURE");
-        }
-        if (temp >= MAX_TEMP) {
-            bodyTempWarning = CRITICAL_HIGH_TEMP_WARNING;
-        }
-        else {
-            bodyTempWarning = HIGH_TEMP_WARNING;
-        }
-    }
-    else if (temp <= LOW_TEMP) {
-        if (halosuit_relay_switch(WATER_PUMP, LOW)) {
-            printf("ERROR: WATER_PUMP READ FAILURE");
-        }
-
-        if (temp <= MINIMUM_TEMP) {
-            bodyTempWarning = CRITICAL_LOW_TEMP_WARNING;
-        }
-        else {
-            bodyTempWarning = LOW_TEMP_WARNING;
-        }
-    }
-    else { 
-        bodyTempWarning = NOMINAL_TEMP;
-    }
-}
-
 // uses values from the water temperature sensor to control the peltier and pump
 static void waterTempLogic() 
 {
@@ -174,7 +104,7 @@ static void waterTempLogic()
         printf("ERROR: CANNOT READ WATER TEMPERATURE VALUE");
     }
 
-    if (newWaterTemp == WATER_TEMP_DEFAULT) {
+    if (newWaterTemp == WATER_SENSOR_DEFAULT) {
         // smooth water temperature with previous values to mitigate outlier data
         adjustedWaterTemp = (adjustedWaterTemp * SMOOTH_WEIGHT) + (newWaterTemp * (1 - SMOOTH_WEIGHT));
     }
@@ -243,20 +173,111 @@ static void checkFlow() {
     }
 }
 
+static void checkHeadTemp(double temp)
+{ 
+    if (temp >= BODY_HIGH_TEMP) {
+        if (halosuit_relay_switch(HEAD_FANS, HIGH)) {
+            printf("ERROR: HEAD_FANS READ FAILURE");
+        }
+
+        if (temp >= BODY_MAX_TEMP) {
+            headTempWarning = CRITICAL_HIGH_TEMP_WARNING;
+        }
+        else {
+            headTempWarning = HIGH_TEMP_WARNING;
+        }
+    }
+    else if (temp <= BODY_LOW_TEMP) {
+        if (halosuit_relay_switch(HEAD_FANS, LOW)) {
+            printf("ERROR: HEAD_FANS READ FAILURE");
+        }
+
+        if (temp <= BODY_MINIMUM_TEMP) {
+            headTempWarning = CRITICAL_LOW_TEMP_WARNING;
+        }
+        else {
+            headTempWarning = LOW_TEMP_WARNING;
+        }
+    }
+    else {
+        headTempWarning = NOMINAL_TEMP;
+    }
+}
+
+static void checkBodyTemp(double temp, double lastTemp)
+{
+    if (temp >= BODY_HIGH_TEMP) {
+        if (halosuit_relay_switch(WATER_PUMP, LOW)) {
+            printf("ERROR: WATER_PUMP READ FAILURE");
+        }
+        else {
+            pump_timein = time(NULL);
+        }
+
+        if (temp >= BODY_MAX_TEMP) {
+            bodyTempWarning = CRITICAL_HIGH_TEMP_WARNING;
+        }
+        else {
+            bodyTempWarning = HIGH_TEMP_WARNING;
+        }
+    }
+    else if (temp <= BODY_LOW_TEMP) {
+        if (halosuit_relay_switch(WATER_PUMP, LOW)) {
+            printf("ERROR: WATER_PUMP READ FAILURE");
+        }
+        else {
+            pump_timein = time(NULL);
+        }
+
+        if (temp <= BODY_MINIMUM_TEMP) {
+            bodyTempWarning = CRITICAL_LOW_TEMP_WARNING;
+        }
+        else {
+            bodyTempWarning = LOW_TEMP_WARNING;
+        }
+    }
+    else { 
+        bodyTempWarning = NOMINAL_TEMP;
+    }
+}
+
+static void bodyTemperatureLogic() {
+    double newHeadTemp;
+    double newArmpitTemp;
+    double newCrotchTemp;
+    double averageBodyTemp; // average of crotch and armpit not head
+
+    if (halosuit_temperature_value(HEAD, &newHeadTemp)) {
+        printf("ERROR: HEAD TEMPERATURE READ FAILURE");
+    }
+    else if (newHeadTemp != BODY_SENSOR_DEFAULT) {
+        adjustedHeadTemp = (adjustedHeadTemp * SMOOTH_WEIGHT) + (newHeadTemp * (1 - SMOOTH_WEIGHT));
+    }
+
+    if (halosuit_temperature_value(ARMPITS, &newArmpitTemp)) {
+        printf("ERROR: ARMPIT TEMPERATURE READ FAILURE");
+    }
+    else if (newArmpitTemp != BODY_SENSOR_DEFAULT) {
+        adjustedArmpitTemp =  (adjustedArmpitTemp * SMOOTH_WEIGHT) + (newArmpitTemp * (1 - SMOOTH_WEIGHT));
+    }
+    
+    if (halosuit_temperature_value(CROTCH, &newCrotchTemp)) {
+        printf("ERROR: CROTCH TEMPERATURE READ FAILURE");
+    }
+    else if (newCrotchTemp != BODY_SENSOR_DEFAULT) {
+        adjustedCrotchTemp = (adjustedCrotchTemp * SMOOTH_WEIGHT) + (newCrotchTemp * (1 - SMOOTH_WEIGHT));
+    }
+
+    averageBodyTemp = (adjustedArmpitTemp + adjustedCrotchTemp) / 2;
+
+    checkHeadTemperature(adjustedHeadTemp);
+    checkBodyTemperature(averageBodyTemp);
+     
+}
+
 static void* automationThread()
 { 
     automationIsDone = false;
-    double headTemp = 0;
-    double armpitTemp = 0;
-    double crotchTemp = 0;
-    double averageBodyTemp = 0;
-
-    double lastHeadTemp = 0;
-    double lastAverageTemp = 0;
-
-    headTempWarning = 'N';
-    bodyTempWarning = 'N';
-
 
     if (halosuit_relay_switch(PELTIER, HIGH)) {
             printf("ERROR: PELTIER READ FAILURE");
@@ -272,31 +293,13 @@ static void* automationThread()
         pump_timein = time(NULL);
     }
 
-    sleep(START_DELAY); // to prevent the suit from reading startup values
-
-    halosuit_temperature_value(HEAD, &lastHeadTemp);
-    halosuit_temperature_value(ARMPITS, &armpitTemp);
-    halosuit_temperature_value(CROTCH, &crotchTemp);
-
-    lastAverageTemp = (armpitTemp + crotchTemp) / 2;
+    sleep(START_DELAY); // to prevent the suit from reading weird startup values
 
     while (!automationIsDone) {
-        halosuit_temperature_value(HEAD, &headTemp);
-        halosuit_temperature_value(ARMPITS, &armpitTemp);
-        halosuit_temperature_value(CROTCH, &crotchTemp);
-
-        averageBodyTemp = (armpitTemp + crotchTemp) / 2; 
-        
-        // will change
-        checkHeadTemp(headTemp, lastHeadTemp);
-        checkBodyTemp(averageBodyTemp, lastAverageTemp); 
-
-        lastHeadTemp = headTemp;
-        lastAverageTemp = averageBodyTemp;
-
         peltier_automation();
         pump_automation();
         waterTempLogic();
+        bodyTemperatureLogic(); 
         
         sleep(READ_DELAY);
     }
