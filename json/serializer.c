@@ -10,7 +10,8 @@
 #include <json/json.h>
 #include <json/json-builder.h>
 #include <beagleblue/beagleblue.h>
-#include <halosuit/halosuit.h>
+//#include <halosuit/halosuit.h>
+#include <testcode/automationtestdata.h>
 #include <halosuit/automation.h>
 
 #define ON "on"
