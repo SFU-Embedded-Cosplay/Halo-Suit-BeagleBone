@@ -140,7 +140,14 @@ static struct _key* config_get_key(struct _key* keys, char* key) {
 int config_get_string(char* section, char* key, char* buf, int bufsize)
 {
 	struct _section* s = config_get_section(config_tree, section);
+	if (s == NULL) {
+		return -1;
+	}
 	struct _key* k = config_get_key(s->keys, key);
+	if (k == NULL) {
+		return -1;
+	}
+	
 	if (k->value != NULL) {
 		strncpy(buf, k->value, bufsize);
 		return 0;

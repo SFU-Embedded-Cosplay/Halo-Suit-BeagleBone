@@ -15,6 +15,7 @@
 #include <pthread.h>
 
 #include <beagleblue/beagleblue.h>
+#include <config/config.h>
 //this is hard coded on both ends
 #define ANDROID_PORT 3
 #define GLASS_PORT 2
@@ -44,6 +45,12 @@ static pthread_mutex_t glass_send_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static int android_sock = -1, android_client = -1;
 static int glass_sock = -1, glass_client = -1;
+
+static char android_mac_addr[MAX_BUF_SIZE] = { 0 };
+static char glass_mac_addr[MAX_BUF_SIZE] = { 0 };
+
+static bool android_configured;
+static bool glass_configured;
 
 //consider converting to macro
 static void set_bluetooth_mode(uint32_t mode)
@@ -80,13 +87,49 @@ static void beagleblue_connect(int *sock, int *client, uint8_t channel)
 		bind(*sock, (struct sockaddr *)&loc_addr, sizeof(loc_addr)); 
 	}
 	// put socket into listening mode
-	listen(*sock, 1);
+    if (channel == ANDROID_PORT && android_configured) { 
+    	while (true) {
+    		listen(*sock, 1);
 
+			*client = accept(*sock, (struct sockaddr *)&rem_addr, &opt);
+    		ba2str( &rem_addr.rc_bdaddr, buf );
 
-	// accept one connection
-	*client = accept(*sock, (struct sockaddr *)&rem_addr, &opt);
+    		if (strcmp(buf, android_mac_addr) == 0) {
+    			break;
+    		} else {
+    			close(*client);
+    			fprintf(stdout, "denied connection from %s\n", buf);
+				fflush(stdout);
+    		}
+    	}
+    } else if (channel == GLASS_PORT && glass_configured) {
+    	while (true) {
+    		listen(*sock, 1);
 
-	ba2str( &rem_addr.rc_bdaddr, buf );
+			*client = accept(*sock, (struct sockaddr *)&rem_addr, &opt);
+    		ba2str( &rem_addr.rc_bdaddr, buf );
+
+    		if (strcmp(buf, glass_mac_addr) == 0) {
+    			break;
+    		} else {
+    			close(*client);
+    			fprintf(stdout, "denied connection from %s\n", buf);
+				fflush(stdout);
+    		}
+    	}
+    } else {
+    	listen(*sock, 1);
+
+		*client = accept(*sock, (struct sockaddr *)&rem_addr, &opt);
+		if (channel == ANDROID_PORT) {
+			android_configured = true;
+		} else {
+			glass_configured = true;
+		}
+    }
+
+    ba2str( &rem_addr.rc_bdaddr, buf );
+
 	fprintf(stdout, "accepted connection from %s\n", buf);
 	fflush(stdout);
 }
@@ -209,6 +252,10 @@ static void *glass_send_thread()
 
 void beagleblue_init(void (*on_receive)(char *))
 {
+	//get the configuration for mac addresses
+	android_configured = config_get_string("Bluetooth", "android", android_mac_addr, MAX_BUF_SIZE) == 0;
+	glass_configured = config_get_string("Bluetooth", "glass", glass_mac_addr, MAX_BUF_SIZE) == 0;
+
 	beagleblue_is_done = false;
 	set_bluetooth_mode(SCAN_INQUIRY | SCAN_PAGE);
 	printf("Bluetooth Discoverable\n");
