@@ -117,20 +117,6 @@ void parser_parse(char* json_text)
                 }
             }
         }
-        else if (strcmp (object->u.object.values[i].name,"peltier") == 0) {
-            if (strcmp(object->u.object.values[i].value->u.string.ptr, "on") == 0) {
-                // turn on peltier
-                if (halosuit_relay_switch(PELTIER, HIGH) != 0) {
-                    logger_log("ERROR: PELTIER RELAY FAILURE\n");
-                }
-            }
-            else if (strcmp(object->u.object.values[i].value->u.string.ptr, "off") == 0) {
-                // turn off peltier
-                if (halosuit_relay_switch(PELTIER, LOW) != 0) {
-                    logger_log("ERROR: PELTIER RELAY FAILURE\n");
-                }
-            }
-        }
         else if (strcmp(object->u.object.values[i].name, "configuration") == 0) {
             json_value* config = object->u.object.values[i].value;
             for (int j = 0; j < config->u.object.length; j++) {
