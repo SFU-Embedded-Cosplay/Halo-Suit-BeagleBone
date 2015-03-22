@@ -16,14 +16,16 @@
 #include <time.h>
 
 #include <halosuit/automation.h>
-//#include <halosuit/halosuit.h>
-#include <testcode/automationtestdata.h>
+#include <halosuit/halosuit.h>
+//#include <testcode/automationtestdata.h>
 
 static pthread_t automation_id;
 
 static bool automationIsDone = false;
 
 static bool peltierLocked = false;
+
+static bool pumpLocked = false;
 
 static char bodyTempWarning = NOMINAL_TEMP;
 static char headTempWarning = NOMINAL_TEMP;
@@ -47,7 +49,7 @@ static void peltier_automation()
 {
     time_t current_time = time(NULL);
 
-    if ((current_time - peltier_timein) >= PELTIER_TIMEOUT && !peltierLocked) {
+    if (difftime(current_time, peltier_timein) >= PELTIER_TIMEOUT && !peltierLocked) {
         int peltierState;
         // peltierState will be a 1 if it's on and a 0 if off
         if (halosuit_relay_value(PELTIER, &peltierState)) { 
@@ -77,7 +79,7 @@ static void pump_automation()
 {
     time_t current_time = time(NULL);
 
-    if ((current_time - pump_timein) >= PUMP_TIMEOUT) {
+    if (difftime(current_time, pump_timein) >= PUMP_TIMEOUT) {
         int pumpState;
         if (halosuit_relay_value(WATER_PUMP, &pumpState)) {
             printf("ERROR: WATER_PUMP READ FAILURE");
@@ -108,7 +110,9 @@ static void waterTempLogic()
         printf("ERROR: CANNOT READ WATER TEMPERATURE VALUE");
     }
 
-    if (newWaterTemp == WATER_SENSOR_DEFAULT) {
+    // occasionly the sensor might give a weird data point which is it's default this ignores it
+    // if the water is at 85 degrees the user will probably know without the suit telling them
+    if (newWaterTemp != WATER_SENSOR_DEFAULT) {
         // smooth water temperature with previous values to mitigate outlier data
         adjustedWaterTemp = (adjustedWaterTemp * SMOOTH_WEIGHT) + (newWaterTemp * (1 - SMOOTH_WEIGHT));
     }
@@ -116,6 +120,7 @@ static void waterTempLogic()
     if (adjustedWaterTemp <= WATER_MIN_TEMP) {
         
         // turn off pump turn off peltier
+        pumpLocked = true;
         waterTempWarning = LOW_TEMP_WARNING;
         if (halosuit_relay_switch(PELTIER, LOW)) {
             printf("ERROR: PELTIER READ FAILURE");
@@ -134,6 +139,7 @@ static void waterTempLogic()
 
     else if (adjustedWaterTemp >= WATER_MAX_TEMP) {
         // turn off pump turn on peltier
+        pumpLocked = true;
         waterTempWarning = HIGH_TEMP_WARNING;
         if (halosuit_relay_switch(PELTIER, HIGH)) {
             printf("ERROR: PELTIER READ FAILURE");
@@ -150,6 +156,7 @@ static void waterTempLogic()
     }
     else {
         waterTempWarning = NOMINAL_TEMP;
+        pumpLocked = false;
     }
 }
 
@@ -216,11 +223,21 @@ static void checkHeadTemperature(double temp)
 static void checkBodyTemperature(double temp)
 {
     if (temp >= BODY_HIGH_TEMP) {
-        if (halosuit_relay_switch(WATER_PUMP, LOW)) {
-            printf("ERROR: WATER_PUMP READ FAILURE");
+        // if water is too cold or too warm the pump will lock
+        // if it's too cold it's probably already cooling the user 
+        // and will warm up the water to start pumping again
+        // if water is too warm well pumping it will not help
+        // may need to add a warning here to notify the user of lack of coolant
+        if (!pumpLocked) {
+            if (halosuit_relay_switch(WATER_PUMP, HIGH)) {
+                printf("ERROR: WATER_PUMP READ FAILURE");
+            }
+            else {
+                pump_timein = time(NULL);
+            }
         }
         else {
-            pump_timein = time(NULL);
+            //TODO: add warning here
         }
 
         if (temp >= BODY_MAX_TEMP) {

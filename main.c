@@ -14,8 +14,8 @@
 #include <beagleblue/beagleblue.h>
 #include <json/parser.h>
 #include <json/serializer.h>
-//#include <halosuit/halosuit.h>
-#include <testcode/automationtestdata.h>
+#include <halosuit/halosuit.h>
+//#include <testcode/automationtestdata.h>
 #include <halosuit/automation.h>
 
 #define WATCHDOG_PATH "/dev/watchdog"

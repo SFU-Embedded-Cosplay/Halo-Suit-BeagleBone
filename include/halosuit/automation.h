@@ -13,8 +13,8 @@
 #ifndef AUTOMATION
 #define AUTOMATION
 
-#define START_DELAY 10000               // 10 seconds
-#define READ_DELAY 1000                 // 1 seconds
+#define START_DELAY 3                   // 3 seconds
+#define READ_DELAY 1                    // 1 seconds
 #define PELTIER_TIMEOUT 1200            // 1200 seconds = 20 minutes time for peltier to run
 #define PUMP_TIMEOUT 1200
 #define PUMP_STARTUP_TIME 5             // 5 seconds for flow to adjust to normal levels
@@ -30,6 +30,8 @@
 #define WATER_MIN_TEMP 1.00             // degrees celsius
 #define WATER_SENSOR_DEFAULT 85         // water temperature sensor default temperature 
                                         // is 85 degrees celsius
+                                        // if the sensor changes becarefull about changing this value
+                                        // since this value will get ignored by automation
 
 #define NOMINAL_FLOW_VALUE 10           // normal flow value when pump is on
 
