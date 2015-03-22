@@ -22,7 +22,7 @@ static int temperature[NUMBER_OF_TEMP_SENSORS - 1]; //water temperature is taken
 //FILE for pipe from readflow.py
 static FILE* python_pipe;
 static int flowrate = 0;
-static double water_temp = 0.0f;
+static float water_temp = 0.0f;
 static char python_buffer[50];
 static pthread_t python_thread_id;
 
@@ -44,6 +44,8 @@ static void *python_thread()
 	while ( fgets(python_buffer, sizeof(python_buffer), python_pipe) != NULL) {
 		sscanf(python_buffer, "%d %f", &flowrate, &water_temp);
 	}
+    
+    return NULL;
 }
 
 void halosuit_init()

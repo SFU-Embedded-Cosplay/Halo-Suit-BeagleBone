@@ -110,14 +110,14 @@ static void serializer_buildjson(json_value *object)
     int value = 0;
     // lights
     if (halosuit_relay_value(LIGHTS, &value) != 0) {
-	    printf("ERROR: LIGHTS READ VALUE FAILURE\n");
+	    logger_log("ERROR: LIGHTS READ VALUE FAILURE\n");
     }	
     if (value == 1) {
 	    json_object_push(object, "lights", json_string_new(ON));
     }
     // auto lights
     else if (halosuit_relay_value(LIGHTS_AUTO, &value) != 0) {
-	    printf("ERROR: LIGHTS_AUTO READ VALUE FAILURE\n");
+	    logger_log("ERROR: LIGHTS_AUTO READ VALUE FAILURE\n");
     }	
     else if (value == 1) {
 	    json_object_push(object, "lights", json_string_new(AUTO));
@@ -129,7 +129,7 @@ static void serializer_buildjson(json_value *object)
     
     // head lights white
     if (halosuit_relay_value(HEADLIGHTS_WHITE, &value) != 0) {
-	    printf("ERROR: HEADLIGHTS_WHITE READ VALUE FAILURE\n");
+	    logger_log("ERROR: HEADLIGHTS_WHITE READ VALUE FAILURE\n");
     }	
     if (value == 1) {
 	    json_object_push(object, "head lights white", json_string_new(ON));
@@ -140,7 +140,7 @@ static void serializer_buildjson(json_value *object)
 
     // head lights red
     if (halosuit_relay_value(HEADLIGHTS_RED, &value) != 0) {
-	    printf("ERROR: HEADLIGHTS RED READ VALUE FAILURE\n");
+	    logger_log("ERROR: HEADLIGHTS RED READ VALUE FAILURE\n");
     }	
     if (value == 1) {
 	    json_object_push(object, "head lights red", json_string_new(ON));
@@ -151,7 +151,7 @@ static void serializer_buildjson(json_value *object)
     
     // head fans
     if (halosuit_relay_value(HEAD_FANS, &value) != 0) {
-	    printf("ERROR: HEAD_FANS READ VALUE FAILURE\n");
+	    logger_log("ERROR: HEAD_FANS READ VALUE FAILURE\n");
     }	
     if (value == 1) {
 	    json_object_push(object, "head fans", json_string_new(ON));
@@ -162,7 +162,7 @@ static void serializer_buildjson(json_value *object)
     
     // water pump
     if (halosuit_relay_value(WATER_PUMP, &value) != 0) {
-	    printf("ERROR: WATER_PUMP READ VALUE FAILURE\n");
+	    logger_log("ERROR: WATER_PUMP READ VALUE FAILURE\n");
     }	
     if (value == 1) {
 	    json_object_push(object, "water pump", json_string_new(ON));
@@ -173,7 +173,7 @@ static void serializer_buildjson(json_value *object)
 
     // peltier
     if (halosuit_relay_value(PELTIER, &value) != 0) {
-	    printf("ERROR: PELTIER READ VALUE FAILURE\n");
+	    logger_log("ERROR: PELTIER READ VALUE FAILURE\n");
     }	
     if (value == 1) {
 	    json_object_push(object, "peltier", json_string_new(ON));
@@ -187,31 +187,31 @@ static void serializer_buildjson(json_value *object)
     
     // head temperature
     if (halosuit_temperature_value(HEAD, &temperature) != 0) {
-	    printf("ERROR: HEAD TEMPERATURE READ FAILURE\n");
+	    logger_log("ERROR: HEAD TEMPERATURE READ FAILURE\n");
     }
     json_object_push(object, "head temperature", json_double_new(temperature)); 
 
     // armpits temperature 
     if (halosuit_temperature_value(ARMPITS, &temperature) != 0) {
-	    printf("ERROR: ARMPITS TEMPERATURE READ FAILURE\n");
+	    logger_log("ERROR: ARMPITS TEMPERATURE READ FAILURE\n");
     }
     json_object_push(object, "armpits temperature", json_double_new(temperature));
 
     // crotch temperature 
     if (halosuit_temperature_value(CROTCH, &temperature) != 0) {
-	    printf("ERROR: CROTCH TEMPERATURE READ FAILURE\n");
+	    logger_log("ERROR: CROTCH TEMPERATURE READ FAILURE\n");
     }
     json_object_push(object, "crotch temperature", json_double_new(temperature));
 
     // water temperature 
     if (halosuit_temperature_value(WATER, &temperature) != 0) {
-	    printf("ERROR: WATER TEMPERATURE READ FAILURE\n");
+	    logger_log("ERROR: WATER TEMPERATURE READ FAILURE\n");
     }
 
     // water flow
     int flow;
     if (halosuit_flowrate(&flow)) {
-        printf("ERROR: FLOW RATE READ FAILURE\n");
+        logger_log("ERROR: FLOW RATE READ FAILURE\n");
     }
     json_object_push(object, "flow rate", json_integer_new(flow));
 

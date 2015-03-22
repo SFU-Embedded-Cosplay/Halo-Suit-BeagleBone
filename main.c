@@ -15,6 +15,7 @@
 #include <json/parser.h>
 #include <json/serializer.h>
 #include <halosuit/halosuit.h>
+#include <halosuit/automation.h>
 //#include <testcode/automationtestdata.h>
 #include <config/config.h>
 #include <halosuit/logger.h>
@@ -40,7 +41,7 @@ int main(int argc, char* argv[])
     halosuit_init();  
     automation_init();
 
-
+    logger_log("Initialization complete");
     // if loop takes longer than 45 secs watchdog will reboot the system
     while (1) {	
 	    // sends status information to android phone and google glass
@@ -61,6 +62,8 @@ int main(int argc, char* argv[])
     config_exit();
     beagleblue_exit();
     beagleblue_join();
+
+    logger_log("Exiting halosuit");
 
     return 0;
 }

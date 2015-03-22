@@ -16,6 +16,7 @@
 
 #include <beagleblue/beagleblue.h>
 #include <config/config.h>
+#include <halosuit/logger.h>
 //this is hard coded on both ends
 #define ANDROID_PORT 3
 #define GLASS_PORT 2
@@ -64,6 +65,9 @@ static void set_bluetooth_mode(uint32_t mode)
 	dr.dev_opt = mode;
 	if (ioctl(sock, HCISETSCAN, (unsigned long) &dr) < 0) {
 		fprintf(stderr, "Can't set scan mode on hci%d: %s (%d)\n", dev_id, strerror(errno), errno);
+        char * string = "";
+        sprintf(string, "Can't set scan mode on hci%d: %s (%d)\n", dev_id, strerror(errno), errno);
+        logger_log(string);
     }
 
     close(sock);
@@ -100,6 +104,10 @@ static void beagleblue_connect(int *sock, int *client, uint8_t channel)
     			close(*client);
     			fprintf(stdout, "denied connection from %s\n", buf);
 				fflush(stdout);
+
+                char * string = "";
+                sprintf(string, "denied connection from %s\n", buf);
+                logger_log(string);
     		}
     	}
     } else if (channel == GLASS_PORT && glass_configured) {
@@ -115,6 +123,10 @@ static void beagleblue_connect(int *sock, int *client, uint8_t channel)
     			close(*client);
     			fprintf(stdout, "denied connection from %s\n", buf);
 				fflush(stdout);
+                
+                char * string = "";
+                sprintf(string, "denied connection from %s\n", buf);
+                logger_log(string);
     		}
     	}
     } else {
@@ -132,6 +144,10 @@ static void beagleblue_connect(int *sock, int *client, uint8_t channel)
 
 	fprintf(stdout, "accepted connection from %s\n", buf);
 	fflush(stdout);
+
+    char * string = "";
+    sprintf(string, "accepted connection from %s\n", buf);
+    logger_log(string);
 }
 
 static void *android_connect_thread()
@@ -141,6 +157,7 @@ static void *android_connect_thread()
 	if (glass_is_connected) {
 		set_bluetooth_mode(SCAN_DISABLED);
 	}
+    return NULL;
 }
 
 static void *glass_connect_thread()
@@ -150,6 +167,7 @@ static void *glass_connect_thread()
 	if (android_is_connected) {
 		set_bluetooth_mode(SCAN_DISABLED);
 	}
+    return NULL;
 }
 
 static void *android_recv_thread(void *callback)
@@ -185,6 +203,7 @@ static void *android_send_thread()
 				if (current_time - start_time == TIMEOUT) {
 					printf("Android Timed Out\n");
 					fflush(stdout);
+                    logger_log("Android Timed Out\n");
 					android_is_connected = false;
 					//close(android_sock);
 					close(android_client);
@@ -235,6 +254,7 @@ static void *glass_send_thread()
 				if (current_time - start_time == TIMEOUT) {
 					printf("Glass Timed Out\n");
 					fflush(stdout);
+                    logger_log("Glass Timed Out\n");
 					glass_is_connected = false;
 					//close(glass_sock);
 					close(glass_client);
@@ -259,6 +279,7 @@ void beagleblue_init(void (*on_receive)(char *))
 	beagleblue_is_done = false;
 	set_bluetooth_mode(SCAN_INQUIRY | SCAN_PAGE);
 	printf("Bluetooth Discoverable\n");
+    logger_log("Bluetooth Discoverable\n");
 	pthread_create(&android_connect_thread_id, NULL, &android_connect_thread, NULL);
 	pthread_create(&glass_connect_thread_id, NULL, &glass_connect_thread, NULL);
 	pthread_create(&android_send_thread_id, NULL, &android_send_thread, NULL);

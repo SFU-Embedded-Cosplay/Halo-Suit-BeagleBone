@@ -18,6 +18,7 @@
 #include <halosuit/automation.h>
 #include <halosuit/halosuit.h>
 //#include <testcode/automationtestdata.h>
+#include <halosuit/logger.h>
 
 static pthread_t automation_id;
 
@@ -53,19 +54,19 @@ static void peltier_automation()
         int peltierState;
         // peltierState will be a 1 if it's on and a 0 if off
         if (halosuit_relay_value(PELTIER, &peltierState)) { 
-            printf("ERROR: PELTIER READ FAILURE");
+            logger_log("ERROR: PELTIER READ FAILURE");
             return;
         }
         else {
             if (peltierState) {
                 if (halosuit_relay_switch(PELTIER, LOW)) {
-                    printf("ERROR: PELTIER READ FAILURE");
+                    logger_log("ERROR: PELTIER READ FAILURE");
                     return;
                 }
             }
             else {
                 if (halosuit_relay_switch(PELTIER, HIGH)) {
-                    printf("ERROR: PELTIER READ FAILURE");
+                    logger_log("ERROR: PELTIER READ FAILURE");
                     return;
                 }
             }
@@ -82,19 +83,19 @@ static void pump_automation()
     if (difftime(current_time, pump_timein) >= PUMP_TIMEOUT) {
         int pumpState;
         if (halosuit_relay_value(WATER_PUMP, &pumpState)) {
-            printf("ERROR: WATER_PUMP READ FAILURE");
+            logger_log("ERROR: WATER_PUMP READ FAILURE");
             return;
         }
         else {
             if (pumpState) {
                 if (halosuit_relay_switch(WATER_PUMP, LOW)) {
-                    printf("ERROR: WATER_PUMP READ FAILURE");
+                    logger_log("ERROR: WATER_PUMP READ FAILURE");
                     return;
                 }
             }
             else {
                 if (halosuit_relay_switch(WATER_PUMP, HIGH)) {
-                    printf("ERROR: WATER_PUMP READ FAILURE");
+                    logger_log("ERROR: WATER_PUMP READ FAILURE");
                 }
             }
         }      
@@ -107,7 +108,7 @@ static void waterTempLogic()
 {
     double newWaterTemp = 0;
     if (halosuit_temperature_value(WATER, &newWaterTemp)) {
-        printf("ERROR: CANNOT READ WATER TEMPERATURE VALUE");
+        logger_log("ERROR: CANNOT READ WATER TEMPERATURE VALUE");
     }
 
     // occasionly the sensor might give a weird data point which is it's default this ignores it
@@ -123,14 +124,14 @@ static void waterTempLogic()
         pumpLocked = true;
         waterTempWarning = LOW_TEMP_WARNING;
         if (halosuit_relay_switch(PELTIER, LOW)) {
-            printf("ERROR: PELTIER READ FAILURE");
+            logger_log("ERROR: PELTIER READ FAILURE");
         }
         else {
             peltier_timein = time(NULL);
         }
         
         if (halosuit_relay_switch(WATER_PUMP, LOW)) {
-            printf("ERROR: WATER_PUMP READ FAILURE");
+            logger_log("ERROR: WATER_PUMP READ FAILURE");
         }
         else {
             pump_timein = time(NULL);
@@ -142,14 +143,14 @@ static void waterTempLogic()
         pumpLocked = true;
         waterTempWarning = HIGH_TEMP_WARNING;
         if (halosuit_relay_switch(PELTIER, HIGH)) {
-            printf("ERROR: PELTIER READ FAILURE");
+            logger_log("ERROR: PELTIER READ FAILURE");
         }
         else {
             peltier_timein = time(NULL);
         }
 
         if (halosuit_relay_switch(WATER_PUMP, LOW)) {
-            printf("ERROR: WATER_PUMP READ FAILURE");
+            logger_log("ERROR: WATER_PUMP READ FAILURE");
         } else {
             pump_timein = time(NULL);
         }
@@ -166,7 +167,7 @@ static void checkFlow() {
     time_t current_time = time(NULL);
     int newFlowRate;
     if (halosuit_flowrate(&newFlowRate)) {
-        printf("ERROR: WATER FLOW READ FAILURE");
+        logger_log("ERROR: WATER FLOW READ FAILURE");
         return;
     } else {
         adjustedFlowRate = (adjustedFlowRate * SMOOTH_WEIGHT) + (newFlowRate * (1 - SMOOTH_WEIGHT));
@@ -174,14 +175,14 @@ static void checkFlow() {
 
     int pumpState;
     if (halosuit_relay_value(WATER_PUMP, &pumpState)) {
-        printf("ERROR: WATER_PUMP READ FAILURE");
+        logger_log("ERROR: WATER_PUMP READ FAILURE");
         return;
     }
     else {
         if (pumpState && (current_time - pump_timein) >= PUMP_STARTUP_TIME 
             && adjustedFlowRate < NOMINAL_FLOW_VALUE) {
             waterFlowWarning = LOW_FLOW;
-            printf("WARNING: FLOWRATE LOW POSSIBLE LEAK");
+            logger_log("WARNING: FLOWRATE LOW POSSIBLE LEAK");
         }
         else {
             waterFlowWarning = NOMINAL_FLOW;
@@ -193,7 +194,7 @@ static void checkHeadTemperature(double temp)
 { 
     if (temp >= BODY_HIGH_TEMP) {
         if (halosuit_relay_switch(HEAD_FANS, HIGH)) {
-            printf("ERROR: HEAD_FANS READ FAILURE");
+            logger_log("ERROR: HEAD_FANS READ FAILURE");
         }
 
         if (temp >= BODY_MAX_TEMP) {
@@ -205,7 +206,7 @@ static void checkHeadTemperature(double temp)
     }
     else if (temp <= BODY_LOW_TEMP) {
         if (halosuit_relay_switch(HEAD_FANS, LOW)) {
-            printf("ERROR: HEAD_FANS READ FAILURE");
+            logger_log("ERROR: HEAD_FANS READ FAILURE");
         }
 
         if (temp <= BODY_MINIMUM_TEMP) {
@@ -230,7 +231,7 @@ static void checkBodyTemperature(double temp)
         // may need to add a warning here to notify the user of lack of coolant
         if (!pumpLocked) {
             if (halosuit_relay_switch(WATER_PUMP, HIGH)) {
-                printf("ERROR: WATER_PUMP READ FAILURE");
+                logger_log("ERROR: WATER_PUMP READ FAILURE");
             }
             else {
                 pump_timein = time(NULL);
@@ -249,7 +250,7 @@ static void checkBodyTemperature(double temp)
     }
     else if (temp <= BODY_LOW_TEMP) {
         if (halosuit_relay_switch(WATER_PUMP, LOW)) {
-            printf("ERROR: WATER_PUMP READ FAILURE");
+            logger_log("ERROR: WATER_PUMP READ FAILURE");
         }
         else {
             pump_timein = time(NULL);
@@ -274,21 +275,21 @@ static void bodyTemperatureLogic() {
     double averageBodyTemp; // average of crotch and armpit not head
 
     if (halosuit_temperature_value(HEAD, &newHeadTemp)) {
-        printf("ERROR: HEAD TEMPERATURE READ FAILURE");
+        logger_log("ERROR: HEAD TEMPERATURE READ FAILURE");
     }
     else if (newHeadTemp != BODY_SENSOR_DEFAULT) {
         adjustedHeadTemp = (adjustedHeadTemp * SMOOTH_WEIGHT) + (newHeadTemp * (1 - SMOOTH_WEIGHT));
     }
 
     if (halosuit_temperature_value(ARMPITS, &newArmpitTemp)) {
-        printf("ERROR: ARMPIT TEMPERATURE READ FAILURE");
+        logger_log("ERROR: ARMPIT TEMPERATURE READ FAILURE");
     }
     else if (newArmpitTemp != BODY_SENSOR_DEFAULT) {
         adjustedArmpitTemp =  (adjustedArmpitTemp * SMOOTH_WEIGHT) + (newArmpitTemp * (1 - SMOOTH_WEIGHT));
     }
     
     if (halosuit_temperature_value(CROTCH, &newCrotchTemp)) {
-        printf("ERROR: CROTCH TEMPERATURE READ FAILURE");
+        logger_log("ERROR: CROTCH TEMPERATURE READ FAILURE");
     }
     else if (newCrotchTemp != BODY_SENSOR_DEFAULT) {
         adjustedCrotchTemp = (adjustedCrotchTemp * SMOOTH_WEIGHT) + (newCrotchTemp * (1 - SMOOTH_WEIGHT));
@@ -305,14 +306,14 @@ static void* automationThread()
     automationIsDone = false;
 
     if (halosuit_relay_switch(PELTIER, HIGH)) {
-            printf("ERROR: PELTIER READ FAILURE");
+            logger_log("ERROR: PELTIER READ FAILURE");
     }
     else {
         peltier_timein = time(NULL);
     }
     
     if (halosuit_relay_switch(WATER_PUMP, HIGH)) {
-            printf("ERROR: WATER_PUMP READ FAILURE");
+            logger_log("ERROR: WATER_PUMP READ FAILURE");
     }
     else {
         pump_timein = time(NULL);
@@ -320,12 +321,15 @@ static void* automationThread()
 
     sleep(START_DELAY); // to prevent the suit from reading weird startup values
 
+    logger_log("Starting suit automation");
+
     while (!automationIsDone) {
 
         peltier_automation();
         pump_automation();
         waterTempLogic();
         bodyTemperatureLogic(); 
+        checkFlow();
         
         sleep(READ_DELAY);
     }

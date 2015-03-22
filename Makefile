@@ -13,7 +13,7 @@ INFILES = main.c json/serializer.c json/parser.c beagleblue/beagleblue.c json/js
 CROSS_COMPILE = arm-linux-gnueabi-
 COMPILER = gcc
 CC_C = $(CROSS_COMPILE)$(COMPILER)
-CFLAGS = -g -pthread -D_POSIX_C_SOURCE=200809L# -Werror -Wall
+CFLAGS = -g -pthread -D_POSIX_C_SOURCE=200809L -std=c99 #-Werror -Wall
 # this will make the compiler look for header files in the include folder
 INCLUDE = -Iinclude
 
