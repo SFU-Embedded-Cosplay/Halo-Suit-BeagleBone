@@ -4,7 +4,7 @@
 #define CONFIG_H
 
 
-void config_init();
+void config_init(char* file);
 int config_get_string(char* section, char* key, char* buf, int bufsize);
 void config_set_string(char* section, char* key, char* val);
 
