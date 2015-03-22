@@ -23,6 +23,9 @@
 #define CROTCH				2
 #define WATER 				3
 
+#define VOLTAGE_1 1
+#define VOLTAGE_2 2
+
 void halosuit_init(); //sets up the file descriptors
 void halosuit_exit(); //closes the file descriptors
 
@@ -35,5 +38,9 @@ int halosuit_relay_value(unsigned int relay, int *value);
 int halosuit_temperature_value(unsigned int location, double *temp);
 
 int halosuit_flowrate(int *flow);
+
+int halosuit_voltage_value(int battery, double *value);
+
+int halosuit_current_draw_value(int *value);
 
 #endif

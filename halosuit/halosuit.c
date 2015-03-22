@@ -19,10 +19,17 @@ static int relays[NUMBER_OF_RELAYS];
 //analog in file descriptors
 static int temperature[NUMBER_OF_TEMP_SENSORS - 1]; //water temperature is taken care of separately
 
+static int current_draw = 0;  //TODO: need to calculate current value`
+
 //FILE for pipe from readflow.py
 static FILE* python_pipe;
 static int flowrate = 0;
 static double water_temp = 0.0f;
+// TODO: these defaults need to change when we get data on for them
+// TODO: figure out which voltage is which
+static double voltage1 = 11.6;
+static double voltage2 = 11.6;
+
 static char python_buffer[50];
 static pthread_t python_thread_id;
 
@@ -42,7 +49,7 @@ static void *python_thread()
 	python_pipe = popen("python /root/readflow.py", "r");
 
 	while ( fgets(python_buffer, sizeof(python_buffer), python_pipe) != NULL) {
-		sscanf(python_buffer, "%d %f", &flowrate, &water_temp);
+		sscanf(python_buffer, "%d %f", &flowrate, &water_temp, &voltage1, &voltage2);
 	}
 }
 
@@ -201,4 +208,26 @@ int halosuit_flowrate(int *flow) {
 		return 0;
 	}
 	return -1;
+}
+
+int halosuit_voltage_value(int battery, double *value) 
+{
+	if (is_initialized) {
+        if (battery == VOLTAGE_1) {
+            *value = voltage1;
+        } else if (battery == VOLTAGE_2) {
+            *value = voltage2;
+        } else {
+            return -1;
+        }
+		return 0;
+	}
+	return -1;
+}
+
+//TODO: needs to be fleshed out
+int halosuit_current_draw_value(int *current) 
+{
+    *current = current_draw;
+    return 0;
 }
