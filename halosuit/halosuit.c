@@ -49,7 +49,7 @@ static void *python_thread()
 	python_pipe = popen("python /root/readflow.py", "r");
 
 	while ( fgets(python_buffer, sizeof(python_buffer), python_pipe) != NULL) {
-		sscanf(python_buffer, "%d %f", &flowrate, &water_temp, &voltage1, &voltage2);
+		sscanf(python_buffer, "%d %f %f %f", &flowrate, &water_temp, &voltage1, &voltage2);
 	}
 }
 
