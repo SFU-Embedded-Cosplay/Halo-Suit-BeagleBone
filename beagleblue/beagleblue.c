@@ -279,7 +279,7 @@ void beagleblue_init(void (*on_receive)(char *))
 	beagleblue_is_done = false;
 	set_bluetooth_mode(SCAN_INQUIRY | SCAN_PAGE);
 	printf("Bluetooth Discoverable\n");
-    logger_log("Bluetooth Discoverable\n");
+    logger_log("Bluetooth Discoverable");
 	pthread_create(&android_connect_thread_id, NULL, &android_connect_thread, NULL);
 	pthread_create(&glass_connect_thread_id, NULL, &glass_connect_thread, NULL);
 	pthread_create(&android_send_thread_id, NULL, &android_send_thread, NULL);
