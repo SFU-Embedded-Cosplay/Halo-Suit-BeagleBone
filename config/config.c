@@ -125,49 +125,107 @@ void config_exit() {
 	free_config_tree();
 }
 
-int config_get_string(char* section, char* key, char* buf, int bufsize)
-{
-	struct _section* curr_section = config_tree;
+static struct _section* config_get_section(struct _section* sections, char* section) {
+	struct _section* curr_section = sections;
 	while (curr_section != NULL) {
 		if (strcmp(section, curr_section->section) == 0) {
-			struct _key* curr_key = curr_section->keys;
-			while (curr_key != NULL) {
-				if (strcmp(curr_key->key, key) == 0) {
-					strncpy(curr_key->value, buf, bufsize);
-					return 0;
-				}
-				curr_key = curr_key->next;
-			}
-			return -1;
+			return curr_section;
 		}
 		curr_section = curr_section->next;
+	}
+	return NULL; 
+}
+
+static struct _key* config_get_key(struct _key* keys, char* key) {
+	struct _key* curr_key = keys;
+	while (curr_key != NULL) {
+		if (strcmp(key, curr_key->key) == 0) {
+			return curr_key;
+		}
+		curr_key = curr_key->next;
+	}
+	return NULL;
+}
+
+int config_get_string(char* section, char* key, char* buf, int bufsize)
+{
+	struct _section* s = config_get_section(config_tree, section);
+	struct _key* k = config_get_key(s->keys, key);
+	if (k->value != NULL) {
+		strncpy(buf, k->value, bufsize);
+		return 0;
 	}
 	return -1;
 }
 
-int config_set_string(char* section, char* key, char* buf, int bufsize)
+void config_set_string(char* section, char* key, char* val)
 {
-	return 0;
+	//first check if the section
+	struct _section* s = config_get_section(config_tree, section);
+	if (s == NULL) {
+		//make new section
+		struct _section* new_section = (struct _section*) malloc(sizeof(struct _section));
+		new_section->next = config_tree;
+		config_tree = new_section;
+		new_section->section = (char*) malloc(MAX_BUF_SIZE);
+		strncpy(new_section->section, section, MAX_BUF_SIZE);
+		s = new_section;
+	}
+
+	struct _key* k = config_get_key(s->keys, key);
+	if (k == NULL) {
+		//make new key
+		struct _key* new_key = (struct _key*) malloc(sizeof(struct _key));
+		new_key->next = s->keys;
+		s->keys = new_key;
+		new_key->key = (char*) malloc(MAX_BUF_SIZE);
+		strncpy(new_key->key, key, MAX_BUF_SIZE);
+		new_key->value = (char*) malloc(MAX_BUF_SIZE);
+		strncpy(new_key->value, val, MAX_BUF_SIZE);
+	}
 }
 
 int config_get_float(char* section, char* key, float* val)
 {
-	return 0;
+	struct _section* s = config_get_section(config_tree, section);
+	struct _key* k = config_get_key(s->keys, key);
+	if (k->value != NULL) {
+		if (sscanf(k->value, "%f", val) == 0) {
+			return -1;
+		}
+		return 0;
+	}
+	return -1;
 }
 
-int config_set_float(char* section, char* key, float* val)
+void config_set_float(char* section, char* key, float val)
 {
-	return 0;
+	char* value = malloc(MAX_BUF_SIZE);
+	snprintf(value, MAX_BUF_SIZE, "%f", val);
+	config_set_string(section, key, value);
+	free(value);
 }
 
 int config_get_int(char* section, char* key, int* val)
 {
+	struct _section* s = config_get_section(config_tree, section);
+	struct _key* k = config_get_key(s->keys, key);
+	if (k->value != NULL) {
+		if (sscanf(k->value, "%d", val) == 0) {
+			return -1;
+		}
+		return 0;
+	}
+	return -1;
 	return 0;
 }
 
-int config_set_int(char* section, char* key, int* val)
+void config_set_int(char* section, char* key, int val)
 {
-	return 0;
+	char* value = malloc(MAX_BUF_SIZE);
+	snprintf(value, MAX_BUF_SIZE, "%d", val);
+	config_set_string(section, key, value);
+	free(value);
 }
 
 int config_remove_key(char* section, char* key)
