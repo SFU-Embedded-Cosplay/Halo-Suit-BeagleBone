@@ -15,6 +15,8 @@
 #include <json/parser.h>
 #include <json/serializer.h>
 #include <halosuit/halosuit.h>
+#include <config/config.h>
+#include <halosuit/logger.h>
 
 #define WATCHDOG_PATH "/dev/watchdog"
 
@@ -22,15 +24,20 @@
 
 int main(int argc, char* argv[])
 {
+
     int fd = open(WATCHDOG_PATH, O_RDWR);
     if (fd < -1) {
 	printf("Cannot open watchdog\n");
 	exit(EXIT_FAILURE);
     }
+    
+    logger_startup();
 
     char buf[1024];
+    config_init("/root/beaglebone.conf");
     beagleblue_init(&parser_parse);    
     halosuit_init();  
+
 
     // if loop takes longer than 45 secs watchdog will reboot the system
     while (1) {	
@@ -47,7 +54,7 @@ int main(int argc, char* argv[])
     // close(fd); 
     
     halosuit_exit();    
-    
+    config_exit();
     beagleblue_exit();
     beagleblue_join();
 
