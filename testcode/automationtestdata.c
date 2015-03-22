@@ -13,6 +13,11 @@
 #define NUMBER_OF_RELAYS 8
 #define NUMBER_OF_TEMP_SENSORS 4
 
+static const double headDataArray[] = {35,39,35,27};
+static const double armpitDataArray[]  = {35};
+static const double crotchDataArray[] = {35};
+static const double waterDataArray[] = {10};
+
 //file descriptors
 static int relays[NUMBER_OF_RELAYS];
 

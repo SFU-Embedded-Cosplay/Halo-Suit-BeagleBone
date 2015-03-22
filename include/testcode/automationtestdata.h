@@ -32,10 +32,6 @@
 #define TIME_SPAN 60            // how long until it runs to the next value is used
 #define FLOW_TEST_ON_VALUE 15   // value returned by halosuit_flowrate when pump is on
 #define FLOW_TEST_OFF_VALUE 0   // value returned by halosuit_flowrate when pump is off
-const double headDataArray[] = {35,39,35,27};
-const double armpitDataArray[]  = {35};
-const double crotchDataArray[] = {35};
-const double waterDataArray[] = {10};
 
 void halosuit_init(); //sets up the file descriptors
 void halosuit_exit(); //closes the file descriptors

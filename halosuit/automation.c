@@ -182,7 +182,7 @@ static void checkFlow() {
     }
 }
 
-static void checkHeadTemp(double temp)
+static void checkHeadTemperature(double temp)
 { 
     if (temp >= BODY_HIGH_TEMP) {
         if (halosuit_relay_switch(HEAD_FANS, HIGH)) {
@@ -213,7 +213,7 @@ static void checkHeadTemp(double temp)
     }
 }
 
-static void checkBodyTemp(double temp, double lastTemp)
+static void checkBodyTemperature(double temp)
 {
     if (temp >= BODY_HIGH_TEMP) {
         if (halosuit_relay_switch(WATER_PUMP, LOW)) {
