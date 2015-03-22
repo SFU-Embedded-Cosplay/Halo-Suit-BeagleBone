@@ -28,16 +28,20 @@ static void get_warnings(json_value *object)
     char headtempwarning = automation_getHeadTempWarning();
     switch (headtempwarning) {
         case CRITICAL_HIGH_TEMP_WARNING :
-            json_object_push(warnings, "critical high head temperature", "HEAD TEMPERATURE CRITICALLY HIGH"); 
+            json_object_push(warnings, "critical high head temperature", 
+                json_string_new("HEAD TEMPERATURE CRITICALLY HIGH")); 
             break;
         case HIGH_TEMP_WARNING :
-            json_object_push(warnings, "high head temperature", "HEAD TEMPERATURE HIGH"); 
+            json_object_push(warnings, "high head temperature", 
+                json_string_new("HEAD TEMPERATURE HIGH")); 
             break;
         case LOW_TEMP_WARNING :
-            json_object_push(warnings, "low head temperature", "HEAD TEMPERATURE LOW"); 
+            json_object_push(warnings, "low head temperature", 
+                json_string_new("HEAD TEMPERATURE LOW")); 
             break;
         case CRITICAL_LOW_TEMP_WARNING :
-            json_object_push(warnings, "critical low head temperature", "HEAD TEMPERATURE CRITICALLY LOW"); 
+            json_object_push(warnings, "critical low head temperature", 
+                json_string_new("HEAD TEMPERATURE CRITICALLY LOW")); 
             break;
         case NOMINAL_TEMP:
             break;
@@ -48,16 +52,20 @@ static void get_warnings(json_value *object)
     char bodytempwarning = automation_getBodyTempWarning();
     switch (bodytempwarning) {
         case CRITICAL_HIGH_TEMP_WARNING :
-            json_object_push(warnings, "critical high body temperature", "BODY TEMPERATURE CRITICALLY HIGH"); 
+            json_object_push(warnings, "critical high body temperature", 
+                json_string_new("BODY TEMPERATURE CRITICALLY HIGH")); 
             break;
         case HIGH_TEMP_WARNING :
-            json_object_push(warnings, "high body temperature", "BODY TEMPERATURE HIGH"); 
+            json_object_push(warnings, "high body temperature", 
+                json_string_new("BODY TEMPERATURE HIGH")); 
             break;
         case LOW_TEMP_WARNING :
-            json_object_push(warnings, "low body temperature", "BODY TEMPERATURE LOW"); 
+            json_object_push(warnings, "low body temperature", 
+                json_string_new("BODY TEMPERATURE LOW")); 
             break;
         case CRITICAL_LOW_TEMP_WARNING :
-            json_object_push(warnings, "critical low body temperature", "BODY TEMPERATURE CRITICALLY LOW"); 
+            json_object_push(warnings, "critical low body temperature", 
+                json_string_new("BODY TEMPERATURE CRITICALLY LOW")); 
             break;
         case NOMINAL_TEMP:
             break;
@@ -68,10 +76,12 @@ static void get_warnings(json_value *object)
     char watertempwarning = automation_getWaterTempWarning();
     switch (watertempwarning) {
         case HIGH_TEMP_WARNING :
-            json_object_push(warnings, "high water temperature", "WATER TEMPERATURE HIGH"); 
+            json_object_push(warnings, "high water temperature", 
+                json_string_new("WATER TEMPERATURE HIGH")); 
             break;
         case LOW_TEMP_WARNING :
-            json_object_push(warnings, "low water temperature", "WATER TEMPERATURE LOW"); 
+            json_object_push(warnings, "low water temperature", 
+                json_string_new("WATER TEMPERATURE LOW")); 
             break;
         case NOMINAL_TEMP :
             break;
@@ -82,7 +92,7 @@ static void get_warnings(json_value *object)
     char flowwarning = automation_getWaterFlowWarning();
     switch (flowwarning) {
         case LOW_FLOW :
-            json_object_push(warnings, "low water flow", "LOW WATER FLOW, POSSIBLE LEAK");
+            json_object_push(warnings, "low water flow", json_string_new("LOW WATER FLOW, POSSIBLE LEAK"));
             break;
         case NOMINAL_FLOW :
             break;
@@ -209,7 +219,7 @@ static void serializer_buildjson(json_value *object)
     json_object_push(object, "water temperature", json_double_new(temperature));
 
     // Warnings 
-    get_warnings(&object);
+    get_warnings(object);
     
 }
 
