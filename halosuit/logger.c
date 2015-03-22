@@ -27,7 +27,7 @@ void logger_log(char* log_post)
         return;
     }
     
-    FILE* f = fopen(LOG_FILE,"w");
+    FILE* f = fopen(LOG_FILE,"a");
     if (f == NULL) {
         printf("Unable to open log file");
     } else {
@@ -49,11 +49,12 @@ void logger_startup()
         return;
     }
 
-    FILE* f = fopen(LOG_FILE, "w");
+    FILE* f = fopen(LOG_FILE, "a");
     if (f == NULL) {
         printf("Unable to open log file");
     } else {
-        fprintf(f, "[%s] - %s\n", time_string, "start up info");
+        fprintf(f, "\n###########################################################\n");
+        fprintf(f, "[%s] - %s\n", time_string, "Halosuit initializing");
         fclose(f);
     }
 }
