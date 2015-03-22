@@ -167,6 +167,7 @@ void config_set_string(char* section, char* key, char* val)
 		config_tree = new_section;
 		new_section->section = (char*) malloc(MAX_BUF_SIZE);
 		strncpy(new_section->section, section, MAX_BUF_SIZE);
+		new_section->keys = NULL;
 		s = new_section;
 	}
 

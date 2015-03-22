@@ -95,7 +95,7 @@ static void beagleblue_connect(int *sock, int *client, uint8_t channel)
     	while (true) {
     		listen(*sock, 1);
 
-			*client = accept(*sock, (struct sockaddr *)&rem_addr, &opt);
+		*client = accept(*sock, (struct sockaddr *)&rem_addr, &opt);
     		ba2str( &rem_addr.rc_bdaddr, buf );
 
     		if (strcmp(buf, android_mac_addr) == 0) {
@@ -132,16 +132,10 @@ static void beagleblue_connect(int *sock, int *client, uint8_t channel)
     } else {
     	listen(*sock, 1);
 
-		*client = accept(*sock, (struct sockaddr *)&rem_addr, &opt);
-		if (channel == ANDROID_PORT) {
-			android_configured = true;
-		} else {
-			glass_configured = true;
-		}
+	*client = accept(*sock, (struct sockaddr *)&rem_addr, &opt);
+				
     }
-
-    ba2str( &rem_addr.rc_bdaddr, buf );
-
+	ba2str( &rem_addr.rc_bdaddr, buf);
 	fprintf(stdout, "accepted connection from %s\n", buf);
 	fflush(stdout);
 
