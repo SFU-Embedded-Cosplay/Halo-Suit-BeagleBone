@@ -145,7 +145,20 @@ void parser_parse(char* json_text)
 		    printf("ERROR: PELTIER RELAY FAILURE\n");
 		}
 	    }
-	}	
+	}
+	else if (strcmp(object->u.object.values[i].name, "configuration") == 0) {
+		json_value* config = object->u.object.values[i].value;
+		int j = 0;
+		for (j = 0; j < config->u.object.length; j++) {
+			if (strcmp(config->u.object.values[j].name, "android") == 0) {
+				config_set_string("Bluetooth", "android", config->u.object.values[j].value->u.string.ptr);
+			} else if (strcmp(config->u.object.values[j].name, "glass") == 0) {
+				config_set_string("Bluetooth", "glass", config->u.object.values[j].value->u.string.ptr);
+			}
+		}
+		config_save();
+	}
+
 	else {
 	    printf("Cannot parse key %d.\n",i);
 	}

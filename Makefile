@@ -8,7 +8,7 @@
 
 OUTFILE = suitcontroller
 OUTDIR = /usr/bin
-INFILES = main.c json/serializer.c json/parser.c beagleblue/beagleblue.c json/json.c json/json-builder.c halosuit/halosuit.c halosuit/automation.c
+INFILES = main.c json/serializer.c json/parser.c beagleblue/beagleblue.c json/json.c json/json-builder.c halosuit/halosuit.c halosuit/logger.c config/config.c halosuit/automation.c
 
 CROSS_COMPILE = arm-linux-gnueabi-
 COMPILER = gcc
