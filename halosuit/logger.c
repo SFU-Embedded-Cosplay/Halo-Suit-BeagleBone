@@ -13,7 +13,7 @@
 void logger_log(char* log_post)
 {
     time_t current_time = time(NULL);
-    char[1000]  time_string;
+    char  time_string[1000];
 
     // had to use these functions since ctime() added an annoying '\n' onto the string 
     struct tm * time = localtime(&current_time);
@@ -23,7 +23,7 @@ void logger_log(char* log_post)
 
     if (current_time == ((time_t) - 1) || time_string == NULL) {
         printf("Unable to compute time");
-        return
+        return;
     }
     
     FILE* f = fopen(LOG_FILE,"w");
@@ -38,14 +38,14 @@ void logger_log(char* log_post)
 void logger_startup() 
 {
     time_t current_time = time(NULL);
-    char[1000]  time_string;
+    char  time_string[1000];
 
     struct tm * time = localtime(&current_time);
     strftime(time_string, 1000, "%A, %B %d %Y", time);
 
     if (current_time == ((time_t) - 1) || time_string == NULL) {
         printf("Unable to compute time");
-        return
+        return;
     }
 
     FILE* f = fopen(LOG_FILE, "w");
