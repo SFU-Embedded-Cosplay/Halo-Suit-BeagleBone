@@ -17,7 +17,8 @@ void logger_log(char* log_post)
 
     // had to use these functions since ctime() added an annoying '\n' onto the string 
     struct tm * time = localtime(&current_time);
-    strftime(time_string, 1000, "%A, %B %d %Y", time);
+    // "%a, %d %b %Y %T %z" puts the time into RFC 2822 formatt
+    strftime(time_string, 1000, "%a, %d %b %Y %T %z", time);
 
 
 
@@ -41,7 +42,7 @@ void logger_startup()
     char  time_string[1000];
 
     struct tm * time = localtime(&current_time);
-    strftime(time_string, 1000, "%A, %B %d %Y", time);
+    strftime(time_string, 1000, "%a, %d %b %Y %T %z", time);
 
     if (current_time == ((time_t) - 1) || time_string == NULL) {
         printf("Unable to compute time");
