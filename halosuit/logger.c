@@ -28,7 +28,7 @@ void logger_log(char* log_post)
         printf("Unable to open log file");
     } else {
         fprintf(f, "[%s]  -  %s\n", c_time_string, log_post);
-        fclosef(f);
+        fclose(f);
     }
 }
 
@@ -45,6 +45,6 @@ void logger_startup()
         printf("Unable to open log file");
     } else {
         fprintf(f, "[%s] - %s\n", c_time_string, "start up info");
-        fclosef(f);
+        fclose(f);
     }
 }
