@@ -59,18 +59,14 @@ static void set_bluetooth_mode(uint32_t mode)
 	int sock = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI);
 	int dev_id = hci_get_route(NULL);
 
-	if (dev_id < 0) {
-		//if doesnt find a device dont start module
-		beagleblue_is_done = true;
-	}
-
 	struct hci_dev_req dr;
 
 	dr.dev_id  = dev_id;
 	dr.dev_opt = mode;
 	if (ioctl(sock, HCISETSCAN, (unsigned long) &dr) < 0) {
+		beagleblue_is_done = true;
 		fprintf(stderr, "Can't set scan mode on hci%d: %s (%d)\n", dev_id, strerror(errno), errno);
-        char * string = "";
+        char string[100];
         sprintf(string, "Can't set scan mode on hci%d: %s (%d)\n", dev_id, strerror(errno), errno);
         logger_log(string);
     }
