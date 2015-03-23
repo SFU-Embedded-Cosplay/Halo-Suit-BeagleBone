@@ -8,10 +8,15 @@
 #include <pthread.h>
 #include <time.h>
 
-#include <halosuit/halosuit.h>
+#include <testcode/automationtestdata.h>
 
 #define NUMBER_OF_RELAYS 8
 #define NUMBER_OF_TEMP_SENSORS 4
+
+static const double headDataArray[] = {35,39,35,27};
+static const double armpitDataArray[]  = {35};
+static const double crotchDataArray[] = {35};
+static const double waterDataArray[] = {10};
 
 //file descriptors
 static int relays[NUMBER_OF_RELAYS];
@@ -19,20 +24,16 @@ static int relays[NUMBER_OF_RELAYS];
 //analog in file descriptors
 static int temperature[NUMBER_OF_TEMP_SENSORS - 1]; //water temperature is taken care of separately
 
-static int current_draw = 0;  //TODO: need to calculate current value`
-
 //FILE for pipe from readflow.py
 static FILE* python_pipe;
 static int flowrate = 0;
-static double water_temp = 10.0f;
-// TODO: these defaults need to change when we get data on for them
-// TODO: figure out which voltage is which
-static double voltage1 = 12.6;
-static double voltage2 = 12.0;
-static int heartrate = 90;
-
+static double water_temp = 0.0f;
 static char python_buffer[50];
 static pthread_t python_thread_id;
+
+static time_t test_time = 0;
+
+static int test_index = 0;
 
 //protects against using other functions early
 static bool is_initialized = false;
@@ -50,10 +51,8 @@ static void *python_thread()
 	python_pipe = popen("python /root/readflow.py", "r");
 
 	while ( fgets(python_buffer, sizeof(python_buffer), python_pipe) != NULL) {
-		sscanf(python_buffer, "%d %f %f %f %d", &flowrate, &water_temp, &voltage1, &voltage2, &heartrate);
+		sscanf(python_buffer, "%d %f", &flowrate, &water_temp);
 	}
-    
-    return NULL;
 }
 
 void halosuit_init()
@@ -120,9 +119,9 @@ void halosuit_init()
     temperature[ARMPITS] = open("/sys/bus/iio/devices/iio:device0/in_voltage1_raw", O_RDONLY);
     temperature[CROTCH] = open("/sys/bus/iio/devices/iio:device0/in_voltage2_raw", O_RDONLY);
     //temperature[WATER] = open("/sys/bus/iio/devices/iio:device0/in_voltage3_raw", O_RDONLY);
-
-    pthread_create(&python_thread_id, NULL, &python_thread, NULL);
-
+    
+    test_time = time(NULL);
+    
     is_initialized = true;
 } 
 
@@ -191,56 +190,48 @@ int halosuit_relay_value(unsigned int relay, int *value)
 
 int halosuit_temperature_value(unsigned int location, double *temp)
 {
-	if (is_initialized && location < NUMBER_OF_TEMP_SENSORS) {
-		if (location == WATER) {
-			*temp = water_temp;
-		} else {
-			char buf[5] = { 0 };
-			read(temperature[location], buf, 4);
-			*temp = analog_to_temperature(buf);
-			lseek(temperature[location], 0, 0);
-		}
+    time_t current_time = time(NULL);
+
+    if (current_time - test_time > TIME_SPAN) {
+        test_time = time(NULL);
+        test_index++;
+    }
+        
+    if (location == WATER) {
+        *temp = waterDataArray[test_index%(sizeof(waterDataArray)/sizeof(double))];
+        return 0;
+	} 
+    else if (location == HEAD) {
+        *temp = headDataArray[test_index%(sizeof(headDataArray)/sizeof(double))]; 
 		return 0;
 	}
-	return -1;
-}
-
-int halosuit_flowrate(int *flow) {
-	if (is_initialized) {
-		*flow = flowrate;
-		return 0;
-	}
-	return -1;
-}
-
-int halosuit_voltage_value(int battery, double *value) 
-{
-	if (is_initialized) {
-        if (battery == VOLTAGE_1) {
-            *value = voltage1;
-        } else if (battery == VOLTAGE_2) {
-            *value = voltage2;
-        } else {
-            return -1;
-        }
-		return 0;
-	}
-	return -1;
-}
-
-//TODO: needs to be fleshed out
-int halosuit_current_draw_value(int *current) 
-{
-    *current = current_draw;
-    return 0;
-}
-
-
-int halosuit_heartrate(int *heart) {
-    if (is_initialized){
-        *heart = heartrate;
+    else if (location == CROTCH) {
+        *temp = crotchDataArray[test_index%(sizeof(crotchDataArray)/sizeof(double))]; 
         return 0;
     }
-    return -1;
+    else if (location == ARMPITS) {
+        *temp = armpitDataArray[test_index%(sizeof(armpitDataArray)/sizeof(double))];
+        return 0;
+    }
+    else {
+        return -1;
+    }
 }
 
+//TODO: make this more comprehensive
+int halosuit_flowrate(int *flow) {
+    int pumpstate = 0;
+    if (halosuit_relay_value(WATER_PUMP, &pumpstate)) {
+        printf("ERROR: PUMP READ FAILURE");
+        return -1;
+    }
+    else {
+        if (pumpstate) {
+            *flow = FLOW_TEST_ON_VALUE;
+        }
+        else {
+            *flow = FLOW_TEST_OFF_VALUE;
+        }
+    }
+    return 0;
+}
