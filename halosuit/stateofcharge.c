@@ -11,6 +11,7 @@
 #define WEIGHT .80
 
 static int adjusted_OCV;
+static int percent_charge
 
 static void* main_thread()
 {
@@ -23,18 +24,10 @@ static void* main_thread()
         new_OCV = terminal_voltage - (current * INTERNAL_RESISTANCE);
 
         adjusted_OCV = (adjusted_OCV * WEIGHT) + (new_OCV * (1 - WEIGHT));
-        int i;
-        for (i = 0; i < sample_size; i++) {
-            if (adjusted_OCV > OCV[i]) {
-                break;
-            }
-        }
-        if (adjusted_OCV < OCV[i]) {
-            percentage = 0;
-        }
-        else {
-            percentage = ((adjusted_OCV - OCV[i]) / (OCV[i+1] - OCV[i]) / 10) + (100 - ((i - 1) * 10));
-        }
+
+        percent_charge = interpolate(adjusted_OCV); 
+
+        sleep(1);
     }
 }
 

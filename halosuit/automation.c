@@ -301,6 +301,18 @@ static void bodyTemperatureLogic() {
     checkBodyTemperature(averageBodyTemp); 
 }
 
+static void check_low_12voltage()
+{
+    double voltage = VOLTAGE_START_2;
+    halosuit_voltage_value(VOLTAGE_2, &voltage);
+
+    if (voltage < VOLTAGE_END) {
+        if (halosuit_relay_switch(ON_BUTTON, LOW)) {
+            logger_log("ERROR: SHUTDOWN FAILURE");
+        }
+    }
+}
+
 static void* automationThread()
 { 
     automationIsDone = false;
@@ -330,6 +342,7 @@ static void* automationThread()
         waterTempLogic();
         bodyTemperatureLogic(); 
         checkFlow();
+        check_low_12voltage();
         
         sleep(READ_DELAY);
     }

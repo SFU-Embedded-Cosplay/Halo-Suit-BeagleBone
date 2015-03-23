@@ -213,7 +213,7 @@ int halosuit_flowrate(int *flow) {
 	return -1;
 }
 
-int halosuit_voltage_value(int battery, double *value) 
+int halosuit_voltage_value(unsigned int battery, double *value) 
 {
 	if (is_initialized) {
         if (battery == VOLTAGE_1) {
