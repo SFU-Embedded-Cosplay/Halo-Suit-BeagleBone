@@ -106,9 +106,7 @@ static void beagleblue_connect(int *sock, int *client, uint8_t channel)
     			fprintf(stdout, "denied connection from %s\n", buf);
 				fflush(stdout);
 
-                char * string = "";
-                sprintf(string, "denied connection from %s\n", buf);
-                logger_log(string);
+                logger_log("denied connection\n");
     		}
     	}
     } else if (channel == GLASS_PORT && glass_configured) {
@@ -125,9 +123,7 @@ static void beagleblue_connect(int *sock, int *client, uint8_t channel)
     			fprintf(stdout, "denied connection from %s\n", buf);
 				fflush(stdout);
                 
-                char * string = "";
-                sprintf(string, "denied connection from %s\n", buf);
-                logger_log(string);
+                logger_log("denied connection\n");
     		}
     	}
     } else {
@@ -140,9 +136,7 @@ static void beagleblue_connect(int *sock, int *client, uint8_t channel)
 	fprintf(stdout, "accepted connection from %s\n", buf);
 	fflush(stdout);
 
-    char * string = "";
-    sprintf(string, "accepted connection from %s\n", buf);
-    logger_log(string);
+    logger_log("accepted connection\n");
 }
 
 static void *android_connect_thread()
