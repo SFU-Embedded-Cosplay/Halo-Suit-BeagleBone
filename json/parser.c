@@ -18,9 +18,7 @@ void parser_parse(char* json_text)
     json_value* object = NULL;
     int length = 0;
     
-    char* string = "";
-    sprintf("printing this string: %s\n", json_text); 
-    logger_log(string);
+    logger_log(json_text);
 
     object = json_parse(json_text, strlen(json_text));
     
@@ -136,11 +134,6 @@ void parser_parse(char* json_text)
                 }
             }
             config_save();
-        }
-
-        else {
-            sprintf(string, "Cannot parse key %d.\n",i);
-            logger_log(string);
         }
     } 
     
