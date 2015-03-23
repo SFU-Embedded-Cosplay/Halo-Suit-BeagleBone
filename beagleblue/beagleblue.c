@@ -59,6 +59,11 @@ static void set_bluetooth_mode(uint32_t mode)
 	int sock = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI);
 	int dev_id = hci_get_route(NULL);
 
+	if (dev_id < 0) {
+		//if doesnt find a device dont start module
+		beagleblue_is_done = true;
+	}
+
 	struct hci_dev_req dr;
 
 	dr.dev_id  = dev_id;
@@ -266,20 +271,22 @@ static void *glass_send_thread()
 
 void beagleblue_init(void (*on_receive)(char *))
 {
-	//get the configuration for mac addresses
-	android_configured = config_get_string("Bluetooth", "android", android_mac_addr, MAX_BUF_SIZE) == 0;
-	glass_configured = config_get_string("Bluetooth", "glass", glass_mac_addr, MAX_BUF_SIZE) == 0;
-
 	beagleblue_is_done = false;
 	set_bluetooth_mode(SCAN_INQUIRY | SCAN_PAGE);
-	printf("Bluetooth Discoverable\n");
-    logger_log("Bluetooth Discoverable");
-	pthread_create(&android_connect_thread_id, NULL, &android_connect_thread, NULL);
-	pthread_create(&glass_connect_thread_id, NULL, &glass_connect_thread, NULL);
-	pthread_create(&android_send_thread_id, NULL, &android_send_thread, NULL);
-	pthread_create(&android_recv_thread_id, NULL, &android_recv_thread, on_receive);
-	pthread_create(&glass_send_thread_id, NULL, &glass_send_thread, NULL);
-	pthread_create(&glass_recv_thread_id, NULL, &glass_recv_thread, on_receive);
+	//
+	if (!beagleblue_is_done) {
+		android_configured = config_get_string("Bluetooth", "android", android_mac_addr, MAX_BUF_SIZE) == 0;
+		glass_configured = config_get_string("Bluetooth", "glass", glass_mac_addr, MAX_BUF_SIZE) == 0;
+
+		printf("Bluetooth Discoverable\n");
+    	logger_log("Bluetooth Discoverable");
+		pthread_create(&android_connect_thread_id, NULL, &android_connect_thread, NULL);
+		pthread_create(&glass_connect_thread_id, NULL, &glass_connect_thread, NULL);
+		pthread_create(&android_send_thread_id, NULL, &android_send_thread, NULL);
+		pthread_create(&android_recv_thread_id, NULL, &android_recv_thread, on_receive);
+		pthread_create(&glass_send_thread_id, NULL, &glass_send_thread, NULL);
+		pthread_create(&glass_recv_thread_id, NULL, &glass_recv_thread, on_receive);
+	}
 	return;
 }
 
