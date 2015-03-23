@@ -189,23 +189,32 @@ static void serializer_buildjson(json_value *object)
     if (halosuit_temperature_value(HEAD, &temperature) != 0) {
 	    logger_log("ERROR: HEAD TEMPERATURE READ FAILURE\n");
     }
-    json_object_push(object, "head temperature", json_double_new(temperature)); 
+    else {
+        json_object_push(object, "head temperature", json_double_new(temperature)); 
+    }
 
     // armpits temperature 
     if (halosuit_temperature_value(ARMPITS, &temperature) != 0) {
 	    logger_log("ERROR: ARMPITS TEMPERATURE READ FAILURE\n");
     }
-    json_object_push(object, "armpits temperature", json_double_new(temperature));
+    else {
+        json_object_push(object, "armpits temperature", json_double_new(temperature));
+    }
 
     // crotch temperature 
     if (halosuit_temperature_value(CROTCH, &temperature) != 0) {
 	    logger_log("ERROR: CROTCH TEMPERATURE READ FAILURE\n");
     }
-    json_object_push(object, "crotch temperature", json_double_new(temperature));
+    else {
+        json_object_push(object, "crotch temperature", json_double_new(temperature));
+    }
 
     // water temperature 
     if (halosuit_temperature_value(WATER, &temperature) != 0) {
 	    logger_log("ERROR: WATER TEMPERATURE READ FAILURE\n");
+    }
+    else {
+        json_object_push(object, "water temperature", json_double_new(temperature));
     }
 
     // water flow
@@ -213,16 +222,23 @@ static void serializer_buildjson(json_value *object)
     if (halosuit_flowrate(&flow)) {
         logger_log("ERROR: FLOW RATE READ FAILURE\n");
     }
-    json_object_push(object, "flow rate", json_integer_new(flow));
+    else {
+        json_object_push(object, "flow rate", json_integer_new(flow));
+    }
 
-
-    json_object_push(object, "water temperature", json_double_new(temperature));
+    // heartrate
+    int heartrate;
+    if (halosuit_heartrate(&heartrate)) {
+        logger_log("ERROR: HEART RATE READ FAILURE\N");
+    }
+    else {
+        json_object_push(object, "heart rate", json_integer_new(heart);
+    }
 
     // Warnings 
     get_warnings(object);
     
-}
-
+} 
 void serializer_serialize(char *buf)
 { 
     json_value *object = json_object_new(0);
