@@ -27,9 +27,9 @@ static int flowrate = 0;
 static double water_temp = 0.0f;
 // TODO: these defaults need to change when we get data on for them
 // TODO: figure out which voltage is which
-static double voltage1 = 11.6;
-static double voltage2 = 11.6;
-
+static double voltage1 = 12.6;
+static double voltage2 = 12.0;
+static int heartrate = 90;
 static char python_buffer[50];
 static pthread_t python_thread_id;
 
@@ -49,7 +49,7 @@ static void *python_thread()
 	python_pipe = popen("python /root/readflow.py", "r");
 
 	while ( fgets(python_buffer, sizeof(python_buffer), python_pipe) != NULL) {
-		sscanf(python_buffer, "%d %f", &flowrate, &water_temp, &voltage1, &voltage2);
+		sscanf(python_buffer, "%d %f %f %f %d", &flowrate, &water_temp, &voltage1, &voltage2, &heartrate);
 	}
 }
 
@@ -231,3 +231,13 @@ int halosuit_current_draw_value(int *current)
     *current = current_draw;
     return 0;
 }
+
+
+int halosuit_heartrate(int *heart) {
+    if (is_initialized){
+        *heart = heartrate;
+        return 0;
+    }
+    return -1;
+}
+

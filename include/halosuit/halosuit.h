@@ -43,4 +43,6 @@ int halosuit_voltage_value(int battery, double *value);
 
 int halosuit_current_draw_value(int *value);
 
+int halosuit_heartrate(int *heart);
+
 #endif
