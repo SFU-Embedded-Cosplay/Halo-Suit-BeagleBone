@@ -13,6 +13,9 @@
 #define	ON_BUTTON 		    6	//GPIO 26
 #define	PELTIER			    7	//GPIO 46
 
+//current draws for each device
+//plus a base current draw
+
 
 #define HIGH 				1
 #define LOW					0
