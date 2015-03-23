@@ -229,10 +229,10 @@ static void serializer_buildjson(json_value *object)
     // heartrate
     int heartrate;
     if (halosuit_heartrate(&heartrate)) {
-        logger_log("ERROR: HEART RATE READ FAILURE\N");
+        logger_log("ERROR: HEART RATE READ FAILURE\n");
     }
     else {
-        json_object_push(object, "heart rate", json_integer_new(heart);
+        json_object_push(object, "heart rate", json_integer_new(heartrate));
     }
 
     // Warnings 
