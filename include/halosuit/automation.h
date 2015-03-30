@@ -47,6 +47,10 @@ void automation_peltier_off();
 
 void automation_peltier_auto();
 
+void automation_pump_off();
+
+void automation_pump_auto();
+
 /* The functions below get character values that correspond to 
    various warnings if the temperature is out of nominal ranges.
    the return values are as follows:

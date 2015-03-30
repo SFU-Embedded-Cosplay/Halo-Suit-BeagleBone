@@ -102,17 +102,11 @@ void parser_parse(char* json_text)
             }
         }
         else if (strcmp (object->u.object.values[i].name,"water pump") == 0) {
-            if (strcmp(object->u.object.values[i].value->u.string.ptr, "on") == 0) {
-                // turn on water pump
-                if (halosuit_relay_switch(WATER_PUMP, HIGH) != 0) {
-                    logger_log("ERROR: WATER_PUMP RELAY FAILURE\n");
-                }
+            if (strcmp(object->u.object.values[i].value->u.string.ptr, "auto") == 0) {
+                automation_pump_auto();
             }
             else if (strcmp(object->u.object.values[i].value->u.string.ptr, "off") == 0) {
-                // turn off water pump
-                if (halosuit_relay_switch(WATER_PUMP, LOW) != 0) {
-                    logger_log("ERROR: WATER_PUMP RELAY FAILURE\n");
-                }
+                automation_pump_off();
             }
         }
         else if (strcmp(object->u.object.values[i].name, "peltier") == 0) {
