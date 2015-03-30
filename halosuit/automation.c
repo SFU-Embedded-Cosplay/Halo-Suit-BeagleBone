@@ -28,6 +28,8 @@ static bool peltierLocked = false;
 
 static bool pumpLocked = false;
 
+static bool peltierOff = false;
+
 static char bodyTempWarning = NOMINAL_TEMP;
 static char headTempWarning = NOMINAL_TEMP;
 static char waterTempWarning = NOMINAL_TEMP;
@@ -50,7 +52,7 @@ static void peltier_automation()
 {
     time_t current_time = time(NULL);
 
-    if (difftime(current_time, peltier_timein) >= PELTIER_TIMEOUT && !peltierLocked) {
+    if (difftime(current_time, peltier_timein) >= PELTIER_TIMEOUT && !peltierLocked && !peltierOff) {
         int peltierState;
         // peltierState will be a 1 if it's on and a 0 if off
         if (halosuit_relay_value(PELTIER, &peltierState)) { 
@@ -359,6 +361,23 @@ void automation_exit()
 {
     automationIsDone = true;
     pthread_join(automation_id, NULL);
+}
+
+void automation_peltier_off()
+{
+    if (halosuit_relay_switch(PELTIER, LOW)) {
+        logger_log("ERROR: PELTIER READ FAILURE");
+    }
+    automationOff = true;
+}
+
+void automation_peltier_auto()
+{
+    if (halosuit_relay_switch(PELTIER, HIGH)) {
+        logger_log("ERROR: PELTIER READ FAILURE");
+    }
+    peltier_timein = time(NULL);
+    automationOff = false;
 }
 
 char automation_getHeadTempWarning()

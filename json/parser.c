@@ -115,6 +115,14 @@ void parser_parse(char* json_text)
                 }
             }
         }
+        else if (strcmp(object->u.object.values[i].name, "peltier") == 0) {
+            if (strcmp(object->u.object.values[i].value->u.string.ptr, "auto") == 0) {
+                automation_peltier_auto();
+            }
+            else if (strcmp(object->u.object.values[i].value->u.string.ptr, "off") == 0) {
+                automation_peltier_off();
+            }
+        }
         else if (strcmp(object->u.object.values[i].name, "configuration") == 0) {
             json_value* config = object->u.object.values[i].value;
             for (int j = 0; j < config->u.object.length; j++) {
