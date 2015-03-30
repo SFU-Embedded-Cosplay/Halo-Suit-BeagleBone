@@ -10,6 +10,7 @@
 #include <json/json.h>
 #include <halosuit/halosuit.h>
 //#include <testcode/automationtestdata.h>
+#include <halosuit/automation.h>
 #include <halosuit/logger.h>
 #include <config/config.h>
 
