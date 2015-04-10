@@ -21,6 +21,7 @@
 //#include <testcode/automationtestdata.h>
 #include <config/config.h>
 #include <halosuit/logger.h>
+#include <halosuit/stateofcharge.h>
 
 #define WATCHDOG_PATH "/dev/watchdog"
 
@@ -50,6 +51,7 @@ int main(int argc, char* argv[])
     beagleblue_init(&parser_parse);    
     halosuit_init();  
     automation_init();
+    soc_init();
 
     logger_log("Initialization complete");
     // if loop takes longer than 45 secs watchdog will reboot the system

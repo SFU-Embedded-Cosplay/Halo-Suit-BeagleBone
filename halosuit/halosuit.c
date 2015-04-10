@@ -9,6 +9,8 @@
 #include <time.h>
 
 #include <halosuit/halosuit.h>
+#include <halosuit/stateofcharge.h>
+#include <halosuit/logger.h>
 
 #define NUMBER_OF_RELAYS 8
 #define NUMBER_OF_TEMP_SENSORS 4
@@ -49,7 +51,7 @@ static void *python_thread()
 {
 	python_pipe = popen("python /usr/bin/readflow.py", "r");
 
-	while ( fgets(python_buffer, sizeof(python_buffer), python_pipe) != NULL) {
+	while (fgets(python_buffer, sizeof(python_buffer), python_pipe) != NULL) {
 		sscanf(python_buffer, "%d %f %f %f %d", &flowrate, &water_temp, &voltage1, &voltage2, &heartrate);
 	}
     
@@ -213,14 +215,16 @@ int halosuit_flowrate(int *flow) {
 	return -1;
 }
 
-int halosuit_voltage_value(unsigned int battery, double *value) 
+int halosuit_voltage_value(unsigned int battery, int *value) 
 {
 	if (is_initialized) {
-        if (battery == VOLTAGE_1) {
-            *value = voltage1;
-        } else if (battery == VOLTAGE_2) {
-            *value = voltage2;
-        } else {
+        if (battery == TURNIGY_8_AH) {
+            *value = (int)(voltage1 * 1000);
+        } 
+        else if (battery == TURNIGY_2_AH) {
+            *value = (int)(voltage2 * 1000);
+        } 
+        else {
             return -1;
         }
 		return 0;
@@ -229,9 +233,42 @@ int halosuit_voltage_value(unsigned int battery, double *value)
 }
 
 //TODO: needs to be fleshed out
-int halosuit_current_draw_value(int *current) 
+int halosuit_current_draw_value(unsigned int batteryID, int *current) 
 {
-    *current = current_draw;
+    if (batteryID == TURNIGY_2_AH) {
+        int current_draw = 0;
+        // TODO: add current draws when values are known
+        
+        *current = current_draw; 
+    }
+    else if (batteryID == TURNIGY_8_AH) {
+        int current_draw = 0;
+        int value = 0;
+        if (halosuit_relay_value(PELTIER, &value)) {
+            logger_log("WARNING: FAILURE TO READ PELTIER FOR CURRENT DRAW");
+            return -1; // the peltier current draw is so much greater than the rest that if the current 
+                       // can't be determined then there is no accuracy in the current draw
+        }
+        else {
+            current_draw += PELTIER_DRAW * 2; // multiplied by 2 since there are 2 peltier
+        }
+        value = 0;
+        if (halosuit_relay_value(WATER_PUMP, &value)) {
+            logger_log("WARNING: FAILURE TO READ WATER_PUMP FOR CURRENT DRAW");
+        }
+        else {
+            current_draw += WATER_PUMP_DRAW;
+        }
+        value = 0;
+        if (halosuit_relay_value(HEAD_FANS, &value)) {
+            logger_log("WARNING: FAILURE TO READ HEAD_FANS FOR CURRENT DRAW");
+        }
+        else {
+            current_draw += HEAD_FANS_DRAW;
+        } 
+        *current = current_draw;
+    }
+
     return 0;
 }
 

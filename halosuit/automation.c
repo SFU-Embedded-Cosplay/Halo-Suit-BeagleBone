@@ -19,6 +19,7 @@
 #include <halosuit/halosuit.h>
 //#include <testcode/automationtestdata.h>
 #include <halosuit/logger.h>
+#include <halosuit/stateofcharge.h>
 
 static pthread_t automation_id;
 
@@ -303,7 +304,7 @@ static void bodyTemperatureLogic() {
 
 static void check_low_12voltage()
 {
-    double voltage = VOLTAGE_START_2;
+    int voltage = VOLTAGE_START_2;
     halosuit_voltage_value(VOLTAGE_2, &voltage);
 
     if (voltage < VOLTAGE_END) {
