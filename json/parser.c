@@ -7,7 +7,7 @@
 #include <string.h>
 
 #include <json/parser.h>
-#include <json/json.h>
+#include <json.h>
 #include <halosuit/halosuit.h>
 //#include <testcode/automationtestdata.h>
 #include <halosuit/automation.h>

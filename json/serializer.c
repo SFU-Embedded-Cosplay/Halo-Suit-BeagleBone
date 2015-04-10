@@ -7,8 +7,8 @@
 #include <string.h>
 
 #include <json/serializer.h>
-#include <json/json.h>
-#include <json/json-builder.h>
+#include <json.h>
+#include <json-builder.h>
 #include <beagleblue/beagleblue.h>
 #include <halosuit/halosuit.h>
 //#include <testcode/automationtestdata.h>
