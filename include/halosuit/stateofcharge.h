@@ -5,8 +5,10 @@
 #ifndef STATE_OF_CHARGE
 #define STATE_OF_CHARGE
 
-#define TURNIGY_8_AH 1
-#define TURNIGY_2_AH 2
+#define TURNIGY_8_AH    1
+#define TURNIGY_2_AH    2
+#define GLASS_BATTERY   3
+#define PHONE_BATTERY   4
 
 #define SAMPLE_SIZE 11
 // if more data points are added increase the size of SAMPLE_SIZE 
@@ -22,6 +24,9 @@ typedef struct Battery {
 
 void soc_init();
 
-int soc_getcharge(int batterID);
+int soc_getcharge(int batteryID);
+
+// can only set phone and glass battery
+void soc_setcharge(int batteryID, int percent_charge);
 
 #endif

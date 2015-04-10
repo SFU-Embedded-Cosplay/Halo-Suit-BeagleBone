@@ -11,6 +11,7 @@
 #include <json/json-builder.h>
 #include <beagleblue/beagleblue.h>
 #include <halosuit/halosuit.h>
+#include <halosuit/stateofcharge.h>
 //#include <testcode/automationtestdata.h>
 #include <halosuit/automation.h>
 #include <halosuit/logger.h>
@@ -234,6 +235,12 @@ static void serializer_buildjson(json_value *object)
     else {
         json_object_push(object, "heart rate", json_integer_new(heartrate));
     }
+    
+    // state of charge
+    json_object_push(object, "8 AH battery", json_integer_new(soc_getcharge(TURNIGY_8_AH)));
+    json_object_push(object, "2 AH battery", json_integer_new(soc_getcharge(TURNIGY_2_AH)));
+    json_object_push(object, "hud battery", json_integer_new(soc_getcharge(GLASS_BATTERY)));
+    json_object_push(object, "phone battery", json_integer_new(soc_getcharge(PHONE_BATTERY)));
 
     // Warnings 
     get_warnings(object);

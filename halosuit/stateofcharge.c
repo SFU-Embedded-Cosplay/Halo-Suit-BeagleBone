@@ -17,6 +17,9 @@
 static Battery battery1 = {TURNIGY_8_AH, 22, 100, 12000, {12580,12270,11990,11790,11610,11450,11350,11270,11170,11050,10000}};
 static Battery battery2 = {TURNIGY_2_AH, 350, 100, 12000, {12500,12090,11820,11620,11480,11310,11200,11140,11080,10800,10000}};
 
+static int phone_soc = 100;
+static int glass_soc = 100;
+
 static pthread_t soc_thread_id;
 
 static int calculate_charge(Battery battery);
@@ -80,4 +83,20 @@ int soc_getcharge(int batteryID)
     else if (batteryID == TURNIGY_2_AH) {
         return battery2.percent_charge;
     }
+    else if (batteryID == GLASS_BATTERY) {
+        return glass_soc;
+    }
+    else if (batteryID == PHONE_BATTERY) {
+        return phone_soc;
+    }
+}
+
+void soc_setcharge(int batteryID, int percent_charge)
+{
+    if (batteryID == GLASS_BATTERY) {
+        glass_soc = percent_charge;
+    }
+    else if (batteryID == PHONE_BATTERY) {
+        phone_soc = percent_charge;
+    } 
 }
