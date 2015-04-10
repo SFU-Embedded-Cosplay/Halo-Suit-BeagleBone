@@ -236,9 +236,32 @@ int halosuit_voltage_value(unsigned int battery, int *value)
 int halosuit_current_draw_value(unsigned int batteryID, int *current) 
 {
     if (batteryID == TURNIGY_2_AH) {
+        int value1 = 0;
+        int value2 = 0;
         int current_draw = 0;
-        // TODO: add current draws when values are known
-        
+        if (halosuit_relay_value(ON_BUTTON, &value1)) {
+            logger_log("WARNING: FAILURE TO READ ON_BUTTON FOR CURRENT DRAW");
+        }
+        else if (value1 == HIGH ){
+            current_draw += LOW_AMP_DRAW;
+        }
+        value1 = 0;
+        value2 = 0;
+        if (halosuit_relay_value(HEADLIGHTS_WHITE, &value1) || halosuit_relay_value(HEADLIGHTS_WHITE, &value2)) {
+            logger_log("WARNING: FAILURE TO READ HEADLIGHTS FOR CURRENT DRAW");
+        }
+        else if (value2 == HIGH) {
+            current_draw += HEAD_LIGHTS_DRAW;
+        }
+        value1 = 0;
+        value2 = 0;
+        if (halosuit_relay_value(LIGHTS, &value1) || halosuit_relay_value(LIGHTS_AUTO, &value2)) {
+            logger_log("WARNING: FAILURE TO READ LIGHTS FOR CURRENT DRAW");
+        }
+        else if (value1 == HIGH || value2 == HIGH) {
+            current_draw += BODY_LIGHTS_DRAW;
+        }
+
         *current = current_draw; 
     }
     else if (batteryID == TURNIGY_8_AH) {
@@ -249,21 +272,21 @@ int halosuit_current_draw_value(unsigned int batteryID, int *current)
             return -1; // the peltier current draw is so much greater than the rest that if the current 
                        // can't be determined then there is no accuracy in the current draw
         }
-        else {
-            current_draw += PELTIER_DRAW * 2; // multiplied by 2 since there are 2 peltier
+        else if (value == HIGH) {
+             current_draw += PELTIER_DRAW * 2; // multiplied by 2 since there are 2 peltier
         }
         value = 0;
         if (halosuit_relay_value(WATER_PUMP, &value)) {
             logger_log("WARNING: FAILURE TO READ WATER_PUMP FOR CURRENT DRAW");
         }
-        else {
+        else if (value == HIGH) {
             current_draw += WATER_PUMP_DRAW;
         }
         value = 0;
         if (halosuit_relay_value(HEAD_FANS, &value)) {
             logger_log("WARNING: FAILURE TO READ HEAD_FANS FOR CURRENT DRAW");
         }
-        else {
+        else if (value == HIGH) {
             current_draw += HEAD_FANS_DRAW;
         } 
         *current = current_draw;

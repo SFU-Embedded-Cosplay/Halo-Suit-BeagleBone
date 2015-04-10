@@ -15,9 +15,13 @@
 
 //current draws for each device
 //plus a base current draw
-#define PELTIER_DRAW        43000 // milliamps
-#define WATER_PUMP_DRAW     2500
-#define HEAD_FANS_DRAW      500
+#define PELTIER_DRAW        4300 // milliamps
+#define WATER_PUMP_DRAW     250
+#define HEAD_FANS_DRAW      50
+
+#define LOW_AMP_DRAW        450
+#define HEAD_LIGHTS_DRAW    100
+#define BODY_LIGHTS_DRAW    500 // we need to firm this number up      
 
 #define VOLTAGE_1           1
 #define VOLTAGE_2           2
