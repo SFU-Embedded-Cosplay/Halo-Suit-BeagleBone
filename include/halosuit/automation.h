@@ -43,6 +43,14 @@ void automation_init();
 // closes the automation thread and joins with main thread
 void automation_exit();
 
+void automation_peltier_off();
+
+void automation_peltier_auto();
+
+void automation_pump_off();
+
+void automation_pump_auto();
+
 /* The functions below get character values that correspond to 
    various warnings if the temperature is out of nominal ranges.
    the return values are as follows:
@@ -68,6 +76,5 @@ char automation_getWaterTempWarning();
 #define LOW_FLOW 'L'
 
 char automation_getWaterFlowWarning();
-
 
 #endif

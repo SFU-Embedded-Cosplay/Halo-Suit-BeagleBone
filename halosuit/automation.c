@@ -24,10 +24,10 @@
 static pthread_t automation_id;
 
 static bool automationIsDone = false;
-
 static bool peltierLocked = false;
-
 static bool pumpLocked = false;
+static bool peltierAuto = true;
+static bool pumpAuto = true;
 
 static char bodyTempWarning = NOMINAL_TEMP;
 static char headTempWarning = NOMINAL_TEMP;
@@ -51,7 +51,7 @@ static void peltier_automation()
 {
     time_t current_time = time(NULL);
 
-    if (difftime(current_time, peltier_timein) >= PELTIER_TIMEOUT && !peltierLocked) {
+    if (difftime(current_time, peltier_timein) >= PELTIER_TIMEOUT && !peltierLocked && peltierAuto) {
         int peltierState;
         // peltierState will be a 1 if it's on and a 0 if off
         if (halosuit_relay_value(PELTIER, &peltierState)) { 
@@ -81,7 +81,7 @@ static void pump_automation()
 {
     time_t current_time = time(NULL);
 
-    if (difftime(current_time, pump_timein) >= PUMP_TIMEOUT) {
+    if (difftime(current_time, pump_timein) >= PUMP_TIMEOUT && pumpAuto) {
         int pumpState;
         if (halosuit_relay_value(WATER_PUMP, &pumpState)) {
             logger_log("ERROR: WATER_PUMP READ FAILURE");
@@ -143,11 +143,13 @@ static void waterTempLogic()
         // turn off pump turn on peltier
         pumpLocked = true;
         waterTempWarning = HIGH_TEMP_WARNING;
-        if (halosuit_relay_switch(PELTIER, HIGH)) {
-            logger_log("ERROR: PELTIER READ FAILURE");
-        }
-        else {
-            peltier_timein = time(NULL);
+        if (peltierAuto) {
+            if (halosuit_relay_switch(PELTIER, HIGH)) {
+                logger_log("ERROR: PELTIER READ FAILURE");
+            }
+            else {
+                peltier_timein = time(NULL);
+            }
         }
 
         if (halosuit_relay_switch(WATER_PUMP, LOW)) {
@@ -182,6 +184,9 @@ static void checkFlow() {
     else {
         if (pumpState && (current_time - pump_timein) >= PUMP_STARTUP_TIME 
             && adjustedFlowRate < NOMINAL_FLOW_VALUE) {
+            //TODO: need to shut off pumpflow and also lock it off so that it doesn't flow
+            //      more information is needed
+
             waterFlowWarning = LOW_FLOW;
             logger_log("WARNING: FLOWRATE LOW POSSIBLE LEAK");
         }
@@ -230,7 +235,7 @@ static void checkBodyTemperature(double temp)
         // and will warm up the water to start pumping again
         // if water is too warm well pumping it will not help
         // may need to add a warning here to notify the user of lack of coolant
-        if (!pumpLocked) {
+        if (!pumpLocked && pumpAuto) {
             if (halosuit_relay_switch(WATER_PUMP, HIGH)) {
                 logger_log("ERROR: WATER_PUMP READ FAILURE");
             }
@@ -239,7 +244,8 @@ static void checkBodyTemperature(double temp)
             }
         }
         else {
-            //TODO: add warning here
+            //TODO: add warning here for being unable to turn on pump becuase of auto being off or 
+            //      the coolant temperature being too low
         }
 
         if (temp >= BODY_MAX_TEMP) {
@@ -362,6 +368,40 @@ void automation_exit()
     pthread_join(automation_id, NULL);
 }
 
+void automation_peltier_off()
+{
+    if (halosuit_relay_switch(PELTIER, LOW)) {
+        logger_log("ERROR: PELTIER READ FAILURE");
+    }
+    peltierAuto = false;
+}
+
+void automation_peltier_auto()
+{
+    if (halosuit_relay_switch(PELTIER, HIGH)) {
+        logger_log("ERROR: PELTIER READ FAILURE");
+    }
+    peltier_timein = time(NULL);
+    peltierAuto = true;
+}
+
+void automation_pump_off()
+{
+    if (halosuit_relay_switch(WATER_PUMP, LOW)) {
+        logger_log("ERROR: WATER_PUMP READ FAILURE");
+    }
+    pumpAuto = false;
+}
+
+void automation_pump_auto()
+{
+    if (halosuit_relay_switch(WATER_PUMP, HIGH)) {
+        logger_log("ERROR: WATER_PUMP READ FAILURE");
+    }
+    pump_timein = time(NULL);
+    pumpAuto = true; 
+}
+
 char automation_getHeadTempWarning()
 {
     return headTempWarning;
@@ -372,7 +412,8 @@ char automation_getBodyTempWarning()
     return bodyTempWarning;
 }
 
-char automation_getWaterTempWarning() { return waterTempWarning;
+char automation_getWaterTempWarning() {
+    return waterTempWarning;
 }
 
 char automation_getWaterFlowWarning()
