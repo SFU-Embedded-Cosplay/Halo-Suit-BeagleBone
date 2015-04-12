@@ -20,7 +20,9 @@
 #define OFF "off"
 #define AUTO "auto"
 
-// todo: replace printf error messages with a log statement
+#define BUFFER_SIZE 1024
+
+static char* sound_buffer = NULL;
 
 static void get_warnings(json_value *object)
 {
@@ -256,4 +258,13 @@ void serializer_serialize(char *buf)
     json_serialize(buf, object);
 
     json_builder_free(object);
+}
+
+void serializer_save_sound(char *buf)
+{
+    if (sound_buffer == NULL) {
+        sound_buffer = (char*) (BUFFER_SIZE * sizeof(char));
+    }
+
+    sound_buffer = buf;
 }

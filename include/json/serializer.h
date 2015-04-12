@@ -6,6 +6,8 @@
 #ifndef SERIALIZER
 #define SERIALIZER
 
-void serializer_serialize(char *);
+void serializer_serialize(char *buf);
+
+void serializer_save_sound(char *buf);
 
 #endif
