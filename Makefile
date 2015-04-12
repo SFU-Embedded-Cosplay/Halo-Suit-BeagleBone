@@ -36,7 +36,7 @@ install:
 	./install.sh
 
 enable:
-	systemctl enable /etc/systemd/system/suitcontroller.service
+	systemctl enable /etc/systemd/system/suitcontrol.service
 
 disable:
-	systemctl disable /etc/systemd/system/suitcontroller.service
+	systemctl disable /etc/systemd/system/suitcontrol.service
