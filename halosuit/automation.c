@@ -154,7 +154,8 @@ static void waterTempLogic()
 
         if (halosuit_relay_switch(WATER_PUMP, LOW)) {
             logger_log("ERROR: WATER_PUMP READ FAILURE");
-        } else {
+        } 
+        else {
             pump_timein = time(NULL);
         }
     }
@@ -172,7 +173,8 @@ static void checkFlow() {
     if (halosuit_flowrate(&newFlowRate)) {
         logger_log("ERROR: WATER FLOW READ FAILURE");
         return;
-    } else {
+    } 
+    else {
         adjustedFlowRate = (adjustedFlowRate * SMOOTH_WEIGHT) + (newFlowRate * (1 - SMOOTH_WEIGHT));
     }
 
@@ -351,6 +353,18 @@ static void check_8AH_voltage()
         }
     }
 
+}
+
+static void check_peltier_lock() 
+{
+    int battery_soc = soc_getcharge(TURNIGY_8_AH);
+
+    if (battery_soc < PELTIER_BATTERY_THRESHOLD) {
+        peltierLocked = true;
+        if (halosuit_relay_switch(WATER_PUMP, LOW)) {
+            logger_log("ERROR: WATER_PUMP READ FAILURE");
+        }
+    } 
 }
 
 
