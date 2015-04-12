@@ -17,7 +17,7 @@ CFLAGS = -g -pthread -D_POSIX_C_SOURCE=200809L -std=c99 #-Werror -Wall
 # this will make the compiler look for header files in the include folder
 INCLUDE = -Iinclude -Ijson-parser -Ijson-builder
 
-all: host
+all: clean host
 
 host: 
 	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(OUTDIR)/$(OUTFILE) -lm -lbluetooth
@@ -31,3 +31,12 @@ host:
 clean: 
 	rm $(OUTDIR)/$(OUTFILE)
 	rm $(OUTDIR)/readflow.py
+
+install:
+	./install.sh
+
+enable:
+	systemctl enable /etc/systemd/system/suitcontroller.service
+
+disable:
+	systemctl disable /etc/systemd/system/suitcontroller.service
