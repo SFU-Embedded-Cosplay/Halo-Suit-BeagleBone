@@ -70,6 +70,12 @@ char automation_getBodyTempWarning();
 // returns only 'h', 'N', or 'l'
 char automation_getWaterTempWarning();
 
+
+#define NOMINAL_SOC 'N'
+#define LOW_SOC     'L'
+
+char automation_getBatteryWarning(int batteryID);
+
 /* This function returns a warning for the coolant flow rate, if coolant flows too slow while the 
     pump is on this will retunr a low flow warning otherwise it will return a nominal flow. Since 
     there is a delay with the reading of the flowrate this warning may be a bit slow

@@ -34,6 +34,10 @@ static char headTempWarning = NOMINAL_TEMP;
 static char waterTempWarning = NOMINAL_TEMP;
 static char waterFlowWarning = NOMINAL_FLOW;
 
+static char turnigy_8AH_low_warning = NOMINAL_SOC;
+static char turnigy_2AH_low_warning = NOMINAL_SOC;
+static char glass_battery_low_warning = NOMINAL_SOC;
+static char phone_battery_low_warning = NOMINAL_SOC;
 // temperatures set to mid range
 static double adjustedWaterTemp = (WATER_MAX_TEMP + WATER_MIN_TEMP) / 2; 
 
@@ -355,18 +359,42 @@ static void check_8AH_voltage()
 
 }
 
-static void check_peltier_lock() 
+
+static void check_battery()
 {
-    int battery_soc = soc_getcharge(TURNIGY_8_AH);
-
-    if (battery_soc < PELTIER_BATTERY_THRESHOLD) {
+    if (soc_getcharge(TURNIGY_8_AH) < LOW_BATTERY_THRESHOLD) {
         peltierLocked = true;
-        if (halosuit_relay_switch(WATER_PUMP, LOW)) {
-            logger_log("ERROR: WATER_PUMP READ FAILURE");
+        if (halosuit_relay_switch(PELTIER, LOW)) {
+            logger_log("ERROR: PELTIER READ FAILURE");
         }
-    } 
-}
+        turnigy_8AH_low_warning = LOW_SOC;
+    }
+    else {
+        turnigy_8AH_low_warning = NOMINAL_SOC;
+        peltierLocked = false;
+    }
 
+    if (soc_getcharge(TURNIGY_2_AH) < LOW_BATTERY_THRESHOLD) {
+        turnigy_2AH_low_warning = LOW_SOC;
+    }
+    else {
+        turnigy_2AH_low_warning = NOMINAL_SOC;
+    }
+
+    if (soc_getcharge(GLASS_BATTERY) < LOW_BATTERY_THRESHOLD) {
+        glass_battery_low_warning = LOW_SOC;
+    }
+    else {
+        glass_battery_low_warning = NOMINAL_SOC;
+    }
+
+    if (soc_getcharge(PHONE_BATTERY) < LOW_BATTERY_THRESHOLD) {
+        phone_battery_low_warning = LOW_SOC;   
+    }
+    else {
+        phone_battery_low_warning = NOMINAL_SOC;
+    }
+}
 
 static void* automationThread()
 { 
@@ -399,6 +427,7 @@ static void* automationThread()
         checkFlow();
         check_8AH_voltage();
         check_2AH_voltage();
+        check_battery();
         
         sleep(READ_DELAY);
     }
@@ -468,4 +497,20 @@ char automation_getWaterTempWarning() {
 char automation_getWaterFlowWarning()
 {
     return waterFlowWarning;
+}
+
+char automation_getBatteryWarning(int batteryID) 
+{
+    if (batteryID == TURNIGY_8_AH) {
+        return turnigy_8AH_low_warning;
+    }
+    else if (batteryID == TURNIGY_2_AH) {
+        return turnigy_2AH_low_warning;
+    }
+    else if (batteryID == GLASS_BATTERY) {
+        return glass_battery_low_warning;
+    }
+    else if (batteryID == PHONE_BATTERY) {
+        return phone_battery_low_warning;
+    }
 }
