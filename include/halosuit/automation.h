@@ -33,7 +33,7 @@
                                         // if the sensor changes becarefull about changing this value
                                         // since this value will get ignored by automation
 
-#define PELTIER_BATTERY_THRESHOLD 15    // % state of charge
+#define LOW_BATTERY_THRESHOLD 15    // % state of charge
 
 #define NOMINAL_FLOW_VALUE 10           // normal flow value when pump is on
 
