@@ -12,7 +12,7 @@
 #include <halosuit/stateofcharge.h>
 #include <halosuit/logger.h>
 
-#define NUMBER_OF_RELAYS 8
+#define NUMBER_OF_RELAYS 16
 #define NUMBER_OF_TEMP_SENSORS 4
 
 //file descriptors
@@ -70,6 +70,8 @@ void halosuit_init()
 	write(export_fd, "45", 2);
 	write(export_fd, "46", 2);
 	write(export_fd, "26", 2);
+    write(export_fd, "65", 2);
+    write(export_fd, "47", 2);
 
 	//flow sensor
 	//write(export_fd, "65", 2);
@@ -85,6 +87,8 @@ void halosuit_init()
     relays[WATER_PUMP] = open("/sys/class/gpio/gpio45/direction", O_WRONLY);
     relays[ON_BUTTON] = open("/sys/class/gpio/gpio26/direction", O_WRONLY);
     relays[PELTIER] = open("/sys/class/gpio/gpio46/direction", O_WRONLY);
+    relays[HIGH_CURRENT_LIVE] = open("/sys/class/gpio/gpio65/direction", O_WRONLY);
+    relays[HIGH_CURRENT_GROUND] = open("/sys/class/gpio/gpio47/direction", O_WRONLY);
 
     //initialize them to be output pins initialized to zero
     write(relays[LIGHTS], "low", 3);
@@ -96,6 +100,8 @@ void halosuit_init()
     write(relays[PELTIER], "low", 3);
     
     write(relays[ON_BUTTON], "high", 4); // must start at high 
+    write(relays[HIGH_CURRENT_LIVE], "high", 4);
+    write(relays[HIGH_CURRENT_GROUND], "high", 4);
 
     //we want open the value file so close this one
     close(relays[LIGHTS]);
@@ -106,6 +112,8 @@ void halosuit_init()
     close(relays[WATER_PUMP]);
     close(relays[ON_BUTTON]);
     close(relays[PELTIER]);
+    close(relays[HIGH_CURRENT_LIVE]);
+    close(relays[HIGH_CURRENT_GROUND]);
 
     //open the values on read/write
     relays[LIGHTS] = open("/sys/class/gpio/gpio66/value", O_RDWR);
@@ -116,6 +124,10 @@ void halosuit_init()
     relays[WATER_PUMP] = open("/sys/class/gpio/gpio45/value", O_RDWR);
     relays[ON_BUTTON] = open("/sys/class/gpio/gpio26/value", O_RDWR);
     relays[PELTIER] = open("/sys/class/gpio/gpio46/value", O_RDWR);
+    relays[HIGH_CURRENT_LIVE] = open("/sys/class/gpio/gpio65/direction", O_RDWR);
+    relays[HIGH_CURRENT_GROUND] = open("/sys/class/gpio/gpio47/direction", O_RDWR);
+
+
 
     //open analog pins
     temperature[HEAD] = open("/sys/bus/iio/devices/iio:device0/in_voltage0_raw", O_RDONLY);
@@ -141,6 +153,10 @@ void halosuit_exit()
     	close(relays[WATER_PUMP]);
     	close(relays[ON_BUTTON]);
     	close(relays[PELTIER]);
+        close(relays[HIGH_CURRENT_LIVE]);
+        close(relays[HIGH_CURRENT_GROUND]);
+
+
 
     	int unexport_fd = open("/sys/class/gpio/unexport", O_WRONLY);
 		//export gpio pins
@@ -232,7 +248,6 @@ int halosuit_voltage_value(unsigned int battery, int *value)
 	return -1;
 }
 
-//TODO: needs to be fleshed out
 int halosuit_current_draw_value(unsigned int batteryID, int *current) 
 {
     if (batteryID == TURNIGY_2_AH) {

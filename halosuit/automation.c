@@ -308,17 +308,51 @@ static void bodyTemperatureLogic() {
     checkBodyTemperature(averageBodyTemp); 
 }
 
-static void check_low_12voltage()
+static void check_2AH_voltage()
 {
-    int voltage = VOLTAGE_START_2;
-    halosuit_voltage_value(VOLTAGE_2, &voltage);
+    int voltage = TURNIGY_2AH_VOLTAGE;
+    halosuit_voltage_value(TURNIGY_2_AH, &voltage);
 
-    if (voltage < VOLTAGE_END) {
+    if (voltage < MIN_VOLTAGE || voltage > MAX_VOLTAGE) {
         if (halosuit_relay_switch(ON_BUTTON, LOW)) {
             logger_log("ERROR: SHUTDOWN FAILURE");
         }
     }
 }
+
+static void check_8AH_voltage()
+{
+    int voltage = TURNIGY_8AH_VOLTAGE;
+    int live_value = 1;
+    int ground_value = 1;
+    halosuit_voltage_value(TURNIGY_8_AH, &voltage);
+
+    if (halosuit_relay_value(HIGH_CURRENT_LIVE, &live_value)) {
+        logger_log("ERROR: HIGH_CURRENT_LIVE READ FAILURE");
+    }
+
+    if (halosuit_relay_value(HIGH_CURRENT_GROUND, &ground_value)) {
+        logger_log("ERROR: HIGH_CURRENT_GROUND READ FAILURE");
+    }
+
+
+    if (live_value == HIGH || ground_value == HIGH) {
+        if (voltage < MIN_VOLTAGE || voltage > MAX_VOLTAGE) {
+            if (halosuit_relay_switch(HIGH_CURRENT_LIVE, LOW) || halosuit_relay_switch(HIGH_CURRENT_GROUND, LOW)) {
+                logger_log("ERROR: SHUTDOWN FAILURE");
+            }
+        }
+    }
+    else if (live_value == LOW || ground_value == LOW) {
+        if (voltage > MIN_VOLTAGE || voltage < MAX_VOLTAGE) {
+            if (halosuit_relay_switch(HIGH_CURRENT_LIVE, HIGH) || halosuit_relay_switch(HIGH_CURRENT_GROUND, HIGH)) {
+                logger_log("ERROR: START UP FAILURE");
+            }
+        }
+    }
+
+}
+
 
 static void* automationThread()
 { 
@@ -349,7 +383,8 @@ static void* automationThread()
         waterTempLogic();
         bodyTemperatureLogic(); 
         checkFlow();
-        check_low_12voltage();
+        check_8AH_voltage();
+        check_2AH_voltage();
         
         sleep(READ_DELAY);
     }
