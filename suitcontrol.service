@@ -2,7 +2,7 @@
 Description=runs a server controls pins via bluetooth commands
 
 [Service]
-WorkingDirectory=/root/
+WorkingDirectory=/usr/bin/
 ExecStart=./suitcontroller
 SyslogIdentifier=suitcontroller
 Restart=on-failure
