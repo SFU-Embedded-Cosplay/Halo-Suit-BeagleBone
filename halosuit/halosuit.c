@@ -26,9 +26,8 @@ static int current_draw = 0;  //TODO: need to calculate current value`
 //FILE for pipe from readflow.py
 static FILE* python_pipe;
 static int flowrate = 0;
-static double water_temp = 10.0f;
+static double water_temp = 10.0;
 // TODO: these defaults need to change when we get data on for them
-// TODO: figure out which voltage is which
 static double voltage1 = 12.6;
 static double voltage2 = 12.0;
 static int heartrate = 90;
