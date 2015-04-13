@@ -299,7 +299,7 @@ void serializer_serialize(char *buf)
     serializer_buildjson(object);
 
     json_serialize(buf, object);
-    logger_log(buf);
+   // logger_log(buf);
     json_builder_free(object);
 }
 
