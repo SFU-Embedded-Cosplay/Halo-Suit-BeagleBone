@@ -235,6 +235,9 @@ static void serializer_buildjson(json_value *object)
     else {
         json_object_push(object, "heart rate", json_integer_new(heartrate));
     }
+
+    json_object_push(object, "play sound", json_string_new());
+
     
     // state of charge
     json_object_push(object, "8 AH battery", json_integer_new(soc_getcharge(TURNIGY_8_AH)));
