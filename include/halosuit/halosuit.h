@@ -12,16 +12,18 @@
 #define	WATER_PUMP 			5   //GPIO 45
 #define	ON_BUTTON 		    6	//GPIO 26
 #define	PELTIER			    7	//GPIO 46
+#define HIGH_CURRENT_LIVE   8   //GPIO 65
+#define HIGH_CURRENT_GROUND 9   //GPIO 47
 
 //current draws for each device
 //plus a base current draw
-#define PELTIER_DRAW        4300 // milliamps
-#define WATER_PUMP_DRAW     250
-#define HEAD_FANS_DRAW      50
+#define PELTIER_DRAW        -4300 // milliamps
+#define WATER_PUMP_DRAW     -250
+#define HEAD_FANS_DRAW      -50
 
-#define LOW_AMP_DRAW        450
-#define HEAD_LIGHTS_DRAW    100
-#define BODY_LIGHTS_DRAW    500 // we need to firm this number up      
+#define LOW_AMP_DRAW        -450
+#define HEAD_LIGHTS_DRAW    -100
+#define BODY_LIGHTS_DRAW    -500 // we need to firm this number up      
 
 #define VOLTAGE_1           1
 #define VOLTAGE_2           2
@@ -36,10 +38,11 @@
 #define CROTCH				2
 #define WATER 				3
 
-#define VOLTAGE_START_1     12600
-#define VOLTAGE_START_2     12000
+#define TURNIGY_8AH_VOLTAGE     12600
+#define TURNIGY_2AH_VOLTAGE     12000
 
-#define VOLTAGE_END         10000
+#define MAX_VOLTAGE             13000
+#define MIN_VOLTAGE             10000
 
 void halosuit_init(); //sets up the file descriptors
 void halosuit_exit(); //closes the file descriptors

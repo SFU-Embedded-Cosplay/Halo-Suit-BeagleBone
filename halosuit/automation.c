@@ -34,6 +34,10 @@ static char headTempWarning = NOMINAL_TEMP;
 static char waterTempWarning = NOMINAL_TEMP;
 static char waterFlowWarning = NOMINAL_FLOW;
 
+static char turnigy_8AH_low_warning = NOMINAL_SOC;
+static char turnigy_2AH_low_warning = NOMINAL_SOC;
+static char glass_battery_low_warning = NOMINAL_SOC;
+static char phone_battery_low_warning = NOMINAL_SOC;
 // temperatures set to mid range
 static double adjustedWaterTemp = (WATER_MAX_TEMP + WATER_MIN_TEMP) / 2; 
 
@@ -154,7 +158,8 @@ static void waterTempLogic()
 
         if (halosuit_relay_switch(WATER_PUMP, LOW)) {
             logger_log("ERROR: WATER_PUMP READ FAILURE");
-        } else {
+        } 
+        else {
             pump_timein = time(NULL);
         }
     }
@@ -172,7 +177,8 @@ static void checkFlow() {
     if (halosuit_flowrate(&newFlowRate)) {
         logger_log("ERROR: WATER FLOW READ FAILURE");
         return;
-    } else {
+    } 
+    else {
         adjustedFlowRate = (adjustedFlowRate * SMOOTH_WEIGHT) + (newFlowRate * (1 - SMOOTH_WEIGHT));
     }
 
@@ -308,15 +314,85 @@ static void bodyTemperatureLogic() {
     checkBodyTemperature(averageBodyTemp); 
 }
 
-static void check_low_12voltage()
+static void check_2AH_voltage()
 {
-    int voltage = VOLTAGE_START_2;
-    halosuit_voltage_value(VOLTAGE_2, &voltage);
+    int voltage = TURNIGY_2AH_VOLTAGE;
+    halosuit_voltage_value(TURNIGY_2_AH, &voltage);
 
-    if (voltage < VOLTAGE_END) {
+    if (voltage < MIN_VOLTAGE || voltage > MAX_VOLTAGE) {
         if (halosuit_relay_switch(ON_BUTTON, LOW)) {
             logger_log("ERROR: SHUTDOWN FAILURE");
         }
+    }
+}
+
+static void check_8AH_voltage()
+{
+    int voltage = TURNIGY_8AH_VOLTAGE;
+    int live_value = 1;
+    int ground_value = 1;
+    halosuit_voltage_value(TURNIGY_8_AH, &voltage);
+
+    if (halosuit_relay_value(HIGH_CURRENT_LIVE, &live_value)) {
+        logger_log("ERROR: HIGH_CURRENT_LIVE READ FAILURE");
+    }
+
+    if (halosuit_relay_value(HIGH_CURRENT_GROUND, &ground_value)) {
+        logger_log("ERROR: HIGH_CURRENT_GROUND READ FAILURE");
+    }
+
+
+    if (live_value == HIGH || ground_value == HIGH) {
+        if (voltage < MIN_VOLTAGE || voltage > MAX_VOLTAGE) {
+            if (halosuit_relay_switch(HIGH_CURRENT_LIVE, LOW) || halosuit_relay_switch(HIGH_CURRENT_GROUND, LOW)) {
+                logger_log("ERROR: SHUTDOWN FAILURE");
+            }
+        }
+    }
+    else if (live_value == LOW || ground_value == LOW) {
+        if (voltage > MIN_VOLTAGE || voltage < MAX_VOLTAGE) {
+            if (halosuit_relay_switch(HIGH_CURRENT_LIVE, HIGH) || halosuit_relay_switch(HIGH_CURRENT_GROUND, HIGH)) {
+                logger_log("ERROR: START UP FAILURE");
+            }
+        }
+    }
+
+}
+
+
+static void check_battery()
+{
+    if (soc_getcharge(TURNIGY_8_AH) < LOW_BATTERY_THRESHOLD) {
+        peltierLocked = true;
+        if (halosuit_relay_switch(PELTIER, LOW)) {
+            logger_log("ERROR: PELTIER READ FAILURE");
+        }
+        turnigy_8AH_low_warning = LOW_SOC;
+    }
+    else {
+        turnigy_8AH_low_warning = NOMINAL_SOC;
+        peltierLocked = false;
+    }
+
+    if (soc_getcharge(TURNIGY_2_AH) < LOW_BATTERY_THRESHOLD) {
+        turnigy_2AH_low_warning = LOW_SOC;
+    }
+    else {
+        turnigy_2AH_low_warning = NOMINAL_SOC;
+    }
+
+    if (soc_getcharge(GLASS_BATTERY) < LOW_BATTERY_THRESHOLD) {
+        glass_battery_low_warning = LOW_SOC;
+    }
+    else {
+        glass_battery_low_warning = NOMINAL_SOC;
+    }
+
+    if (soc_getcharge(PHONE_BATTERY) < LOW_BATTERY_THRESHOLD) {
+        phone_battery_low_warning = LOW_SOC;   
+    }
+    else {
+        phone_battery_low_warning = NOMINAL_SOC;
     }
 }
 
@@ -349,7 +425,9 @@ static void* automationThread()
         waterTempLogic();
         bodyTemperatureLogic(); 
         checkFlow();
-        check_low_12voltage();
+        check_8AH_voltage();
+        check_2AH_voltage();
+        check_battery();
         
         sleep(READ_DELAY);
     }
@@ -419,4 +497,20 @@ char automation_getWaterTempWarning() {
 char automation_getWaterFlowWarning()
 {
     return waterFlowWarning;
+}
+
+char automation_getBatteryWarning(int batteryID) 
+{
+    if (batteryID == TURNIGY_8_AH) {
+        return turnigy_8AH_low_warning;
+    }
+    else if (batteryID == TURNIGY_2_AH) {
+        return turnigy_2AH_low_warning;
+    }
+    else if (batteryID == GLASS_BATTERY) {
+        return glass_battery_low_warning;
+    }
+    else if (batteryID == PHONE_BATTERY) {
+        return phone_battery_low_warning;
+    }
 }

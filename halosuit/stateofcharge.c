@@ -89,6 +89,10 @@ int soc_getcharge(int batteryID)
     else if (batteryID == PHONE_BATTERY) {
         return phone_soc;
     }
+    else {
+        logger_log("ERROR: UNDEFINED BATTERY ID");
+        return -1;
+    }
 }
 
 void soc_setcharge(int batteryID, int percent_charge)

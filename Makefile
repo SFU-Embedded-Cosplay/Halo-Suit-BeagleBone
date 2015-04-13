@@ -31,3 +31,12 @@ host:
 clean: 
 	rm $(OUTDIR)/$(OUTFILE)
 	rm $(OUTDIR)/readflow.py
+
+install:
+	./install.sh
+
+enable:
+	systemctl enable /etc/systemd/system/suitcontrol.service
+
+disable:
+	systemctl disable /etc/systemd/system/suitcontrol.service

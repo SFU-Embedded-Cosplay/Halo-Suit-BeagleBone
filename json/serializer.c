@@ -20,7 +20,9 @@
 #define OFF "off"
 #define AUTO "auto"
 
-// todo: replace printf error messages with a log statement
+#define BUFFER_SIZE 1024
+
+static char* sound_buffer = NULL;
 
 static void get_warnings(json_value *object)
 {
@@ -101,6 +103,49 @@ static void get_warnings(json_value *object)
             logger_log("ERROR: WATER FLOW WARNING UNDEFINED");
     } 
 
+    char turnigy_8AH_warning = automation_getBatteryWarning(TURNIGY_8_AH);
+    switch (turnigy_8AH_warning) {
+        case LOW_SOC:
+            json_object_push(warnings, "low 8AH battery warning", json_string_new("TURNIGY 8 AH LOW BATTERY"));
+            break;
+        case NOMINAL_SOC:
+            break;
+        default:
+            logger_log("ERROR: TURNIGY 8AH BATTERY WARNING UNDEFINED");
+    }
+
+    char turnigy_2AH_warning = automation_getBatteryWarning(TURNIGY_2_AH);
+    switch (turnigy_2AH_warning) {
+        case LOW_SOC:
+            json_object_push(warnings, "low 2AH battery warning", json_string_new("TURNIGY 2 AH LOW BATTERY"));
+            break;
+        case NOMINAL_SOC:
+            break;
+        default:
+            logger_log("ERROR: TURNIGY 2AH BATTERY WARNING UNDEFINED");
+    }
+
+    char glass_battery_warning = automation_getBatteryWarning(GLASS_BATTERY);
+    switch (glass_battery_warning) {
+        case LOW_SOC:
+            json_object_push(warnings, "low hud battery warning", json_string_new("GOOGLE GLASS LOW BATTERY"));
+            break;
+        case NOMINAL_SOC:
+            break;
+        default:
+            logger_log("ERROR: GLASS BATTERY WARNING UNDEFINED");
+    }
+
+    char phone_battery_warning = automation_getBatteryWarning(PHONE_BATTERY);
+    switch (phone_battery_warning) {
+        case LOW_SOC:
+            json_object_push(warnings, "low phone battery warning", json_string_new("PHONE LOW BATTERY"));
+            break;
+        case NOMINAL_SOC:
+            break;
+        default:
+            logger_log("ERROR: PHONE BATTERY WARNING UNDEFINED");
+    }
     json_object_push(object, "warnings", warnings); 
 }
 
@@ -257,6 +302,15 @@ void serializer_serialize(char *buf)
     serializer_buildjson(object);
 
     json_serialize(buf, object);
-
+   // logger_log(buf);
     json_builder_free(object);
+}
+
+void serializer_save_sound(char *buf)
+{
+    if (sound_buffer == NULL) {
+        sound_buffer = (char*) (BUFFER_SIZE * sizeof(char));
+    }
+
+    sound_buffer = buf;
 }

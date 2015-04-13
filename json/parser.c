@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include <json/parser.h>
+#include <json/serializer.h>
 #include <json.h>
 #include <halosuit/halosuit.h>
 #include <halosuit/stateofcharge.h>
@@ -126,6 +127,10 @@ void parser_parse(char* json_text)
 
         else if (strcmp (object->u.object.values[i].name, "phone battery") == 0) {
             soc_setcharge(PHONE_BATTERY, object->u.object.values[i].value->u.integer);
+        }
+
+        else if (strcmp(object->u.object.values[i].name, "play sound") == 0) {
+            serializer_save_sound(object->u.object.values[i].value->u.string.ptr);
         }
 
         else if (strcmp(object->u.object.values[i].name, "configuration") == 0) {
