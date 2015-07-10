@@ -1,0 +1,6 @@
+[submodule "json-builder"]
+	path = json-builder
+	url = http://github.com/udp/json-builder.git
+[submodule "json-parser"]
+	path = json-parser
+	url = https://github.com/udp/json-parser.git
