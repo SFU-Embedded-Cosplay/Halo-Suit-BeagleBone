@@ -1,3 +1,5 @@
+#ifndef MOCK_HARDWARE
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -318,3 +320,5 @@ int halosuit_heartrate(int *heart) {
     return -1;
 }
 
+
+#endif
