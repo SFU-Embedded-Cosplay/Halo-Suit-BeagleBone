@@ -8,12 +8,7 @@
 
 #include <halosuit/halosuit.h>
 
-//static int NAME_SIZE = 15;
-
-typedef struct {
-char hwName[15];
-int index;
-_Bool isInteger;
+typedef union {
 int intVal;
 double dblVal;
 } MockHW_t;
