@@ -1,6 +1,8 @@
 /*
    beagleblue.c
 */ 
+#ifndef MOCK_BLUETOOTH
+
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
@@ -326,3 +328,5 @@ void beagleblue_join()
 	pthread_join(android_recv_thread_id, NULL);
 	pthread_join(android_send_thread_id, NULL);
 }
+
+#endif
