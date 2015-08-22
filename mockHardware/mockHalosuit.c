@@ -59,10 +59,18 @@ enum SUIT_HW_PARAMS {
 MockHW_t mock_data[E_NUM_HW_PARAMS];
 
 static bool is_initialized = false;
+static pthread_t json_reader_thread_id;
+
+static void *read_JSON() 
+{
+	return NULL;
+
+}
 
 // create socket and constantly read values from it and store values
 void halosuit_init() 
-{.
+{
+	pthread_create(&json_reader_thread_id, NULL, &read_JSON, NULL);
 	is_initialized = true;
     //return NULL;
 }
@@ -70,31 +78,39 @@ void halosuit_init()
 // close socket and kill thread
 void halosuit_exit() 
 {
+	if (is_initialized) {
+		is_initialized = false;
+	}
 }
 
 // 
 int halosuit_relay_switch(unsigned int relay, int ps)
 {
-	assert(relay <= HIGH_CURRENT_GROUND);
-
 	int mock_index = relay + E_RELAYS_FIRST;
-	
-	mock_data[mock_index].intVal = ps;
-    return 0;
+
+	if (is_initialized && relay < E_NUM_HW_PARAMS) {
+		if(ps != HIGH && ps != LOW) {
+			return -1
+		}
+
+		mock_data[mock_index].intVal = ps;
+		return 0;
+	}
+	return -1;
 }
 
 int halosuit_relay_value(unsigned int relay, int *value)
 {
 	int mock_index = relay + E_RELAYS_FIRST;
-	value = mock_data[mock_index].intVal;
+	value = &mock_data[mock_index].intVal;
 
 	return 0;
 }
 
 int halosuit_temperature_value(unsigned int location, double *value)
 {
-	int mock_index = relay + E_RELAYS_FIRST;
-	value = mock_data[mock_index].dblVal;
+	int mock_index = location + E_TEMP_FIST;
+	value = &mock_data[mock_index].dblVal;
 
     return 0;
 }
@@ -105,7 +121,7 @@ int halosuit_flowrate(int *flow)
 		return -1;
 	}
 
-	flow = mock_data[E_FLOWRATE].intVal;
+	flow = &mock_data[E_FLOWRATE].intVal;
     return 0;
 }
 
@@ -115,7 +131,7 @@ int halosuit_voltage_value(unsigned int battery, int *value)
 		return -1;
 	}
 	int mock_index = E_VOLTAGE_FIRST + battery - 1;
-	value = mock_data[mock_index].intVal;
+	value = &mock_data[mock_index].intVal;
     return 0;
 }
 
