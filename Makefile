@@ -32,11 +32,15 @@ clean:
 	rm $(OUTDIR)/$(OUTFILE)
 	rm $(OUTDIR)/readflow.py
 
+# this command will require root access since it installs bluetooth and python dependencies
+# only works for systems that use apt-get (Ubuntu, Debian, etc).
 install:
 	./install.sh
 
 enable:
+	cp ./suitcontrol.service /etc/systemd/system/suitcontrol.service
 	systemctl enable /etc/systemd/system/suitcontrol.service
 
 disable:
 	systemctl disable /etc/systemd/system/suitcontrol.service
+	rm /etc/systemd/system/suitcontrol.service
