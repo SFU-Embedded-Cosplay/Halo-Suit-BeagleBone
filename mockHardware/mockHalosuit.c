@@ -106,7 +106,7 @@ int halosuit_relay_switch(unsigned int relay, int ps) //done
 			return -1
 		}
 
-		mock_data[mock_index].intVal = ps;
+		setIntValue(mock_data[mock_index], ps);
 		return 0;
 	}
 	return -1;
@@ -116,7 +116,7 @@ int halosuit_relay_value(unsigned int relay, int *value) //done
 {
 	if(is_initialized && relay < E_NUMBER_OF_RELAYS) {
 		int mock_index = relay + E_RELAYS_FIRST;
-		value = &mock_data[mock_index].intVal;
+		value = &getIntValue(mock_data[mock_index]);
 		return 0;
 	}
 
@@ -131,7 +131,7 @@ int halosuit_temperature_value(unsigned int location, double *value) //half done
 			// some of the values like temp_water is inside the .c file and so what I have may not work.
 		}
 		int mock_index = location + E_TEMP_FIST;
-		value = &mock_data[mock_index].dblVal;
+		value = &getDoubleValue(mock_data[mock_index]);
 	}	
 
     return 0;
@@ -143,7 +143,7 @@ int halosuit_flowrate(int *flow) //done
 		return -1;
 	}
 
-	flow = &mock_data[E_FLOWRATE].intVal;
+	flow = &getIntValue(mock_data[E_FLOWRATE]);
     return 0;
 }
 
@@ -151,10 +151,10 @@ int halosuit_voltage_value(unsigned int battery, int *value) //done - I think - 
 {
 	if (is_initialized) {
         if (battery == TURNIGY_8_AH) {
-            *value = (int)(mock_data[E_VOLTAGE_1].intVal * 1000);
+            *value = (int)(getDoubleValue(mock_data[E_VOLTAGE_1]) * 1000); //Im not sure fi this should be getDoubleValue or getIntValue
         } 
         else if (battery == TURNIGY_2_AH) {
-            *value = (int)(mock_data[E_VOLTAGE_2].intVal * 1000);
+            *value = (int)(getDoubleValue(mock_data[E_VOLTAGE_2]) * 1000);
         } 
         else {
             return -1;
@@ -164,6 +164,7 @@ int halosuit_voltage_value(unsigned int battery, int *value) //done - I think - 
 	return -1;
 }
 
+// TODO: this probably does not work and needs some work to go over it
 int halosuit_current_draw_value(unsigned int battery, int *value)
 {
 	// requires calculations
@@ -247,6 +248,7 @@ static void setDoubleValue(MockHW_t hardware, double value)
 	hardware.dblVal = value
 }
 
+// heart rate is normally gotten from python script and thus I need to look into how to properly do this.
 int halosuit_heartrate(int *heart)
 {
 	if (is_initialized){
