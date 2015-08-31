@@ -125,9 +125,11 @@ int halosuit_relay_value(unsigned int relay, int *value) //done
 
 int halosuit_temperature_value(unsigned int location, double *value) //half done
 {
-	if(is_initialized && location < NUMBER_OF_TEMP_SENSORS) {
-		if(location == WATER) {
-			value = E_TEMP_WATER;
+	int mock_index = E_TEMP_FIST + location;
+
+	if(is_initialized && mock_index < E_NUMBER_OF_TEMP_SENSORS) {
+		if(mock_index == E_TEMP_WATER) {
+			value = water_temp; // TODO: PYTHON - deal with this in however we decide is best to deal with the python values.
 			// some of the values like temp_water is inside the .c file and so what I have may not work.
 		}
 		int mock_index = location + E_TEMP_FIST;
@@ -143,7 +145,8 @@ int halosuit_flowrate(int *flow) //done
 		return -1;
 	}
 
-	flow = &getIntValue(mock_data[E_FLOWRATE]);
+	flow = flowrate; // TODO: PYTHON - deal with this in however we decide is best to deal with the python values.
+	// flow = &getIntValue(mock_data[E_FLOWRATE]);
     return 0;
 }
 
@@ -151,10 +154,12 @@ int halosuit_voltage_value(unsigned int battery, int *value) //done - I think - 
 {
 	if (is_initialized) {
         if (battery == TURNIGY_8_AH) {
-            *value = (int)(getDoubleValue(mock_data[E_VOLTAGE_1]) * 1000); //Im not sure fi this should be getDoubleValue or getIntValue
+        	*value = (int)(voltage1 * 1000); // TODO: PYTHON - deal with this in however we decide is best to deal with the python values.
+            // *value = (int)(getDoubleValue(mock_data[E_VOLTAGE_1]) * 1000); //Im not sure if this should be getDoubleValue or getIntValue
         } 
         else if (battery == TURNIGY_2_AH) {
-            *value = (int)(getDoubleValue(mock_data[E_VOLTAGE_2]) * 1000);
+        	*value = (int)(voltage2 * 1000); // TODO: PYTHON - deal with this in however we decide is best to deal with the python values.
+            // *value = (int)(getDoubleValue(mock_data[E_VOLTAGE_2]) * 1000); // still not sure if this should be getInt for getDouble
         } 
         else {
             return -1;
