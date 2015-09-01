@@ -63,6 +63,9 @@ static pthread_t json_reader_thread_id;
 
 static void *read_JSON() 
 {
+	//read in json from local socket.
+	//store json
+	//wait
 	return NULL;
 
 }

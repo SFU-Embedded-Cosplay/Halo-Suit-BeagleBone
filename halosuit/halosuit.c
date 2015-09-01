@@ -61,7 +61,7 @@ static void *python_thread()
 
 void halosuit_init()
 {
-	int export_fd = open("/sys/class/gpio/export", O_WRONLY);
+	int export_fd = open("/sys/class/gpio/export", O_WRONLY); // change
 	//export gpio pins
 	write(export_fd, "66", 2);
 	write(export_fd, "67", 2);
@@ -80,7 +80,7 @@ void halosuit_init()
 	close(export_fd);
 
 	//open the files for the gpio pins direction
-	relays[LIGHTS] = open("/sys/class/gpio/gpio66/direction", O_WRONLY);
+	relays[LIGHTS] = open("/sys/class/gpio/gpio66/direction", O_WRONLY); //change all
 	relays[LIGHTS_AUTO] = open("/sys/class/gpio/gpio67/direction", O_WRONLY);
 	relays[HEADLIGHTS_WHITE] = open("/sys/class/gpio/gpio68/direction", O_WRONLY);
 	relays[HEADLIGHTS_RED] = open("/sys/class/gpio/gpio69/direction", O_WRONLY);
@@ -117,7 +117,7 @@ void halosuit_init()
     close(relays[HIGH_CURRENT_GROUND]);
 
     //open the values on read/write
-    relays[LIGHTS] = open("/sys/class/gpio/gpio66/value", O_RDWR);
+    relays[LIGHTS] = open("/sys/class/gpio/gpio66/value", O_RDWR); // change
     relays[LIGHTS_AUTO] = open("/sys/class/gpio/gpio67/value", O_RDWR);
     relays[HEADLIGHTS_WHITE] = open("/sys/class/gpio/gpio68/value", O_RDWR);
     relays[HEADLIGHTS_RED] = open("/sys/class/gpio/gpio69/value", O_RDWR);
@@ -131,7 +131,7 @@ void halosuit_init()
 
 
     //open analog pins
-    temperature[HEAD] = open("/sys/bus/iio/devices/iio:device0/in_voltage0_raw", O_RDONLY);
+    temperature[HEAD] = open("/sys/bus/iio/devices/iio:device0/in_voltage0_raw", O_RDONLY); //change
     temperature[ARMPITS] = open("/sys/bus/iio/devices/iio:device0/in_voltage1_raw", O_RDONLY);
     temperature[CROTCH] = open("/sys/bus/iio/devices/iio:device0/in_voltage2_raw", O_RDONLY);
     //temperature[WATER] = open("/sys/bus/iio/devices/iio:device0/in_voltage3_raw", O_RDONLY);
@@ -159,7 +159,7 @@ void halosuit_exit()
 
 
 
-    	int unexport_fd = open("/sys/class/gpio/unexport", O_WRONLY);
+    	int unexport_fd = open("/sys/class/gpio/unexport", O_WRONLY); //change
 		//export gpio pins
 		write(unexport_fd, "66", 2);
 		write(unexport_fd, "67", 2);
