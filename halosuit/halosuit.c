@@ -249,7 +249,7 @@ int halosuit_voltage_value(unsigned int battery, int *value)
 	return -1;
 }
 
-int halosuit_current_draw_value(unsigned int batteryID, int *current) 
+int halosuit_current_draw_value(unsigned int batteryID, int *current)  //this is fairly complicated and should probably be simlified
 {
     if (batteryID == TURNIGY_2_AH) {
         int value1 = 0;
