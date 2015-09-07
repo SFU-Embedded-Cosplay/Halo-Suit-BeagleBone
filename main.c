@@ -25,7 +25,7 @@
 
 #define WATCHDOG_PATH "/dev/watchdog"
 
-#define SERIALIZE_DELAY 1 // second
+#define SERIALIZE_DELAY_IN_SECONDS 1
 
 bool watchdog_disabled = false;
 
@@ -36,10 +36,10 @@ int main(int argc, char* argv[])
             watchdog_disabled = true;
         }
     }
-    int fd;
+    int file_descriptor;
     if (!watchdog_disabled) {
-        fd = open(WATCHDOG_PATH, O_RDWR);
-        if (fd < -1) {
+        file_descriptor = open(WATCHDOG_PATH, O_RDWR);
+        if (file_descriptor < -1) {
             printf("Cannot open watchdog\n");
             exit(EXIT_FAILURE);
         }
@@ -63,12 +63,12 @@ int main(int argc, char* argv[])
 
         if (!watchdog_disabled) {
 	        // kick watchdog
-	        ioctl(fd, WDIOC_KEEPALIVE, NULL);
+	        ioctl(file_descriptor, WDIOC_KEEPALIVE, NULL);
 	    }
-	    sleep(SERIALIZE_DELAY);
+	    sleep(SERIALIZE_DELAY_IN_SECONDS);
     } 
 
-    // close(fd); 
+    // close(file_descriptor); 
 
     automation_exit(); 
     halosuit_exit();    
