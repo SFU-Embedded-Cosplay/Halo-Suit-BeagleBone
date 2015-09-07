@@ -9,7 +9,7 @@
 OUTFILE = suitcontroller
 OUTDIR = /usr/bin
 TESTDIR = .
-INFILES = main.c json/serializer.c json/parser.c beagleblue/beagleblue.c json-parser/json.c json-builder/json-builder.c halosuit/halosuit.c halosuit/logger.c config/config.c halosuit/automation.c halosuit/stateofcharge.c mockHardware/mockHalosuit.c
+INFILES = main.c json/serializer.c json/parser.c beagleblue/beagleblue.c json-parser/json.c json-builder/json-builder.c halosuit/halosuit.c halosuit/logger.c config/config.c halosuit/automation.c halosuit/stateofcharge.c mockHardware/mockHalosuit.c mockHardware/mockBluetooth.c
 
 CROSS_COMPILE = arm-linux-gnueabi-
 COMPILER = gcc
@@ -44,4 +44,4 @@ disable:
 	systemctl disable /etc/systemd/system/suitcontrol.service
 
 localTest:	
-	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(TESTDIR)/$(OUTFILE) -lm -lbluetooth -D MOCK_HARDWARE
+	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(TESTDIR)/$(OUTFILE) -lm -lbluetooth -D MOCK_HARDWARE -D MOCK_BLUETOOTH

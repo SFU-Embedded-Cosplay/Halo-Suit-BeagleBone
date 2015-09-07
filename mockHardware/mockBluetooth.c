@@ -4,6 +4,11 @@
  */
 #ifdef MOCK_BLUETOOTH
 
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdbool.h>
+#include <pthread.h>
 int beagleblue_glass_send(char *buffer)
 {
    return 0;
@@ -16,7 +21,6 @@ int beagleblue_android_send(char *buffer)
 
 void beagleblue_init(void (*on_receive)(char *buffer)) 
 {
-    return NULL;
 }
 
 void beagleblue_exit() 
