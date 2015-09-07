@@ -7,6 +7,9 @@
 #include <stdbool.h>
 
 #include <halosuit/halosuit.h>
+#include <halosuit/stateofcharge.h>
+#include <halosuit/logger.h>
+
 
 typedef union {
 	int intVal;
@@ -74,6 +77,26 @@ static double voltage1 = 12.6;
 static double voltage2 = 12.0;
 static int heartrate = 90;
 
+static void get_int_value(MockHW_t hardware, int* storage) 
+{
+	storage = &hardware.intVal;
+}
+
+static void set_int_value(MockHW_t hardware, int value) 
+{
+	hardware.intVal = value;
+}
+
+static void get_double_value(MockHW_t hardware, double* storage) 
+{
+	storage = &hardware.dblVal;
+}
+
+static void set_double_value(MockHW_t hardware, double value) 
+{ 
+	hardware.dblVal = value;
+}
+
 static void *read_JSON() 
 {
 	//read in json from local socket.
@@ -106,10 +129,10 @@ int halosuit_relay_switch(unsigned int relay, int ps) //done
 
 	if (is_initialized && relay < E_NUMBER_OF_RELAYS) {
 		if(ps != HIGH && ps != LOW) {
-			return -1
+			return -1;
 		}
 
-		setIntValue(mock_data[mock_index], ps);
+		set_int_value(mock_data[mock_index], ps);
 		return 0;
 	}
 	return -1;
@@ -119,7 +142,7 @@ int halosuit_relay_value(unsigned int relay, int *value) //done
 {
 	if(is_initialized && relay < E_NUMBER_OF_RELAYS) {
 		int mock_index = relay + E_RELAYS_FIRST;
-		value = &getIntValue(mock_data[mock_index]);
+		get_int_value(mock_data[mock_index], value);
 		return 0;
 	}
 
@@ -132,11 +155,11 @@ int halosuit_temperature_value(unsigned int location, double *value) //half done
 
 	if(is_initialized && mock_index < E_NUMBER_OF_TEMP_SENSORS) {
 		if(mock_index == E_TEMP_WATER) {
-			value = water_temp; // TODO: PYTHON - deal with this in however we decide is best to deal with the python values.
+			value = &water_temp; // TODO: PYTHON - deal with this in however we decide is best to deal with the python values.
 			// some of the values like temp_water is inside the .c file and so what I have may not work.
 		}
 		int mock_index = location + E_TEMP_FIST;
-		value = &getDoubleValue(mock_data[mock_index]);
+		get_double_value(mock_data[mock_index], value);
 	}	
 
     return 0;
@@ -148,8 +171,8 @@ int halosuit_flowrate(int *flow) //done
 		return -1;
 	}
 
-	flow = flowrate; // TODO: PYTHON - deal with this in however we decide is best to deal with the python values.
-	// flow = &getIntValue(mock_data[E_FLOWRATE]);
+	flow = &flowrate; // TODO: PYTHON - deal with this in however we decide is best to deal with the python values.
+	// get_int_value(mock_data[E_FLOWRATE], flow);
     return 0;
 }
 
@@ -158,11 +181,11 @@ int halosuit_voltage_value(unsigned int battery, int *value) //done - I think - 
 	if (is_initialized) {
         if (battery == TURNIGY_8_AH) {
         	*value = (int)(voltage1 * 1000); // TODO: PYTHON - deal with this in however we decide is best to deal with the python values.
-            // *value = (int)(getDoubleValue(mock_data[E_VOLTAGE_1]) * 1000); //Im not sure if this should be getDoubleValue or getIntValue
+            // get_double_value(mock_data[E_VOLTAGE_1], value) * 1000); //Im not sure if this should be getDoubleValue or get_int_value
         } 
         else if (battery == TURNIGY_2_AH) {
         	*value = (int)(voltage2 * 1000); // TODO: PYTHON - deal with this in however we decide is best to deal with the python values.
-            // *value = (int)(getDoubleValue(mock_data[E_VOLTAGE_2]) * 1000); // still not sure if this should be getInt for getDouble
+            // getDoubleValue(mock_data[E_VOLTAGE_2], value) * 1000); // still not sure if this should be getInt or getDouble
         } 
         else {
             return -1;
@@ -173,7 +196,7 @@ int halosuit_voltage_value(unsigned int battery, int *value) //done - I think - 
 }
 
 // TODO: this probably does not work and needs some work to go over it
-int halosuit_current_draw_value(unsigned int battery, int *value)
+int halosuit_current_draw_value(unsigned int batteryID, int *current)
 {
 	// requires calculations
 	if (batteryID == TURNIGY_2_AH) {
@@ -234,26 +257,6 @@ int halosuit_current_draw_value(unsigned int battery, int *value)
     }
 
     return 0;
-}
-
-static int getIntValue(MockHW_t hardware) 
-{
-	return hardware.intVal;
-}
-
-static void setIntValue(MockHW_t hardware, int value) 
-{
-	hardware.intVal = value;
-}
-
-static double getDoubleValue(MockHW_t hardware) 
-{
-	return hardware.dblVal;
-}
-
-static void setDoubleValue(MockHW_t hardware, double value) 
-{ 
-	hardware.dblVal = value
 }
 
 // heart rate is normally gotten from python script and thus I need to look into how to properly do this.
