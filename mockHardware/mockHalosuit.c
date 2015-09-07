@@ -6,7 +6,7 @@
 #include <pthread.h>
 #include <stdbool.h>
 
-#include <json-parser/json.h>
+#include <json/json.h>
 
 #include <halosuit/halosuit.h>
 #include <halosuit/stateofcharge.h>
@@ -54,6 +54,7 @@ enum SUIT_HW_PARAMS {
 	E_VOLTAGE_2,
 
 	E_VOLTAGE_LAST = E_VOLTAGE_2,
+	E_NUMBER_OF_VOLTAGES = E_VOLTAGE_LAST - E_NUMBER_OF_TEMP_SENSORS,
 
 	// Flowrate
 	E_FLOWRATE,
@@ -79,15 +80,6 @@ static double voltage1 = 12.6;
 static double voltage2 = 12.0;
 static int heartrate = 90;
 
-static int socket_descriptor;
-
-static struct sockaddr_un remote;
-
-static const int inputBufferLength = 1024;
-static char socketInputBuffer[inputBufferLength];
-
-static json_value* jsonValue;
-
 const char[] SOCKET_PATH = "localhost";
 
 static void get_int_value(MockHW_t hardware, int* storage) 
@@ -112,33 +104,45 @@ static void set_double_value(MockHW_t hardware, double value)
 
 static void *read_JSON() 
 {
+
+	int socket_descriptor;
+
+	sockaddr_in server;
+
+	const int PORT = 8080;
+	const char[] INTERNET_ADDRESS = "127.0.0.1";
+
+	const int INPUT_BUFFER_LENGTH = 1024;
+	char socket_input_buffer[INPUT_BUFFER_LENGTH];
+
 	//setup socket (connect to test server)
-	if ((socket_descriptor = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+	if ((socket_descriptor = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         perror("socket");
         exit(1);
     }
 
     printf("Trying to connect to test server...\n");
 
-    remote.sun_family = AF_UNIX;
-    strcpy(remote.sun_path, SOCKET_PATH);
-    int len = strlen(remote.sun_path) + sizeof(remote.sun_family);
+    server.sin_addr.s_addr = inet_addr(INTERNET_ADDRESS);
+    server.sin_family = AF_INET;
+    server.sin_port = htons(PORT);
 
-    if (connect(socket_descriptor, (struct sockaddr *)&remote, len) == -1) {
+    if (connect(socket_descriptor, (struct sockaddr *)&server, sizeof(server)) < 0) {
         perror("connect");
         exit(1);
     }
 
     printf("Connected.\n");
 
-	//read in json from local socket.
-	while(Connected(socket_descriptor)) {
 
-        if (recv(socket_descriptor, socketInputBuffer, inputBufferLength, MSG_DONTWAIT) != -1) {
-        	// parse json
-        	json_value = json_parse_ex(socketInputBuffer, strlen(socketInputBuffer));
-        	// store json values
-        	// wait 
+	//read in json from local socket.
+	while(Connected(socket_descriptor) && is_initialized) {
+
+        if (recv(socket_descriptor, socket_input_buffer, INPUT_BUFFER_LENGTH, MSG_DONTWAIT) != -1) {
+        	// parse and store json values
+        	parser_parse(socket_input_buffer);
+        	sleep(1000);
+        	
         } else {
             printf("Server closed connection\n");
             exit(1); //should this be here?
@@ -156,7 +160,6 @@ void halosuit_init()
 {
 	pthread_create(&json_reader_thread_id, NULL, &read_JSON, NULL);
 	is_initialized = true;
-    //return NULL;
 }
 
 // close socket and kill thread
