@@ -3,10 +3,18 @@
 #ifdef MOCK_HARDWARE
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <pthread.h>
+#include <unistd.h>
 #include <stdbool.h>
+#include <assert.h>
 
-#include <json/json.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/ip.h>
+#include <arpa/inet.h>
+
+#include <json/parser.h>
 
 #include <halosuit/halosuit.h>
 #include <halosuit/stateofcharge.h>
@@ -80,7 +88,6 @@ static double voltage1 = 12.6;
 static double voltage2 = 12.0;
 static int heartrate = 90;
 
-const char[] SOCKET_PATH = "localhost";
 
 static void get_int_value(MockHW_t hardware, int* storage) 
 {
@@ -106,18 +113,20 @@ static void *read_JSON()
 {
 
 	int socket_descriptor;
-
-	sockaddr_in server;
+	struct sockaddr_in server;
 
 	const int PORT = 8080;
-	const char[] INTERNET_ADDRESS = "127.0.0.1";
+	const char* INTERNET_ADDRESS = "127.0.0.1";
 
 	const int INPUT_BUFFER_LENGTH = 1024;
 	char socket_input_buffer[INPUT_BUFFER_LENGTH];
 
+	int sleep_time_in_seconds = 1;
+
+
 	//setup socket (connect to test server)
 	if ((socket_descriptor = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-        perror("socket");
+        perror("socket in mockHardware failed to get socket descriptor");
         exit(1);
     }
 
@@ -128,7 +137,7 @@ static void *read_JSON()
     server.sin_port = htons(PORT);
 
     if (connect(socket_descriptor, (struct sockaddr *)&server, sizeof(server)) < 0) {
-        perror("connect");
+        perror("socket in mockHardware failed to get connect");
         exit(1);
     }
 
@@ -136,37 +145,41 @@ static void *read_JSON()
 
 
 	//read in json from local socket.
-	while(Connected(socket_descriptor) && is_initialized) {
-
+	while(is_initialized) {
+		// printf("looping through thread");
         if (recv(socket_descriptor, socket_input_buffer, INPUT_BUFFER_LENGTH, MSG_DONTWAIT) != -1) {
+        	printf("received socket message: %s \n", socket_input_buffer);
         	// parse and store json values
         	parser_parse(socket_input_buffer);
-        	sleep(1000);
-        	
-        } else {
-            printf("Server closed connection\n");
-            exit(1); //should this be here?
+
+        	sleep(sleep_time_in_seconds);
         }
+
+        sleep(sleep_time_in_seconds);
     }
 
     close(socket_descriptor);
 
 	return NULL;
-
 }
 
 // create socket and constantly read values from it and store values
 void halosuit_init() 
 {
-	pthread_create(&json_reader_thread_id, NULL, &read_JSON, NULL);
+	assert(!is_initialized);
+
 	is_initialized = true;
+	pthread_create(&json_reader_thread_id, NULL, &read_JSON, NULL);
 }
 
 // close socket and kill thread
 void halosuit_exit() 
 {
+	assert(is_initialized);
+
 	if (is_initialized) {
 		is_initialized = false;
+		pthread_join(json_reader_thread_id, NULL);
 	}
 }
 
