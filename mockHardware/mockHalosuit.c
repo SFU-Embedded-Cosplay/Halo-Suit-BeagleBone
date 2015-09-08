@@ -67,6 +67,9 @@ enum SUIT_HW_PARAMS {
 	// Flowrate
 	E_FLOWRATE,
 
+	// heartrate
+	E_HEARTRATE,
+
 	// Count them:
 	E_NUM_HW_PARAMS
 };
@@ -76,18 +79,6 @@ MockHW_t mock_data[E_NUM_HW_PARAMS];
 
 static bool is_initialized = false;
 static pthread_t json_reader_thread_id;
-
-// TODO: integrate the bellow values into the SUIT_HW_PARAMS enum, or some other data structure so that they can be accessed properly.
-// the bellow 5 values are gained from the python thread.  I need to better understand these and then better deal with them
-// I dont beleive these work properly at this point.
-// From halosuit.h file.  we should probably put these in the header file.
-static int flowrate = 0;
-static double water_temp = 10.0;
-// TODO: these defaults need to change when we get data on for them
-static double voltage1 = 12.6;
-static double voltage2 = 12.0;
-static int heartrate = 90;
-
 
 static void get_int_value(MockHW_t hardware, int* storage) 
 {
@@ -168,6 +159,16 @@ void halosuit_init()
 {
 	assert(!is_initialized);
 
+	// TODO: place constatnts in header file.
+	// initialize values so that they are the same in halosuit.c
+	// static int flowrate = 0;
+	set_double_value(mock_data[E_TEMP_WATER], 10.0);
+	set_double_value(mock_data[E_VOLTAGE_1], 12.6);
+	set_double_value(mock_data[E_VOLTAGE_2], 12.0);
+	set_int_value(mock_data[E_HEARTRATE], 90);
+
+
+
 	is_initialized = true;
 	pthread_create(&json_reader_thread_id, NULL, &read_JSON, NULL);
 }
@@ -216,7 +217,8 @@ int halosuit_temperature_value(unsigned int location, double *value) //half done
 
 	if(is_initialized && mock_index < E_NUMBER_OF_TEMP_SENSORS) {
 		if(mock_index == E_TEMP_WATER) {
-			value = &water_temp; // TODO: PYTHON - deal with this in however we decide is best to deal with the python values.
+			get_double_value(mock_data[E_TEMP_WATER], value);
+			// TODO: PYTHON - deal with this in however we decide is best to deal with the python values.
 			// some of the values like temp_water is inside the .c file and so what I have may not work.
 		}
 		int mock_index = location + E_TEMP_FIST;
@@ -232,20 +234,24 @@ int halosuit_flowrate(int *flow) //done
 		return -1;
 	}
 
-	flow = &flowrate; // TODO: PYTHON - deal with this in however we decide is best to deal with the python values.
+	get_int_value(mock_data[E_FLOWRATE], flow); // TODO: PYTHON - deal with this in however we decide is best to deal with the python values.
 	// get_int_value(mock_data[E_FLOWRATE], flow);
     return 0;
 }
 
 int halosuit_voltage_value(unsigned int battery, int *value) //done - I think - This assumes battery is not an index but is instead a value around 12000
 {
+	double* temp_value;
+
 	if (is_initialized) {
         if (battery == TURNIGY_8_AH) {
-        	*value = (int)(voltage1 * 1000); // TODO: PYTHON - deal with this in however we decide is best to deal with the python values.
+        	get_double_value(mock_data[E_VOLTAGE_1], temp_value);
+        	*value = (int)(*temp_value * 1000); // TODO: PYTHON - deal with this in however we decide is best to deal with the python values.
             // get_double_value(mock_data[E_VOLTAGE_1], value) * 1000); //Im not sure if this should be getDoubleValue or get_int_value
         } 
         else if (battery == TURNIGY_2_AH) {
-        	*value = (int)(voltage2 * 1000); // TODO: PYTHON - deal with this in however we decide is best to deal with the python values.
+        	get_double_value(mock_data[E_VOLTAGE_2], temp_value);
+        	*value = (int)(*temp_value * 1000); // TODO: PYTHON - deal with this in however we decide is best to deal with the python values.
             // getDoubleValue(mock_data[E_VOLTAGE_2], value) * 1000); // still not sure if this should be getInt or getDouble
         } 
         else {
@@ -323,8 +329,10 @@ int halosuit_current_draw_value(unsigned int batteryID, int *current)
 // heart rate is normally gotten from python script and thus I need to look into how to properly do this.
 int halosuit_heartrate(int *heart)
 {
+	assert(is_initialized);
+
 	if (is_initialized){
-        *heart = heartrate;
+        get_int_value(mock_data[E_HEARTRATE], heart);
         return 0;
     }
     return -1;
