@@ -76,28 +76,38 @@ enum SUIT_HW_PARAMS {
 
 // Store the mock vales for HW.
 MockHW_t mock_data[E_NUM_HW_PARAMS];
+pthread_mutex_t hardwareLocks[E_NUM_HW_PARAMS];
 
 static bool is_initialized = false;
 static pthread_t json_reader_thread_id;
 
 static void get_int_value(MockHW_t hardware, int* storage) 
 {
+	pthread_mutex_lock(&hardwareLocks[hardware]);
 	storage = &hardware.intVal;
+	pthread_mutex_unlock(&hardwareLocks[hardware]);
+
 }
 
 static void set_int_value(MockHW_t hardware, int value) 
 {
+	pthread_mutex_lock(&hardwareLocks[hardware]);
 	hardware.intVal = value;
+	pthread_mutex_unlock(&hardwareLocks[hardware]);
 }
 
 static void get_double_value(MockHW_t hardware, double* storage) 
 {
+	pthread_mutex_lock(&hardwareLocks[hardware]);
 	storage = &hardware.dblVal;
+	pthread_mutex_unlock(&hardwareLocks[hardware]);
 }
 
 static void set_double_value(MockHW_t hardware, double value) 
 { 
+	pthread_mutex_lock(&hardwareLocks[hardware]);
 	hardware.dblVal = value;
+	pthread_mutex_unlock(&hardwareLocks[hardware]);
 }
 
 static void *read_JSON() 
