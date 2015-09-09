@@ -30,6 +30,8 @@ host:
 #	$(CC_C) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(OUTDIR)/$(OUTFILE) -lm -lbluetooth
 
 clean: 
+	rm $(TESTDIR)/$(OUTFILE)
+	rm $(TESTDIR)/test__*
 	rm $(OUTDIR)/$(OUTFILE)
 	rm $(OUTDIR)/readflow.py
 
@@ -45,3 +47,8 @@ disable:
 
 localTest:	
 	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(TESTDIR)/$(OUTFILE) -lm -lbluetooth -D MOCK_HARDWARE -D MOCK_BLUETOOTH
+
+testMockBluetooth:
+	$(COMPILER) $(CFLAGS) $(INCLUDE) testcode/mockbluetooth_test/mockbluetooth_test.c mockHardware/mockBluetooth.c -o $(TESTDIR)/test__mock_bluetooth -lm -D MOCK_BLUETOOTH
+
+

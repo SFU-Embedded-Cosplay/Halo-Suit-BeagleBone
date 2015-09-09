@@ -16,6 +16,9 @@
 
 #include <beagleblue/beagleblue.h>
 
+#define SERVER_PORT 49153
+#define CLIENT_PORT 49154
+
 static char server_buffer[BUFFER_SIZE];
 
 static pthread_t server_thread_id;
@@ -42,6 +45,7 @@ void beagleblue_init(void (*on_receive)(char *buffer))
 
 void beagleblue_exit() 
 {
+    is_listening = false; 
     beagleblue_join();
 }
 
@@ -52,19 +56,22 @@ void beagleblue_join()
 
 static void *server_thread(void *callback) 
 {
+    printf("starting server\n");
     void (*on_receive)(char *) = callback;
     int sockfd; 
     int new_sockfd;
     socklen_t client_len;
     struct sockaddr_in server_addr;
     struct sockaddr_in client_addr;
-    int port;
+    int port = SERVER_PORT;
+
+    memset (&server_buffer, 0 , sizeof(server_buffer));
 
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (sockfd < 0) {
         // log or prinf
-        printf("ERROR, bad socket");
+        printf("ERROR, bad socket\n");
         return NULL;
     } 
 
@@ -72,24 +79,27 @@ static void *server_thread(void *callback)
     server_addr.sin_addr.s_addr = INADDR_ANY;
     server_addr.sin_port = htons(port);
 
-    if (bind(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
-        printf("ERROR, binding error");
+    if (bind(sockfd, (struct sockaddr*) &server_addr, sizeof(server_addr)) < 0) {
+        printf("ERROR, binding error\n");
     }
+
+    printf("waiting for connection\n");
     listen(sockfd, 1);
     client_len = sizeof(client_addr); 
-    new_sockfd = accept(sockfd, (struct sockaddr *) &client_addr, &client_len);
+    new_sockfd = accept(sockfd, (struct sockaddr*) &client_addr, &client_len);
     
     if (new_sockfd < 0) {
-        printf("ERROR, on accept");
+        printf("ERROR, on accept\n");
     }  
     is_listening = true;
     while (is_listening) {
         if (read(new_sockfd, server_buffer, sizeof(server_buffer)) < 0) {
-            printf("ERROR, on read");
+            printf("ERROR, on read\n");
         }
         on_receive(server_buffer);
         memset(server_buffer,0, sizeof(server_buffer)); 
     } 
+    printf("closing socket\n");
     close(sockfd); 
     return NULL;
 }

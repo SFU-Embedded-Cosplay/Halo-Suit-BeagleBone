@@ -4,6 +4,7 @@
 *.out
 *.o
 suitcontroller
+test__*
 
 #####Log Files###################
 log.txt
