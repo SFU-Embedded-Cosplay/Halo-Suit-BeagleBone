@@ -22,11 +22,11 @@
 
 
 typedef union {
-	int intVal;
-	double dblVal;
+	int intValue;
+	double doubleValue;
 } MockHW_t;
  
-enum SUIT_HW_PARAMS {
+enum SUIT_HARDWARE_PARAMS {
 	// RELAYS
 	E_RELAYS_FIRST,
 
@@ -42,7 +42,6 @@ enum SUIT_HW_PARAMS {
 	E_HIGH_CURRENT_GROUND,
 
 	E_RELAYS_LAST = E_HIGH_CURRENT_GROUND,
-	E_NUMBER_OF_RELAYS = E_RELAYS_LAST,
 
 	// Temperatures
 	E_TEMP_FIST,
@@ -53,7 +52,6 @@ enum SUIT_HW_PARAMS {
 	E_TEMP_WATER,
 
 	E_TEMP_LAST = E_TEMP_WATER,
-	E_NUMBER_OF_TEMP_SENSORS = E_TEMP_LAST - E_NUMBER_OF_RELAYS,
 
 	// Voltage
 	E_VOLTAGE_FIRST,
@@ -62,7 +60,6 @@ enum SUIT_HW_PARAMS {
 	E_VOLTAGE_2,
 
 	E_VOLTAGE_LAST = E_VOLTAGE_2,
-	E_NUMBER_OF_VOLTAGES = E_VOLTAGE_LAST - E_NUMBER_OF_TEMP_SENSORS,
 
 	// Flowrate
 	E_FLOWRATE,
@@ -76,38 +73,37 @@ enum SUIT_HW_PARAMS {
 
 // Store the mock vales for HW.
 MockHW_t mock_data[E_NUM_HW_PARAMS];
-pthread_mutex_t hardwareLocks[E_NUM_HW_PARAMS];
+pthread_mutex_t hardwareLock;
 
 static bool is_initialized = false;
 static pthread_t json_reader_thread_id;
 
 static void get_int_value(MockHW_t hardware, int* storage) 
 {
-	pthread_mutex_lock(&hardwareLocks[hardware]);
-	storage = &hardware.intVal;
-	pthread_mutex_unlock(&hardwareLocks[hardware]);
-
+	pthread_mutex_lock(&hardwareLock);
+	*storage = hardware.intValue;
+	pthread_mutex_unlock(&hardwareLock);
 }
 
-static void set_int_value(MockHW_t hardware, int value) 
+static void set_int_value(MockHW_t* hardware, int value) 
 {
-	pthread_mutex_lock(&hardwareLocks[hardware]);
-	hardware.intVal = value;
-	pthread_mutex_unlock(&hardwareLocks[hardware]);
+	pthread_mutex_lock(&hardwareLock);
+	hardware->intValue = value;
+	pthread_mutex_unlock(&hardwareLock);
 }
 
 static void get_double_value(MockHW_t hardware, double* storage) 
 {
-	pthread_mutex_lock(&hardwareLocks[hardware]);
-	storage = &hardware.dblVal;
-	pthread_mutex_unlock(&hardwareLocks[hardware]);
+	pthread_mutex_lock(&hardwareLock);
+	*storage = hardware.doubleValue;
+	pthread_mutex_unlock(&hardwareLock);
 }
 
-static void set_double_value(MockHW_t hardware, double value) 
+static void set_double_value(MockHW_t* hardware, double value) 
 { 
-	pthread_mutex_lock(&hardwareLocks[hardware]);
-	hardware.dblVal = value;
-	pthread_mutex_unlock(&hardwareLocks[hardware]);
+	pthread_mutex_lock(&hardwareLock);
+	hardware->doubleValue = value;
+	pthread_mutex_unlock(&hardwareLock);
 }
 
 static void *read_JSON() 
@@ -153,6 +149,17 @@ static void *read_JSON()
         	// parse and store json values
         	parser_parse(socket_input_buffer);
 
+        	printf("\n\nPRINTING HARDWARE STATISTICS %d: \n", E_NUM_HW_PARAMS);
+        	for(int i = 0; i < E_NUM_HW_PARAMS; i++) {
+        		int intValue = 0;
+        		get_int_value(mock_data[i], &intValue);
+        		
+        		double doubleValue = 0.0;
+        		get_double_value(mock_data[i], &doubleValue);
+
+        		printf("value for item # %d = %f %d\n", i, doubleValue, intValue);
+        	}
+
         	sleep(sleep_time_in_seconds);
         }
 
@@ -172,10 +179,11 @@ void halosuit_init()
 	// TODO: place constatnts in header file.
 	// initialize values so that they are the same in halosuit.c
 	// static int flowrate = 0;
-	set_double_value(mock_data[E_TEMP_WATER], 10.0);
-	set_double_value(mock_data[E_VOLTAGE_1], 12.6);
-	set_double_value(mock_data[E_VOLTAGE_2], 12.0);
-	set_int_value(mock_data[E_HEARTRATE], 90);
+	printf("init called");
+	set_double_value(&mock_data[E_TEMP_WATER], 10.0);
+	set_double_value(&mock_data[E_VOLTAGE_1], 12.6);
+	set_double_value(&mock_data[E_VOLTAGE_2], 12.0);
+	set_int_value(&mock_data[E_HEARTRATE], 90);
 
 
 
@@ -199,12 +207,12 @@ int halosuit_relay_switch(unsigned int relay, int ps) //done
 {
 	int mock_index = relay + E_RELAYS_FIRST;
 
-	if (is_initialized && relay < E_NUMBER_OF_RELAYS) {
+	if (is_initialized && relay < (E_RELAYS_LAST - E_RELAYS_FIRST + 1)) {
 		if(ps != HIGH && ps != LOW) {
 			return -1;
 		}
 
-		set_int_value(mock_data[mock_index], ps);
+		set_int_value(&mock_data[mock_index], ps);
 		return 0;
 	}
 	return -1;
@@ -212,7 +220,7 @@ int halosuit_relay_switch(unsigned int relay, int ps) //done
 
 int halosuit_relay_value(unsigned int relay, int *value) //done
 {
-	if(is_initialized && relay < E_NUMBER_OF_RELAYS) {
+	if(is_initialized) {
 		int mock_index = relay + E_RELAYS_FIRST;
 		get_int_value(mock_data[mock_index], value);
 		return 0;
@@ -225,11 +233,9 @@ int halosuit_temperature_value(unsigned int location, double *value) //half done
 {
 	int mock_index = E_TEMP_FIST + location;
 
-	if(is_initialized && mock_index < E_NUMBER_OF_TEMP_SENSORS) {
+	if(is_initialized) {
 		if(mock_index == E_TEMP_WATER) {
 			get_double_value(mock_data[E_TEMP_WATER], value);
-			// TODO: PYTHON - deal with this in however we decide is best to deal with the python values.
-			// some of the values like temp_water is inside the .c file and so what I have may not work.
 		}
 		int mock_index = location + E_TEMP_FIST;
 		get_double_value(mock_data[mock_index], value);
@@ -244,25 +250,23 @@ int halosuit_flowrate(int *flow) //done
 		return -1;
 	}
 
-	get_int_value(mock_data[E_FLOWRATE], flow); // TODO: PYTHON - deal with this in however we decide is best to deal with the python values.
-	// get_int_value(mock_data[E_FLOWRATE], flow);
+	get_int_value(mock_data[E_FLOWRATE], flow);
     return 0;
 }
 
 int halosuit_voltage_value(unsigned int battery, int *value) //done - I think - This assumes battery is not an index but is instead a value around 12000
 {
-	double* temp_value;
+	double temp_voltage_value = 0;
 
 	if (is_initialized) {
         if (battery == TURNIGY_8_AH) {
-        	get_double_value(mock_data[E_VOLTAGE_1], temp_value);
-        	*value = (int)(*temp_value * 1000); // TODO: PYTHON - deal with this in however we decide is best to deal with the python values.
+        	get_double_value(mock_data[E_VOLTAGE_1], &temp_voltage_value);
+        	*value = (int)(temp_voltage_value * 1000);
             // get_double_value(mock_data[E_VOLTAGE_1], value) * 1000); //Im not sure if this should be getDoubleValue or get_int_value
         } 
         else if (battery == TURNIGY_2_AH) {
-        	get_double_value(mock_data[E_VOLTAGE_2], temp_value);
-        	*value = (int)(*temp_value * 1000); // TODO: PYTHON - deal with this in however we decide is best to deal with the python values.
-            // getDoubleValue(mock_data[E_VOLTAGE_2], value) * 1000); // still not sure if this should be getInt or getDouble
+        	get_double_value(mock_data[E_VOLTAGE_2], &temp_voltage_value);
+        	*value = (int)(temp_voltage_value * 1000);
         } 
         else {
             return -1;
