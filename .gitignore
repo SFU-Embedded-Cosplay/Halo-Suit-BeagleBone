@@ -1,0 +1,28 @@
+# git ignore for Halo-Suit-BeagleBone
+
+#####Compiled Source#############
+*.out
+*.o
+suitcontroller
+test__*
+
+#####Log Files###################
+log.txt
+
+#####Compressed Files############
+*.zip
+*.rar
+*.tar
+*.gz.tar
+
+#####ETC#########################
+*.swp
+
+#####Android#####################
+#not necessary but doesn't hurt
+.gradle
+/local.properties
+/.idea/workspace.xml
+/.idea/libraries
+.DS_Store
+/build
