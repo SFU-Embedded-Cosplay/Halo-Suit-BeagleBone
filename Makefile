@@ -47,3 +47,6 @@ disable:
 noauto:	
 	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(OUTDIR)/$(OUTFILE) -lm -lbluetooth -DNO_AUTOMATION
 	cp python_scripts/readflow.py $(OUTDIR)/
+
+run:
+	$(OUTDIR)/$(OUTFILE)
