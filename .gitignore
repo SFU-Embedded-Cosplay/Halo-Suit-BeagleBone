@@ -9,6 +9,8 @@ test__*
 #####Log Files###################
 log.txt
 
+#####Configfiles#################
+
 #####Compressed Files############
 *.zip
 *.rar
