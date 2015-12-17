@@ -4,6 +4,9 @@
 # use this command to undo the above if there is an important change in the makefile
 # $ git update-index --no-assume-unchanged Makefile
 
+#-----Constants------------------
+# NO_AUTOMATION add this to turn off automation
+
 #-----Macros---------------------
 
 OUTFILE = suitcontroller
@@ -45,3 +48,13 @@ disable:
 
 localTest:	
 	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(TESTDIR)/$(OUTFILE) -lm -lbluetooth -D MOCK_HARDWARE
+
+noauto:	
+	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(OUTDIR)/$(OUTFILE) -lm -lbluetooth -DNO_AUTOMATION
+	cp python_scripts/readflow.py $(OUTDIR)/
+
+enableanalog:
+	echo cape-bone-iio > /sys/devices/bone_capemgr.*/slots
+
+run:
+	$(OUTDIR)/$(OUTFILE)

@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 #include <pthread.h>
 #include <time.h>
 
@@ -40,6 +41,8 @@ static pthread_t python_thread_id;
 //protects against using other functions early
 static bool is_initialized = false;
 
+static void enable_analog();
+
 static double analog_to_temperature(char *string)  
 {  
 	int value = atoi(string); 
@@ -61,7 +64,9 @@ static void *python_thread()
 
 void halosuit_init()
 {
-	int export_fd = open("/sys/class/gpio/export", O_WRONLY); // change
+
+    enable_analog();
+	int export_fd = open("/sys/class/gpio/export", O_WRONLY);
 	//export gpio pins
 	write(export_fd, "66", 2);
 	write(export_fd, "67", 2);
@@ -321,4 +326,19 @@ int halosuit_heartrate(int *heart) {
 }
 
 
+void enable_analog() { 
+	int analog_fd = open("/sys/devices/bonecapemgr.*/slots", O_RDWR);
+    bool analog_set = false;
+    char buffer[1024];
+    while (read(analog_fd,buffer,1024) != 0) {
+        if ((strstr(buffer, "cape-bone-iio")) != NULL) {
+            analog_set = true;
+            break;
+        }
+    }
+    close(analog_fd);
+    if (!analog_set) {
+        write(analog_fd, "cape-bone-iio", 13);
+    }
+}
 #endif

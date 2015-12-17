@@ -4,8 +4,10 @@
 *.out
 *.o
 suitcontroller
+test__*
 
-#####Log Files###################
+
+#####Configfiles#################
 log.txt
 
 #####Compressed Files############
