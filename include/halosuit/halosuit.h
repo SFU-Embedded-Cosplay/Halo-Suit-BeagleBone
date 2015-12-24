@@ -4,6 +4,7 @@
 #ifndef HALOSUIT
 #define HALOSUIT
 
+// index in array to access each relay
 #define	LIGHTS            	0	//GPIO 66
 #define	LIGHTS_AUTO       	1 	//GPIO 67
 #define	HEADLIGHTS_WHITE  	2   //GPIO 68  
