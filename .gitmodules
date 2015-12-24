@@ -1,8 +1,8 @@
 [submodule "json-builder"]
-	path = json-builder
+	path = external/json-builder
 	url = http://github.com/udp/json-builder.git
 [submodule "json-parser"]
-	path = json-parser
+	path = external/json-parser
 	url = https://github.com/udp/json-parser.git
 [submodule "docs"]
 	path = docs

@@ -8,14 +8,14 @@
 
 OUTFILE = suitcontroller
 OUTDIR = /usr/bin
-INFILES = main.c json/serializer.c json/parser.c beagleblue/beagleblue.c json-parser/json.c json-builder/json-builder.c halosuit/halosuit.c halosuit/logger.c config/config.c halosuit/automation.c halosuit/stateofcharge.c
+INFILES = main.c lib/json/serializer.c lib/json/parser.c lib/beagleblue/beagleblue.c external/json-parser/json.c external/json-builder/json-builder.c lib/halosuit/halosuit.c lib/halosuit/logger.c lib/config/config.c lib/halosuit/automation.c lib/halosuit/stateofcharge.c
 
 CROSS_COMPILE = arm-linux-gnueabi-
 COMPILER = gcc
-CC_C = $(CROSS_COMPILE)$(COMPILER)
+CC_C = $(CROSS_COMPILE)$(COMPILER)x
 CFLAGS = -g -pthread -D_POSIX_C_SOURCE=200809L -std=c99 #-Werror -Wall
 # this will make the compiler look for header files in the include folder
-INCLUDE = -Iinclude -Ijson-parser -Ijson-builder
+INCLUDE = -Iinclude -Iexternal/json-parser -Iexternal/json-builder
 
 all: host
 
