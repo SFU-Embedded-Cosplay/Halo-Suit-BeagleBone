@@ -1,6 +1,6 @@
 /*
    beagleblue.c
-*/ 
+*/
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
@@ -80,19 +80,19 @@ static void beagleblue_connect(int *sock, int *client, uint8_t channel)
 	struct sockaddr_rc loc_addr = { 0 }, rem_addr = { 0 };
 	socklen_t opt = sizeof(rem_addr);
 	char buf[20];
-	
+
 	if (*sock == -1) {
 		//initialize socket
 		*sock = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-	
+
 		//bind socket to local bluetooth device
 		loc_addr.rc_family = AF_BLUETOOTH;
 		loc_addr.rc_bdaddr = *BDADDR_ANY;
 		loc_addr.rc_channel = channel;
-		bind(*sock, (struct sockaddr *)&loc_addr, sizeof(loc_addr)); 
+		bind(*sock, (struct sockaddr *)&loc_addr, sizeof(loc_addr));
 	}
 	// put socket into listening mode
-    if (channel == ANDROID_PORT && android_configured) { 
+    if (channel == ANDROID_PORT && android_configured) {
     	while (true) {
     		listen(*sock, 1);
 
@@ -122,7 +122,7 @@ static void beagleblue_connect(int *sock, int *client, uint8_t channel)
     			close(*client);
     			fprintf(stdout, "denied connection from %s\n", buf);
 				fflush(stdout);
-                
+
                 logger_log("denied connection\n");
     		}
     	}
@@ -130,7 +130,7 @@ static void beagleblue_connect(int *sock, int *client, uint8_t channel)
     	listen(*sock, 1);
 
 	*client = accept(*sock, (struct sockaddr *)&rem_addr, &opt);
-				
+
     }
 	ba2str( &rem_addr.rc_bdaddr, buf);
 	fprintf(stdout, "accepted connection from %s\n", buf);
@@ -228,10 +228,10 @@ static void *glass_send_thread()
 	while(!beagleblue_is_done) {
 		if (glass_is_connected) {
 			if (glass_is_sending) {
-				
+
 				int start_time = time(NULL);
 				int current_time = start_time;
-				
+
 				while (current_time - start_time < TIMEOUT) {
 					if(send(glass_client, glass_send_buffer, strlen(glass_send_buffer), MSG_DONTWAIT) == -1) {
 						current_time = time(NULL);
