@@ -14,6 +14,18 @@
 #include <halosuit/halosuit.h>
 #include <halosuit/stateofcharge.h>
 #include <halosuit/logger.h>
+#include <halosuit/gpio.h>
+
+#define LIGHTS_PIN               66   
+#define LIGHTS_AUTO_PIN          67   
+#define HEADLIGHTS_WHITE_PIN     68   
+#define HEADLIGHTS_RED_PIN       69   
+#define HEAD_FANS_PIN            44   
+#define WATER_PUMP_PIN           45   
+#define ON_BUTTON_PIN            26   
+#define PELTIER_PIN              46   
+#define HIGH_CURRENT_LIVE_PIN    65   
+#define HIGH_CURRENT_GROUND_PIN  47  
 
 #define NUMBER_OF_RELAYS 16
 #define NUMBER_OF_TEMP_SENSORS 4
@@ -66,23 +78,21 @@ void halosuit_init()
 {
 
     enable_analog();
-	int export_fd = open("/sys/class/gpio/export", O_WRONLY);
+    
 	//export gpio pins
-	write(export_fd, "66", 2);
-	write(export_fd, "67", 2);
-	write(export_fd, "68", 2);
-	write(export_fd, "69", 2);
-	write(export_fd, "44", 2);
-	write(export_fd, "45", 2);
-	write(export_fd, "46", 2);
-	write(export_fd, "26", 2);
-    write(export_fd, "65", 2);
-    write(export_fd, "47", 2);
+    gpio_export(LIGHTS_PIN); // 66
+    gpio_export(LIGHTS_AUTO_PIN); // 67  
+    gpio_export(HEADLIGHTS_WHITE_PIN); //68
+    gpio_export(HEADLIGHTS_RED_PIN); // 69
+    gpio_export(HEAD_FANS_PIN); // 44
+    gpio_export(WATER_PUMP_PIN); // 45
+    gpio_export(ON_BUTTON_PIN); // 26
+    gpio_export(PELTIER_PIN); // 46  
+    gpio_export(HIGH_CURRENT_LIVE_PIN); // 65
+    gpio_export(HIGH_CURRENT_GROUND_PIN); // 47
 
 	//flow sensor
 	//write(export_fd, "65", 2);
-	//close the export file descriptor for export
-	close(export_fd);
 
 	//open the files for the gpio pins direction
 	relays[LIGHTS] = open("/sys/class/gpio/gpio66/direction", O_WRONLY); //change all
