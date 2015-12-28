@@ -437,13 +437,17 @@ static void* automationThread()
 
 void automation_init()
 {
+    #ifndef NO_AUTOMATION
     pthread_create(&automation_id, NULL, &automationThread, NULL);
+    #endif
 }
 
 void automation_exit()
 {
+    #ifndef NO_AUTOMATION
     automationIsDone = true;
     pthread_join(automation_id, NULL);
+    #endif
 }
 
 void automation_peltier_off()
@@ -451,7 +455,9 @@ void automation_peltier_off()
     if (halosuit_relay_switch(PELTIER, LOW)) {
         logger_log("ERROR: PELTIER READ FAILURE");
     }
+    #ifndef NO_AUTOMATION
     peltierAuto = false;
+    #endif
 }
 
 void automation_peltier_auto()
@@ -459,8 +465,10 @@ void automation_peltier_auto()
     if (halosuit_relay_switch(PELTIER, HIGH)) {
         logger_log("ERROR: PELTIER READ FAILURE");
     }
+    #ifndef NO_AUTOMATION
     peltier_timein = time(NULL);
     peltierAuto = true;
+    #endif
 }
 
 void automation_pump_off()
@@ -468,7 +476,9 @@ void automation_pump_off()
     if (halosuit_relay_switch(WATER_PUMP, LOW)) {
         logger_log("ERROR: WATER_PUMP READ FAILURE");
     }
+    #ifndef NO_AUTOMATION
     pumpAuto = false;
+    #endif
 }
 
 void automation_pump_auto()
@@ -476,8 +486,10 @@ void automation_pump_auto()
     if (halosuit_relay_switch(WATER_PUMP, HIGH)) {
         logger_log("ERROR: WATER_PUMP READ FAILURE");
     }
+    #ifndef NO_AUTOMATION
     pump_timein = time(NULL);
     pumpAuto = true; 
+    #endif
 }
 
 char automation_getHeadTempWarning()
