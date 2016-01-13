@@ -154,6 +154,10 @@ static void *read_JSON()
 
 	if (connect(socket_descriptor, (struct sockaddr *)&server, sizeof(server)) != 0) {
 		perror("\nsocket in mockHardware failed to get connect");
+		printf("******************************\n\n"
+			"Make sure that you have started the Halo-Suit-Test-Server on your local machine and clicked the \'wait for connection\' button"
+			"\n\nIf that does confirm that you have access to Inet address 192.168.7.2 through ifconfig"
+			"\n\n******************************\n");
 		exit(1);
 	}
 
