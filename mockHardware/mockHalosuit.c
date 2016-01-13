@@ -194,7 +194,7 @@ static void *read_JSON()
 			}
 
 			printf("sending message of size %d\n", index_into_message);
-			send(socket_descriptor, message, 1024, 0);`
+			send(socket_descriptor, message, 1024, 0);
 
 			sleep(sleep_time_in_seconds);
 		}
