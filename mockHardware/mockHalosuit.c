@@ -30,24 +30,24 @@ typedef union {
 } MockHW_t;
 
 static const char SUIT_HARDWARE_NAMES[18][25] = {
-	"main lights",
-	"main lights auto",
+	"main lights", // different then regular json
+	"main lights auto", // different then regular json
 	"head lights white",
 	"head lights red",
 	"head fans",
 	"water pump",
 	"on button???", //TODO: what is this
 	"peltier",
-	"battery current live",
-	"battery current ground",
+	"battery current live", // what is this
+	"battery current ground", // what is this
 	"head temperature",
-	"armpit temperature",
+	"armpits temperature",
 	"crotch temperature",
 	"water temperature",
-	"voltage 1",
-	"voltage 2",
-	"flowrate",
-	"heartrate"
+	"voltage 1", // different then regular json
+	"voltage 2", // different then regular json
+	"flow rate",
+	"heart rate"
 };
 
 enum SUIT_HARDWARE_PARAMS {
