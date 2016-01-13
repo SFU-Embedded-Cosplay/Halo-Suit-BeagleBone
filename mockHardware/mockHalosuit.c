@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <string.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -15,6 +16,8 @@
 #include <arpa/inet.h>
 
 #include <json/parser.h>
+#include <json/serializer.h>
+#include <json.h>
 
 #include <halosuit/halosuit.h>
 #include <halosuit/stateofcharge.h>
@@ -127,6 +130,37 @@ static void set_double_value(MockHW_t* hardware, double value)
 	pthread_mutex_unlock(&hardwareLock);
 }
 
+static void set_hardware_values(char *json_text)
+{
+	json_value* object = NULL;
+	int length = 0;
+
+	logger_log(json_text);
+
+	object = json_parse(json_text, strlen(json_text));
+
+	if (object == NULL) {
+		logger_log("ERROR: MESSAGE NOT JSON\n");
+		return;
+	}
+
+	length = object->u.object.length;
+
+	for(int i = 0; i < length; i++) {
+		for(int j = 0; j < E_NUM_HW_PARAMS; j++) {
+			if(strcmp(object->u.object.values[i].name, SUIT_HARDWARE_NAMES[j]) == 0) {
+				int intValue = object->u.object.values[i].value->u.integer;
+				double doubleValue = object->u.object.values[i].value->u.dbl;
+
+				set_int_value(&mock_data[j], intValue);
+				set_double_value(&mock_data[j], doubleValue);
+			}
+		}
+	}
+
+	json_value_free(object);
+}
+
 static void *read_JSON()
 {
 	int socket_descriptor;
@@ -171,6 +205,8 @@ static void *read_JSON()
 			printf("received socket message: |%s|\n", socket_input_buffer);
 			// parse and store json values
 			parser_parse(socket_input_buffer);
+
+			set_hardware_values(socket_input_buffer);
 
 			printf("\n\nPRINTING HARDWARE STATISTICS %d: \n", E_NUM_HW_PARAMS);
 
