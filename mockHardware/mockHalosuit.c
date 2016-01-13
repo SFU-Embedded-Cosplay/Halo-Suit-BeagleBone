@@ -174,6 +174,9 @@ static void *read_JSON()
 
 			printf("\n\nPRINTING HARDWARE STATISTICS %d: \n", E_NUM_HW_PARAMS);
 
+			char message[1024];
+			int index_into_message = 0;
+
 			for(int i = 0; i < E_NUM_HW_PARAMS; i++) {
 				int intValue = 0;
 				get_int_value(mock_data[i], &intValue);
@@ -183,8 +186,15 @@ static void *read_JSON()
 
 				printf("value for item: %s = %f %d\n", SUIT_HARDWARE_NAMES[i], doubleValue, intValue);
 
-
+				index_into_message += sprintf(&message[index_into_message], "value for item: %s = %f %d\n", SUIT_HARDWARE_NAMES[i], doubleValue, intValue);
+				if(index_into_message >= 1024) {
+					perror("the string we are building to send to the server got bigger than its max size.");
+					exit(1);
+				}
 			}
+
+			printf("sending message of size %d\n", index_into_message);
+			send(socket_descriptor, message, 1024, 0);`
 
 			sleep(sleep_time_in_seconds);
 		}
