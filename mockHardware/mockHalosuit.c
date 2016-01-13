@@ -26,6 +26,27 @@ typedef union {
 	double doubleValue;
 } MockHW_t;
 
+static const char SUIT_HARDWARE_NAMES[18][25] = {
+	"main lights",
+	"main lights auto",
+	"head lights white",
+	"head lights red",
+	"head fans",
+	"water pump",
+	"on button???", //TODO: what is this
+	"peltier",
+	"battery current live",
+	"battery current ground",
+	"head temperature",
+	"armpit temperature",
+	"crotch temperature",
+	"water temperature",
+	"voltage 1",
+	"voltage 2",
+	"flowrate",
+	"heartrate"
+};
+
 enum SUIT_HARDWARE_PARAMS {
 	// RELAYS
 	E_RELAYS_FIRST,
@@ -126,14 +147,13 @@ static void *read_JSON()
 		exit(1);
 	}
 
-	printf("Trying to connect to test server...\n");
-
+	printf("Trying to connect to test server through address %s on port %d...\n", INTERNET_ADDRESS, PORT);
 	server.sin_addr.s_addr = inet_addr(INTERNET_ADDRESS);
 	server.sin_family = AF_INET;
 	server.sin_port = htons(PORT);
 
 	if (connect(socket_descriptor, (struct sockaddr *)&server, sizeof(server)) != 0) {
-		perror("socket in mockHardware failed to get connect");
+		perror("\nsocket in mockHardware failed to get connect");
 		exit(1);
 	}
 
@@ -149,6 +169,7 @@ static void *read_JSON()
 			parser_parse(socket_input_buffer);
 
 			printf("\n\nPRINTING HARDWARE STATISTICS %d: \n", E_NUM_HW_PARAMS);
+
 			for(int i = 0; i < E_NUM_HW_PARAMS; i++) {
 				int intValue = 0;
 				get_int_value(mock_data[i], &intValue);
@@ -156,7 +177,9 @@ static void *read_JSON()
 				double doubleValue = 0.0;
 				get_double_value(mock_data[i], &doubleValue);
 
-				printf("value for item # %d = %f %d\n", i, doubleValue, intValue);
+				printf("value for item: %s = %f %d\n", SUIT_HARDWARE_NAMES[i], doubleValue, intValue);
+
+
 			}
 
 			sleep(sleep_time_in_seconds);
@@ -178,7 +201,7 @@ void halosuit_init()
 	// TODO: place constatnts in header file.
 	// initialize values so that they are the same in halosuit.c
 	// static int flowrate = 0;
-	printf("init called");
+	printf("init called\n");
 	set_double_value(&mock_data[E_TEMP_WATER], 10.0);
 	set_double_value(&mock_data[E_VOLTAGE_1], 12.6);
 	set_double_value(&mock_data[E_VOLTAGE_2], 12.0);
