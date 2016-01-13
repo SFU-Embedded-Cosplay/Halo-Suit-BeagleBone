@@ -228,9 +228,14 @@ static void *read_JSON()
 					exit(1);
 				}
 			}
-
 			printf("sending message of size %d\n", index_into_message);
 			send(socket_descriptor, message, 1024, 0);
+
+			char json_message[1024];
+			serializer_serialize(json_message);
+
+			send(socket_descriptor, json_message, strlen(json_message), 0);
+
 
 			sleep(sleep_time_in_seconds);
 		}
