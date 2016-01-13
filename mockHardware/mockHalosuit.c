@@ -25,7 +25,7 @@ typedef union {
 	int intValue;
 	double doubleValue;
 } MockHW_t;
- 
+
 enum SUIT_HARDWARE_PARAMS {
 	// RELAYS
 	E_RELAYS_FIRST,
@@ -78,42 +78,41 @@ pthread_mutex_t hardwareLock;
 static bool is_initialized = false;
 static pthread_t json_reader_thread_id;
 
-static void get_int_value(MockHW_t hardware, int* storage) 
+static void get_int_value(MockHW_t hardware, int* storage)
 {
 	pthread_mutex_lock(&hardwareLock);
 	*storage = hardware.intValue;
 	pthread_mutex_unlock(&hardwareLock);
 }
 
-static void set_int_value(MockHW_t* hardware, int value) 
+static void set_int_value(MockHW_t* hardware, int value)
 {
 	pthread_mutex_lock(&hardwareLock);
 	hardware->intValue = value;
 	pthread_mutex_unlock(&hardwareLock);
 }
 
-static void get_double_value(MockHW_t hardware, double* storage) 
+static void get_double_value(MockHW_t hardware, double* storage)
 {
 	pthread_mutex_lock(&hardwareLock);
 	*storage = hardware.doubleValue;
 	pthread_mutex_unlock(&hardwareLock);
 }
 
-static void set_double_value(MockHW_t* hardware, double value) 
-{ 
+static void set_double_value(MockHW_t* hardware, double value)
+{
 	pthread_mutex_lock(&hardwareLock);
 	hardware->doubleValue = value;
 	pthread_mutex_unlock(&hardwareLock);
 }
 
-static void *read_JSON() 
+static void *read_JSON()
 {
-
 	int socket_descriptor;
 	struct sockaddr_in server;
 
 	const int PORT = 8080;
-	const char* INTERNET_ADDRESS = "127.0.0.1";
+	const char* INTERNET_ADDRESS = "192.168.7.1";
 
 	const int INPUT_BUFFER_LENGTH = 1024;
 	char socket_input_buffer[INPUT_BUFFER_LENGTH];
@@ -123,56 +122,56 @@ static void *read_JSON()
 
 	//setup socket (connect to test server)
 	if ((socket_descriptor = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-        perror("socket in mockHardware failed to get socket descriptor");
-        exit(1);
-    }
+		perror("socket in mockHardware failed to get socket descriptor");
+		exit(1);
+	}
 
-    printf("Trying to connect to test server...\n");
+	printf("Trying to connect to test server...\n");
 
-    server.sin_addr.s_addr = inet_addr(INTERNET_ADDRESS);
-    server.sin_family = AF_INET;
-    server.sin_port = htons(PORT);
+	server.sin_addr.s_addr = inet_addr(INTERNET_ADDRESS);
+	server.sin_family = AF_INET;
+	server.sin_port = htons(PORT);
 
-    if (connect(socket_descriptor, (struct sockaddr *)&server, sizeof(server)) < 0) {
-        perror("socket in mockHardware failed to get connect");
-        exit(1);
-    }
+	if (connect(socket_descriptor, (struct sockaddr *)&server, sizeof(server)) != 0) {
+		perror("socket in mockHardware failed to get connect");
+		exit(1);
+	}
 
-    printf("Connected.\n");
+	printf("Connected.\n");
 
 
 	//read in json from local socket.
 	while(is_initialized) {
 		// printf("looping through thread");
-        if (recv(socket_descriptor, socket_input_buffer, INPUT_BUFFER_LENGTH, MSG_DONTWAIT) != -1) {
-        	printf("received socket message: %s \n", socket_input_buffer);
-        	// parse and store json values
-        	parser_parse(socket_input_buffer);
+		if (recv(socket_descriptor, socket_input_buffer, INPUT_BUFFER_LENGTH, MSG_DONTWAIT) != -1) {
+			printf("received socket message: |%s|\n", socket_input_buffer);
+			// parse and store json values
+			parser_parse(socket_input_buffer);
 
-        	printf("\n\nPRINTING HARDWARE STATISTICS %d: \n", E_NUM_HW_PARAMS);
-        	for(int i = 0; i < E_NUM_HW_PARAMS; i++) {
-        		int intValue = 0;
-        		get_int_value(mock_data[i], &intValue);
-        		
-        		double doubleValue = 0.0;
-        		get_double_value(mock_data[i], &doubleValue);
+			printf("\n\nPRINTING HARDWARE STATISTICS %d: \n", E_NUM_HW_PARAMS);
+			for(int i = 0; i < E_NUM_HW_PARAMS; i++) {
+				int intValue = 0;
+				get_int_value(mock_data[i], &intValue);
 
-        		printf("value for item # %d = %f %d\n", i, doubleValue, intValue);
-        	}
+				double doubleValue = 0.0;
+				get_double_value(mock_data[i], &doubleValue);
 
-        	sleep(sleep_time_in_seconds);
-        }
+				printf("value for item # %d = %f %d\n", i, doubleValue, intValue);
+			}
 
-        sleep(sleep_time_in_seconds);
-    }
+			sleep(sleep_time_in_seconds);
+		}
 
-    close(socket_descriptor);
+		sleep(sleep_time_in_seconds);
+	}
+
+	close(socket_descriptor);
 
 	return NULL;
 }
 
 // create socket and constantly read values from it and store values
-void halosuit_init() 
+void halosuit_init()
 {
 	assert(!is_initialized);
 
@@ -192,7 +191,7 @@ void halosuit_init()
 }
 
 // close socket and kill thread
-void halosuit_exit() 
+void halosuit_exit()
 {
 	assert(is_initialized);
 
@@ -202,7 +201,7 @@ void halosuit_exit()
 	}
 }
 
-// 
+//
 int halosuit_relay_switch(unsigned int relay, int ps) //done
 {
 	int mock_index = relay + E_RELAYS_FIRST;
@@ -239,7 +238,7 @@ int halosuit_temperature_value(unsigned int location, double *value) //half done
 		}
 		int mock_index = location + E_TEMP_FIST;
 		get_double_value(mock_data[mock_index], value);
-	}	
+	}
 
     return 0;
 }
@@ -263,11 +262,11 @@ int halosuit_voltage_value(unsigned int battery, int *value) //done - I think - 
         	get_double_value(mock_data[E_VOLTAGE_1], &temp_voltage_value);
         	*value = (int)(temp_voltage_value * 1000);
             // get_double_value(mock_data[E_VOLTAGE_1], value) * 1000); //Im not sure if this should be getDoubleValue or get_int_value
-        } 
+        }
         else if (battery == TURNIGY_2_AH) {
         	get_double_value(mock_data[E_VOLTAGE_2], &temp_voltage_value);
         	*value = (int)(temp_voltage_value * 1000);
-        } 
+        }
         else {
             return -1;
         }
@@ -307,14 +306,14 @@ int halosuit_current_draw_value(unsigned int batteryID, int *current)
             current_draw += BODY_LIGHTS_DRAW;
         }
 
-        *current = current_draw; 
+        *current = current_draw;
     }
     else if (batteryID == TURNIGY_8_AH) {
         int current_draw = 0;
         int value = 0;
         if (halosuit_relay_value(PELTIER, &value)) {
             logger_log("WARNING: FAILURE TO READ PELTIER FOR CURRENT DRAW");
-            return -1; // the peltier current draw is so much greater than the rest that if the current 
+            return -1; // the peltier current draw is so much greater than the rest that if the current
                        // can't be determined then there is no accuracy in the current draw
         }
         else if (value == HIGH) {
@@ -333,7 +332,7 @@ int halosuit_current_draw_value(unsigned int batteryID, int *current)
         }
         else if (value == HIGH) {
             current_draw += HEAD_FANS_DRAW;
-        } 
+        }
         *current = current_draw;
     }
 
