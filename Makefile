@@ -49,7 +49,6 @@ disable:
 	systemctl disable /etc/systemd/system/suitcontrol.service
 	rm /etc/systemd/system/suitcontrol.service
 
-
 localTest:	
 	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(TESTDIR)/$(OUTFILE) -lm -lbluetooth -D MOCK_HARDWARE
 
