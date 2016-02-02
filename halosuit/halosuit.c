@@ -1,3 +1,5 @@
+#ifndef MOCK_HARDWARE
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -5,6 +7,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 #include <pthread.h>
 #include <time.h>
 
@@ -38,6 +41,8 @@ static pthread_t python_thread_id;
 //protects against using other functions early
 static bool is_initialized = false;
 
+static void enable_analog();
+
 static double analog_to_temperature(char *string)  
 {  
 	int value = atoi(string); 
@@ -59,6 +64,8 @@ static void *python_thread()
 
 void halosuit_init()
 {
+
+    enable_analog();
 	int export_fd = open("/sys/class/gpio/export", O_WRONLY);
 	//export gpio pins
 	write(export_fd, "66", 2);
@@ -78,7 +85,7 @@ void halosuit_init()
 	close(export_fd);
 
 	//open the files for the gpio pins direction
-	relays[LIGHTS] = open("/sys/class/gpio/gpio66/direction", O_WRONLY);
+	relays[LIGHTS] = open("/sys/class/gpio/gpio66/direction", O_WRONLY); //change all
 	relays[LIGHTS_AUTO] = open("/sys/class/gpio/gpio67/direction", O_WRONLY);
 	relays[HEADLIGHTS_WHITE] = open("/sys/class/gpio/gpio68/direction", O_WRONLY);
 	relays[HEADLIGHTS_RED] = open("/sys/class/gpio/gpio69/direction", O_WRONLY);
@@ -115,7 +122,7 @@ void halosuit_init()
     close(relays[HIGH_CURRENT_GROUND]);
 
     //open the values on read/write
-    relays[LIGHTS] = open("/sys/class/gpio/gpio66/value", O_RDWR);
+    relays[LIGHTS] = open("/sys/class/gpio/gpio66/value", O_RDWR); // change
     relays[LIGHTS_AUTO] = open("/sys/class/gpio/gpio67/value", O_RDWR);
     relays[HEADLIGHTS_WHITE] = open("/sys/class/gpio/gpio68/value", O_RDWR);
     relays[HEADLIGHTS_RED] = open("/sys/class/gpio/gpio69/value", O_RDWR);
@@ -129,7 +136,7 @@ void halosuit_init()
 
 
     //open analog pins
-    temperature[HEAD] = open("/sys/bus/iio/devices/iio:device0/in_voltage0_raw", O_RDONLY);
+    temperature[HEAD] = open("/sys/bus/iio/devices/iio:device0/in_voltage0_raw", O_RDONLY); //change
     temperature[ARMPITS] = open("/sys/bus/iio/devices/iio:device0/in_voltage1_raw", O_RDONLY);
     temperature[CROTCH] = open("/sys/bus/iio/devices/iio:device0/in_voltage2_raw", O_RDONLY);
     //temperature[WATER] = open("/sys/bus/iio/devices/iio:device0/in_voltage3_raw", O_RDONLY);
@@ -157,7 +164,7 @@ void halosuit_exit()
 
 
 
-    	int unexport_fd = open("/sys/class/gpio/unexport", O_WRONLY);
+    	int unexport_fd = open("/sys/class/gpio/unexport", O_WRONLY); //change
 		//export gpio pins
 		write(unexport_fd, "66", 2);
 		write(unexport_fd, "67", 2);
@@ -247,7 +254,7 @@ int halosuit_voltage_value(unsigned int battery, int *value)
 	return -1;
 }
 
-int halosuit_current_draw_value(unsigned int batteryID, int *current) 
+int halosuit_current_draw_value(unsigned int batteryID, int *current)  //this is fairly complicated and should probably be simlified
 {
     if (batteryID == TURNIGY_2_AH) {
         int value1 = 0;
@@ -318,3 +325,20 @@ int halosuit_heartrate(int *heart) {
     return -1;
 }
 
+
+void enable_analog() { 
+	int analog_fd = open("/sys/devices/bonecapemgr.*/slots", O_RDWR);
+    bool analog_set = false;
+    char buffer[1024];
+    while (read(analog_fd,buffer,1024) != 0) {
+        if ((strstr(buffer, "cape-bone-iio")) != NULL) {
+            analog_set = true;
+            break;
+        }
+    }
+    close(analog_fd);
+    if (!analog_set) {
+        write(analog_fd, "cape-bone-iio", 13);
+    }
+}
+#endif

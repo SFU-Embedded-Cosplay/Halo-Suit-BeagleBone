@@ -4,11 +4,15 @@
 # use this command to undo the above if there is an important change in the makefile
 # $ git update-index --no-assume-unchanged Makefile
 
+#-----Constants------------------
+# NO_AUTOMATION add this to turn off automation
+
 #-----Macros---------------------
 
 OUTFILE = suitcontroller
 OUTDIR = /usr/bin
-INFILES = main.c json/serializer.c json/parser.c beagleblue/beagleblue.c json-parser/json.c json-builder/json-builder.c halosuit/halosuit.c halosuit/logger.c config/config.c halosuit/automation.c halosuit/stateofcharge.c
+TESTDIR = .
+INFILES = main.c json/serializer.c json/parser.c beagleblue/beagleblue.c json-parser/json.c json-builder/json-builder.c halosuit/halosuit.c halosuit/logger.c config/config.c halosuit/automation.c halosuit/stateofcharge.c mockHardware/mockHalosuit.c
 
 CROSS_COMPILE = arm-linux-gnueabi-
 COMPILER = gcc
@@ -44,3 +48,17 @@ enable:
 disable:
 	systemctl disable /etc/systemd/system/suitcontrol.service
 	rm /etc/systemd/system/suitcontrol.service
+
+
+localTest:	
+	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(TESTDIR)/$(OUTFILE) -lm -lbluetooth -D MOCK_HARDWARE
+
+noauto:	
+	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(OUTDIR)/$(OUTFILE) -lm -lbluetooth -DNO_AUTOMATION
+	cp python_scripts/readflow.py $(OUTDIR)/
+
+enableanalog:
+	echo cape-bone-iio > /sys/devices/bone_capemgr.*/slots
+
+run:
+	$(OUTDIR)/$(OUTFILE)
