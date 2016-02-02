@@ -36,6 +36,8 @@ clean:
 	rm $(OUTDIR)/$(OUTFILE)
 	rm $(OUTDIR)/readflow.py
 
+# this command will require root access since it installs bluetooth and python dependencies
+# only works for systems that use apt-get (Ubuntu, Debian, etc).
 install:
 	./install.sh
 
@@ -45,6 +47,8 @@ enable:
 
 disable:
 	systemctl disable /etc/systemd/system/suitcontrol.service
+	rm /etc/systemd/system/suitcontrol.service
+
 
 localTest:	
 	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(TESTDIR)/$(OUTFILE) -lm -lbluetooth -D MOCK_HARDWARE
