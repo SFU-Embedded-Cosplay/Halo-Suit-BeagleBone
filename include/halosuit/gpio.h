@@ -1,5 +1,4 @@
-#ifndef GPIO
-#define GPIO
+#pragma once
 
 void gpio_init();
 
@@ -13,5 +12,3 @@ int gpio_open_direction_file(int pin);
 int gpio_open_value_file(int pin);
 
 void gpio_exit();
-
-#endif

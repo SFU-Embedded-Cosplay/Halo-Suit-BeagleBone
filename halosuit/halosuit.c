@@ -95,15 +95,15 @@ void halosuit_init()
 	//write(export_fd, "65", 2);
 
 	//open the files for the gpio pins direction
-	relays[LIGHTS] = open("/sys/class/gpio/gpio66/direction", O_WRONLY); //change all
-	relays[LIGHTS_AUTO] = open("/sys/class/gpio/gpio67/direction", O_WRONLY);
-	relays[HEADLIGHTS_WHITE] = open("/sys/class/gpio/gpio68/direction", O_WRONLY);
-	relays[HEADLIGHTS_RED] = open("/sys/class/gpio/gpio69/direction", O_WRONLY);
-    relays[HEAD_FANS] = open("/sys/class/gpio/gpio44/direction", O_WRONLY);
-    relays[WATER_PUMP] = open("/sys/class/gpio/gpio45/direction", O_WRONLY);
-    relays[ON_BUTTON] = open("/sys/class/gpio/gpio26/direction", O_WRONLY);
-    relays[PELTIER] = open("/sys/class/gpio/gpio46/direction", O_WRONLY);
-    relays[HIGH_CURRENT_LIVE] = open("/sys/class/gpio/gpio65/direction", O_WRONLY);
+	relays[LIGHTS] = gpio_open_direction_file(LIGHTS_PIN);
+	relays[LIGHTS_AUTO] = gpio_open_direction_file(LIGHTS_AUTO_PIN);
+	relays[HEADLIGHTS_WHITE] = gpio_open_direction_file(HEADLIGHTS_WHITE_PIN);
+	relays[HEADLIGHTS_RED] = gpio_open_direction_file(HEADLIGHTS_RED_PIN);
+    relays[HEAD_FANS] = gpio_open_direction_file(HEAD_FANS_PIN);
+    relays[WATER_PUMP] = gpio_open_direction_file(WATER_PUMP_PIN);
+    relays[ON_BUTTON] = gpio_open_direction_file(ON_BUTTON_PIN);
+    relays[PELTIER] = gpio_open_direction_file(PELTIER_PIN);
+    relays[HIGH_CURRENT_LIVE] = gpio_open_direction_file(HIGH);
     relays[HIGH_CURRENT_GROUND] = open("/sys/class/gpio/gpio47/direction", O_WRONLY);
 
     //initialize them to be output pins initialized to zero

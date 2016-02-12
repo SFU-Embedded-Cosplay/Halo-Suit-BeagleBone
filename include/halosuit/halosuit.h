@@ -1,8 +1,7 @@
 /*
     halosuit.h
 */
-#ifndef HALOSUIT
-#define HALOSUIT
+#pragma once
 
 // index in array to access each relay
 #define	LIGHTS            	0	//GPIO 66
@@ -63,5 +62,3 @@ int halosuit_voltage_value(unsigned int battery, int *value);
 int halosuit_current_draw_value(unsigned int battery, int *value);
 
 int halosuit_heartrate(int *heart);
-
-#endif
