@@ -40,7 +40,11 @@ void gpio_export(int pin)
 
 void gpio_unexport(int pin) 
 {
-
+    int unexport_fd = open("/sys/class/gpio/unexport", O_WRONLY);
+    char str[2];
+    sprintf(str,"%d",pin);
+    write(unexport_fd,str,2);
+    close(unexport_fd);
 }
 
 // return the file descriptor for the pin
@@ -53,6 +57,17 @@ int gpio_open_direction_file(int pin)
     strcat(path,str);
     strcat(path, "/direction");
     return open(path, O_WRONLY);
+}
+
+// sets the pin to either high or low
+void gpio_write_direction_file(int fd, bool high)
+{
+    if (!high) {
+        write(fd,"low",3);
+    }
+    else {
+        write(fd,"high",4);
+    }
 }
 
 // return the file descriptor for the pin

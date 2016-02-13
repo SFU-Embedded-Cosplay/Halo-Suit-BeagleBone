@@ -4,16 +4,28 @@
 #pragma once
 
 // index in array to access each relay
-#define	LIGHTS            	0	//GPIO 66
-#define	LIGHTS_AUTO       	1 	//GPIO 67
-#define	HEADLIGHTS_WHITE  	2   //GPIO 68  
-#define	HEADLIGHTS_RED 	  	3	//GPIO 69
-#define	HEAD_FANS 		  	4   //GPIO 44
-#define	WATER_PUMP 			5   //GPIO 45
-#define	ON_BUTTON 		    6	//GPIO 26
-#define	PELTIER			    7	//GPIO 46
-#define HIGH_CURRENT_LIVE   8   //GPIO 65
-#define HIGH_CURRENT_GROUND 9   //GPIO 47
+#define	LIGHTS            	    0
+#define	LIGHTS_AUTO       	    1
+#define	HEADLIGHTS_WHITE  	    2
+#define	HEADLIGHTS_RED 	  	    3
+#define	HEAD_FANS 		  	    4
+#define	WATER_PUMP 			    5
+#define	ON_BUTTON 		        6
+#define	PELTIER			        7
+#define HIGH_CURRENT_LIVE       8
+#define HIGH_CURRENT_GROUND     9
+
+#define	LIGHTS_PIN            	66
+#define	LIGHTS_AUTO_PIN      	67
+#define	HEADLIGHTS_WHITE_PIN  	68  
+#define	HEADLIGHTS_RED_PIN 	  	69
+#define	HEAD_FANS_PIN 		  	44
+#define	WATER_PUMP_PIN 			45
+#define	ON_BUTTON_PIN 		    26
+#define	PELTIER_PIN			    46
+#define HIGH_CURRENT_LIVE_PIN   65
+#define HIGH_CURRENT_GROUND_PIN 47
+
 
 //current draws for each device
 //plus a base current draw
