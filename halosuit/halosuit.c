@@ -17,19 +17,20 @@
 #include <halosuit/gpio.h>
 
 // To add a new hardware device declare a static struct with:
-// {device ID, pin number, starting charge (0 for low, 1 for high), 
+// {device ID, pin number, starting charge (LOW or HIGH), 
 // 0 for the file descriptor} 
 // see gpio.h for details
-static struct GPIO_device devices[] = {{"lights",LIGHTS_PIN,false,0},// id:1 pin:66, "high", fd
-                                       {"lights auto",LIGHTS_AUTO_PIN,false,0},
-                                       {"headlights white",HEADLIGHTS_WHITE_PIN,false,0},
-                                       {"headlights red",HEADLIGHTS_RED_PIN,false,0},
-                                       {"head fans",HEAD_FANS_PIN,false,0},
-                                       {"water pump",WATER_PUMP_PIN,false,0},
-                                       {"on button",ON_BUTTON_PIN,true,0}, 
-                                       {"peltier",PELTIER_PIN,false,0},
-                                       {"high current live",HIGH_CURRENT_LIVE_PIN,true,0},
-                                       {"high current ground",HIGH_CURRENT_GROUND_PIN,true,0}
+
+static struct GPIO_device devices[] = {{"lights",LIGHTS_PIN,LOW,0},
+                                       {"lights auto",LIGHTS_AUTO_PIN,LOW,0},
+                                       {"headlights white",HEADLIGHTS_WHITE_PIN,LOW,0},
+                                       {"headlights red",HEADLIGHTS_RED_PIN,LOW,0},
+                                       {"head fans",HEAD_FANS_PIN,LOW,0},
+                                       {"water pump",WATER_PUMP_PIN,LOW,0},
+                                       {"on button",ON_BUTTON_PIN,HIGH,0}, 
+                                       {"peltier",PELTIER_PIN,LOW,0},
+                                       {"high current live",HIGH_CURRENT_LIVE_PIN,HIGH,0},
+                                       {"high current ground",HIGH_CURRENT_GROUND_PIN,HIGH,0}
                                       };
 
 static const int num_devices = (int)(sizeof(devices) / sizeof(devices[0]));
@@ -115,7 +116,7 @@ void halosuit_exit()
 		close(temperature[HEAD]);
 		close(temperature[ARMPITS]);
 		close(temperature[CROTCH]);
-		close(temperature[WATER]);
+		//close(temperature[WATER]);
 	}
 }
 
