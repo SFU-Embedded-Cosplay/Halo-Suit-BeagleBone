@@ -21,7 +21,7 @@
 // 0 for the file descriptor} 
 // see gpio.h for details
 
-static struct GPIO_device devices[] = {{"lights",LIGHTS_PIN,LOW,0},
+static struct GPIO_digital devices[] = {{"lights",LIGHTS_PIN,LOW,0},
                                        {"lights auto",LIGHTS_AUTO_PIN,LOW,0},
                                        {"headlights white",HEADLIGHTS_WHITE_PIN,LOW,0},
                                        {"headlights red",HEADLIGHTS_RED_PIN,LOW,0},
@@ -32,13 +32,13 @@ static struct GPIO_device devices[] = {{"lights",LIGHTS_PIN,LOW,0},
                                        {"high current live",HIGH_CURRENT_LIVE_PIN,HIGH,0},
                                        {"high current ground",HIGH_CURRENT_GROUND_PIN,HIGH,0}
                                       };
+static struct GPIO_analog sensors[] = {{"head_temperature",HEAD_TEMP_APIN,0},
+                                       {"armpit_temperature",ARMPIT_TEMP_APIN,0},
+                                       {"crotch_temperature",CROTCH_TEMP_APIN,0}
+                                      };
 
 static const int num_devices = (int)(sizeof(devices) / sizeof(devices[0]));
-
-#define NUMBER_OF_TEMP_SENSORS 4
-
-//analog in file descriptors
-static int temperature[NUMBER_OF_TEMP_SENSORS - 1]; //water temperature is taken care of separately
+static const int num_sensors = (int)(sizeof(sensors) / sizeof(sensors[0]));
 
 static int current_draw = 0;  //TODO: need to calculate current value`
 
@@ -61,18 +61,24 @@ static void enable_analog();
 
 static double analog_to_temperature(char *string)  
 {  
-	int value = atoi(string); 
-	double millivolts = (value / 4096.0) * 1800;  
-	double temp = (millivolts - 500.0) / 10.0;  
-	return temp;  
+    int value = atoi(string); 
+    double millivolts = (value / 4096.0) * 1800;  
+    double temp = (millivolts - 500.0) / 10.0;  
+    return temp;  
 }
 
 static void *python_thread()
 {
-	python_pipe = popen("python /usr/bin/readflow.py", "r");
+    python_pipe = popen("python /usr/bin/readflow.py", "r");
 
-	while (fgets(python_buffer, sizeof(python_buffer), python_pipe) != NULL) {
-		sscanf(python_buffer, "%d %lf %lf %lf %d", &flowrate, &water_temp, &voltage1, &voltage2, &heartrate);
+    while (fgets(python_buffer, sizeof(python_buffer), python_pipe) != NULL) {
+        sscanf(python_buffer, 
+               "%d %lf %lf %lf %d", 
+               &flowrate, 
+               &water_temp, 
+               &voltage1, 
+               &voltage2, 
+               &heartrate);
 	}
     
     return NULL;
@@ -83,7 +89,7 @@ void halosuit_init()
 
     enable_analog();
     
-	//export gpio pins
+    //export gpio pins
     for (int i = 0; i < num_devices; i++) {
         gpio_export(devices[i].pin);
         devices[i].fd = gpio_open_direction_file(devices[i].pin);
@@ -93,10 +99,9 @@ void halosuit_init()
     }
 
     //open analog pins
-    temperature[HEAD] = open("/sys/bus/iio/devices/iio:device0/in_voltage0_raw", O_RDONLY); //change
-    temperature[ARMPITS] = open("/sys/bus/iio/devices/iio:device0/in_voltage1_raw", O_RDONLY);
-    temperature[CROTCH] = open("/sys/bus/iio/devices/iio:device0/in_voltage2_raw", O_RDONLY);
-    //temperature[WATER] = open("/sys/bus/iio/devices/iio:device0/in_voltage3_raw", O_RDONLY);
+    for (int i = 0; i < num_sensors; i++) {
+        sensors[i].fd = gpio_open_analog(sensors[i].apin);
+    }
 
     pthread_create(&python_thread_id, NULL, &python_thread, NULL);
 
@@ -105,77 +110,76 @@ void halosuit_init()
 
 void halosuit_exit()
 {
-	if (is_initialized) {
-		is_initialized = false;
+    if (is_initialized) {
+        is_initialized = false;
 
         for (int i = 0; i < num_devices; i++) {
             close(devices[i].fd);
             gpio_unexport(devices[i].pin);
         }
 
-		close(temperature[HEAD]);
-		close(temperature[ARMPITS]);
-		close(temperature[CROTCH]);
-		//close(temperature[WATER]);
+        for (int i = 0; i < num_sensors; i++) {
+            close(sensors[i].fd);
+        }
 	}
 }
 
 int halosuit_relay_switch(unsigned int relay, int ps)
 {
-	if (is_initialized && relay < num_devices) {
-		if (ps == HIGH) {
-			write(devices[relay].fd, "1", 1);
-			lseek(devices[relay].fd, 0, 0);
-		} else if (ps == LOW) {
-			write(devices[relay].fd, "0", 1);
-			lseek(devices[relay].fd, 0, 0);
-		} else {
-			return -1;
-		}
-		return 0;
-	}
-	return -1;
+    if (is_initialized && relay < num_devices) {
+        if (ps == HIGH) {
+            write(devices[relay].fd, "1", 1);
+            lseek(devices[relay].fd, 0, 0);
+        } else if (ps == LOW) {
+            write(devices[relay].fd, "0", 1);
+            lseek(devices[relay].fd, 0, 0);
+        } else {
+            return -1;
+        }
+        return 0;
+    }
+    return -1;
 }
 
 int halosuit_relay_value(unsigned int relay, int *value)
 {
-	if (is_initialized && relay < num_devices) {
-		char buf[2] = { 0 };
-		read(devices[relay].fd, buf, 1);
-		*value = atoi(buf);
-		lseek(devices[relay].fd, 0, 0);
-		return 0;
-	}
-	return -1;
+    if (is_initialized && relay < num_devices) {
+        char buf[2] = { 0 };
+        read(devices[relay].fd, buf, 1);
+        *value = atoi(buf);
+        lseek(devices[relay].fd, 0, 0);
+        return 0;
+    }
+    return -1;
 }
 
 int halosuit_temperature_value(unsigned int location, double *temp)
 {
-	if (is_initialized && location < NUMBER_OF_TEMP_SENSORS) {
-		if (location == WATER) {
-			*temp = water_temp;
-		} else {
-			char buf[5] = { 0 };
-			read(temperature[location], buf, 4);
-			*temp = analog_to_temperature(buf);
-			lseek(temperature[location], 0, 0);
-		}
-		return 0;
-	}
-	return -1;
+    if (is_initialized && location < (num_sensors + 1)) {
+        if (location == WATER) {
+            *temp = water_temp;
+        } else {
+            char buf[5] = { 0 };
+            read(sensors[location].fd, buf, 4);
+            *temp = analog_to_temperature(buf);
+            lseek(sensors[location].fd, 0, 0);
+        }
+        return 0;
+    }
+    return -1;
 }
 
 int halosuit_flowrate(int *flow) {
-	if (is_initialized) {
-		*flow = flowrate;
-		return 0;
-	}
-	return -1;
+    if (is_initialized) {
+        *flow = flowrate;
+        return 0;
+    }
+    return -1;
 }
 
 int halosuit_voltage_value(unsigned int battery, int *value) 
 {
-	if (is_initialized) {
+    if (is_initialized) {
         if (battery == TURNIGY_8_AH) {
             *value = (int)(voltage1 * 1000);
         } 
@@ -185,9 +189,9 @@ int halosuit_voltage_value(unsigned int battery, int *value)
         else {
             return -1;
         }
-		return 0;
-	}
-	return -1;
+        return 0;
+    }
+    return -1;
 }
 
 int halosuit_current_draw_value(unsigned int batteryID, int *current)  //this is fairly complicated and should probably be simlified
@@ -263,7 +267,7 @@ int halosuit_heartrate(int *heart) {
 
 
 void enable_analog() { 
-	int analog_fd = open("/sys/devices/bonecapemgr.*/slots", O_RDWR);
+    int analog_fd = open("/sys/devices/bonecapemgr.*/slots", O_RDWR);
     bool analog_set = false;
     char buffer[1024];
     while (read(analog_fd,buffer,1024) != 0) {

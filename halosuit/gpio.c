@@ -8,14 +8,14 @@
 
 #include <halosuit/gpio.h>
 
-int get_digits_in_number(int number) {
-	int count = 0;
-	while(number != 0) {
-		number /= 10;             /* n=n/10 */
-		count++;
-	}
+static int get_digits_in_number(int number) {
+    int count = 0;
+    while(number != 0) {
+        number /= 10;             /* n=n/10 */
+        count++;
+    }
 
-	return count;
+    return count;
 }
 
 void gpio_init() 
@@ -25,17 +25,17 @@ void gpio_init()
 
 void gpio_export(int pin) 
 {	
-	// check this resource to learn about file I/O with  fopen and fputs.
-	// http://www.tutorialspoint.com/cprogramming/c_file_io.htm
-	FILE *export_fd = fopen("/sys/class/gpio/export", "w");
+    // check this resource to learn about file I/O with  fopen and fputs.
+    // http://www.tutorialspoint.com/cprogramming/c_file_io.htm
+    FILE *export_fd = fopen("/sys/class/gpio/export", "w");
 
-	int digitsInNumber = get_digits_in_number(pin);
-	char pinValue[digitsInNumber];
-	sprintf(pinValue, "%d", pin);
+    int digitsInNumber = get_digits_in_number(pin);
+    char pinValue[digitsInNumber];
+    sprintf(pinValue, "%d", pin);
 
-	fputs(pinValue, export_fd);
+    fputs(pinValue, export_fd);
 
-	fclose(export_fd);
+    fclose(export_fd);
 }
 
 void gpio_unexport(int pin) 
@@ -80,6 +80,17 @@ int gpio_open_value_file(int pin)
     strcat(path,str);
     strcat(path, "/value");
     return open(path, O_RDWR);
+}
+
+int gpio_open_analog(int apin)
+{
+    // File path shouldn't be greater than 256 characters
+    char path[256] = "/sys/bus/iio/devices/iio:device";
+    char * str;
+    sprintf(str, "%d", apin);
+    strcat(path,str);
+    strcat(path, "_raw");
+    return open(path, O_RDONLY);
 }
 
 void gpio_exit() 
