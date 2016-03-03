@@ -336,9 +336,11 @@ void enable_analog() {
             break;
         }
     }
-    close(analog_fd);
+    
     if (!analog_set) {
         write(analog_fd, "cape-bone-iio", 13);
     }
+    
+    close(analog_fd);
 }
 #endif
