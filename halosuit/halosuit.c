@@ -327,7 +327,7 @@ int halosuit_heartrate(int *heart) {
 
 
 void enable_analog() { 
-	int analog_fd = open("/sys/devices/bonecapemgr.*/slots", O_RDWR);
+	int analog_fd = open("/sys/devices/bone_capemgr.9/slots", O_RDWR);
     bool analog_set = false;
     char buffer[1024];
     while (read(analog_fd,buffer,1024) != 0) {
