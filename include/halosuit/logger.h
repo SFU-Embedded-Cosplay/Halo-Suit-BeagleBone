@@ -10,7 +10,6 @@
 #define LOG_MAX_MESSAGE_LENGTH 1024
 
 // takes a string and posts it in the log file
-// void logger_log(char* log_post);
 void logger_log(const char *message, ...);
 
 // run at the beginning to indicate startup as well status information
