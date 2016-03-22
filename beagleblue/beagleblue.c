@@ -66,9 +66,8 @@ static void set_bluetooth_mode(uint32_t mode)
 	if (ioctl(sock, HCISETSCAN, (unsigned long) &dr) < 0) {
 		beagleblue_is_done = true;
 		fprintf(stderr, "Can't set scan mode on hci%d: %s (%d)\n", dev_id, strerror(errno), errno);
-        char string[100];
-        sprintf(string, "Can't set scan mode on hci%d: %s (%d)\n", dev_id, strerror(errno), errno);
-        logger_log(string);
+
+        logger_log("Can't set scan mode on hci%d: %s (%d)", dev_id, strerror(errno), errno);
 		logger_log("WARNING: This is a fatal error that will prevent bluetooth from working\n");
     }
 
