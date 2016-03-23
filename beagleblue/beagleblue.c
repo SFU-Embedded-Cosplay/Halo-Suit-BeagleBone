@@ -172,6 +172,8 @@ static void *android_recv_thread(void *callback)
 			}
 		}
 	}
+	
+	logger_log("Android  receive thread ended\n");
 	return NULL;
 }
 
@@ -204,6 +206,8 @@ static void *android_send_thread()
 			}
 		}
 	}
+	
+	logger_log("Android send thread ended\n");
 	return NULL;
 }
 
@@ -220,6 +224,8 @@ static void *glass_recv_thread(void *callback)
 			}
 		}
 	}
+	
+	logger_log("Glass receive thread ending\n");
 	return NULL;
 }
 
@@ -256,6 +262,8 @@ static void *glass_send_thread()
 			}
 		}
 	}
+	
+	logger_log("Glass send thread ending\n");
 	return NULL;
 }
 
