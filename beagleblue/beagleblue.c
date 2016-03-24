@@ -66,12 +66,11 @@ static void set_bluetooth_mode(uint32_t mode)
 	if (ioctl(sock, HCISETSCAN, (unsigned long) &dr) < 0) {
 		beagleblue_is_done = true;
 		fprintf(stderr, "Can't set scan mode on hci%d: %s (%d)\n", dev_id, strerror(errno), errno);
-
-        logger_log("Can't set scan mode on hci%d: %s (%d)", dev_id, strerror(errno), errno);
+		logger_log("Can't set scan mode on hci%d: %s (%d)", dev_id, strerror(errno), errno);
 		logger_log("WARNING: This is a fatal error that will prevent bluetooth from working\n");
-    }
+	}
 
-    close(sock);
+	close(sock);
 }
 
 //if sockets are initialized close them before this
@@ -92,51 +91,51 @@ static void beagleblue_connect(int *sock, int *client, uint8_t channel)
 		bind(*sock, (struct sockaddr *)&loc_addr, sizeof(loc_addr));
 	}
 	// put socket into listening mode
-    if (channel == ANDROID_PORT && android_configured) {
-    	while (true) {
-    		listen(*sock, 1);
+	if (channel == ANDROID_PORT && android_configured) {
+		while (true) {
+			listen(*sock, 1);
 
 			*client = accept(*sock, (struct sockaddr *)&rem_addr, &opt);
-    		ba2str( &rem_addr.rc_bdaddr, buf );
+			ba2str( &rem_addr.rc_bdaddr, buf );
 
-    		if (strcmp(buf, android_mac_addr) == 0) {
-    			break;
-    		} else {
-    			close(*client);
-    			fprintf(stdout, "denied connection from %s\n", buf);
+			if (strcmp(buf, android_mac_addr) == 0) {
+				break;
+			} else {
+				close(*client);
+				fprintf(stdout, "denied connection from %s\n", buf);
 				fflush(stdout);
 
-                logger_log("denied connection\n");
-    		}
-    	}
-    } else if (channel == GLASS_PORT && glass_configured) {
-    	while (true) {
-    		listen(*sock, 1);
+				logger_log("denied connection\n");
+			}
+		}
+	} else if (channel == GLASS_PORT && glass_configured) {
+		while (true) {
+			listen(*sock, 1);
 
 			*client = accept(*sock, (struct sockaddr *)&rem_addr, &opt);
-    		ba2str( &rem_addr.rc_bdaddr, buf );
+			ba2str( &rem_addr.rc_bdaddr, buf );
 
-    		if (strcmp(buf, glass_mac_addr) == 0) {
-    			break;
-    		} else {
-    			close(*client);
-    			fprintf(stdout, "denied connection from %s\n", buf);
+			if (strcmp(buf, glass_mac_addr) == 0) {
+				break;
+			} else {
+				close(*client);
+				fprintf(stdout, "denied connection from %s\n", buf);
 				fflush(stdout);
 
-                logger_log("denied connection\n");
-    		}
-    	}
-    } else {
-    	listen(*sock, 1);
+				logger_log("denied connection\n");
+			}
+		}
+	} else {
+		listen(*sock, 1);
 
 	*client = accept(*sock, (struct sockaddr *)&rem_addr, &opt);
 
-    }
+	}
 	ba2str( &rem_addr.rc_bdaddr, buf);
 	fprintf(stdout, "accepted connection from %s\n", buf);
 	fflush(stdout);
 
-    logger_log("accepted connection\n");
+	logger_log("accepted connection\n");
 }
 
 static void *android_connect_thread()
@@ -146,7 +145,7 @@ static void *android_connect_thread()
 	if (glass_is_connected) {
 		set_bluetooth_mode(SCAN_DISABLED);
 	}
-    return NULL;
+	return NULL;
 }
 
 static void *glass_connect_thread()
@@ -156,7 +155,7 @@ static void *glass_connect_thread()
 	if (android_is_connected) {
 		set_bluetooth_mode(SCAN_DISABLED);
 	}
-    return NULL;
+	return NULL;
 }
 
 static void *android_recv_thread(void *callback)
@@ -194,7 +193,7 @@ static void *android_send_thread()
 				if (current_time - start_time == TIMEOUT) {
 					printf("Android Timed Out\n");
 					fflush(stdout);
-                    logger_log("Android Timed Out\n");
+					logger_log("Android Timed Out\n");
 					android_is_connected = false;
 					//close(android_sock);
 					close(android_client);
@@ -249,7 +248,7 @@ static void *glass_send_thread()
 				if (current_time - start_time == TIMEOUT) {
 					printf("Glass Timed Out\n");
 					fflush(stdout);
-                    logger_log("Glass Timed Out\n");
+					logger_log("Glass Timed Out\n");
 					glass_is_connected = false;
 					//close(glass_sock);
 					close(glass_client);
@@ -277,7 +276,7 @@ void beagleblue_init(void (*on_receive)(char *))
 		glass_configured = config_get_string("Bluetooth", "glass", glass_mac_addr, MAX_BUF_SIZE) == 0;
 
 		printf("Bluetooth Discoverable\n");
-    	logger_log("Bluetooth Discoverable");
+		logger_log("Bluetooth Discoverable");
 		pthread_create(&android_connect_thread_id, NULL, &android_connect_thread, NULL);
 		pthread_create(&glass_connect_thread_id, NULL, &glass_connect_thread, NULL);
 		pthread_create(&android_send_thread_id, NULL, &android_send_thread, NULL);
