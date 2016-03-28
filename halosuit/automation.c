@@ -17,7 +17,6 @@
 
 #include <halosuit/automation.h>
 #include <halosuit/halosuit.h>
-//#include <testcode/automationtestdata.h>
 #include <halosuit/logger.h>
 #include <halosuit/stateofcharge.h>
 
@@ -39,7 +38,7 @@ static char turnigy_2AH_low_warning = NOMINAL_SOC;
 static char glass_battery_low_warning = NOMINAL_SOC;
 static char phone_battery_low_warning = NOMINAL_SOC;
 // temperatures set to mid range
-static double adjustedWaterTemp = (WATER_MAX_TEMP + WATER_MIN_TEMP) / 2; 
+static double adjustedWaterTemp = (WATER_MAX_TEMP + WATER_MIN_TEMP) / 2;
 
 static double adjustedHeadTemp = (BODY_HIGH_TEMP + BODY_LOW_TEMP) / 2;
 static double adjustedArmpitTemp = (BODY_HIGH_TEMP + BODY_LOW_TEMP) / 2;
@@ -109,7 +108,7 @@ static void pump_automation()
 }
 
 // uses values from the water temperature sensor to control the peltier and pump
-static void waterTempLogic() 
+static void waterTempLogic()
 {
 	double newWaterTemp = 0;
 	if (halosuit_temperature_value(WATER, &newWaterTemp)) {
@@ -169,7 +168,7 @@ static void waterTempLogic()
 	}
 }
 
-// checks if pump is working correctly 
+// checks if pump is working correctly
 // delays flow check to let water speed to build up
 static void checkFlow() {
 	time_t current_time = time(NULL);
@@ -203,7 +202,7 @@ static void checkFlow() {
 }
 
 static void checkHeadTemperature(double temp)
-{ 
+{
 	if (temp >= BODY_HIGH_TEMP) {
 		if (halosuit_relay_switch(HEAD_FANS, HIGH)) {
 			logger_log("ERROR: HEAD_FANS READ FAILURE");
@@ -397,7 +396,7 @@ static void check_battery()
 }
 
 static void* automationThread()
-{ 
+{
 	automationIsDone = false;
 
 	if (halosuit_relay_switch(PELTIER, HIGH)) {
@@ -511,7 +510,7 @@ char automation_getWaterFlowWarning()
 	return waterFlowWarning;
 }
 
-char automation_getBatteryWarning(int batteryID) 
+char automation_getBatteryWarning(int batteryID)
 {
 	if (batteryID == TURNIGY_8_AH) {
 		return turnigy_8AH_low_warning;
