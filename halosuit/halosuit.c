@@ -28,12 +28,12 @@ static int current_draw = 0;  //TODO: need to calculate current value`
 
 //FILE for pipe from readflow.py
 static FILE* python_pipe;
-static int flowrate = 0;
-static double water_temp = 10.0;
-// TODO: these defaults need to change when we get data on for them
-static double voltage1 = 12.6;
-static double voltage2 = 12.0;
-static int heartrate = 90;
+static int flowrate = FLOWRATE_INITIAL_VALUE;
+static double water_temp = WATER_TEMP_INITIAL_VALUE;
+// TODO: voltage initial values need to change when we get the appropriate data
+static double voltage1 = VOLTAGE_1_INITIAL_VALUE;
+static double voltage2 = VOLTAGE_2_INITIAL_VALUE;
+static int heartrate = HEARTRATE_INITIAL_VALUE;
 
 static char python_buffer[50];
 static pthread_t python_thread_id;
@@ -43,12 +43,12 @@ static bool is_initialized = false;
 
 static void enable_analog();
 
-static double analog_to_temperature(char *string)  
-{  
-	int value = atoi(string); 
-	double millivolts = (value / 4096.0) * 1800;  
-	double temp = (millivolts - 500.0) / 10.0;  
-	return temp;  
+static double analog_to_temperature(char *string)
+{
+	int value = atoi(string);
+	double millivolts = (value / 4096.0) * 1800;
+	double temp = (millivolts - 500.0) / 10.0;
+	return temp;
 }
 
 static void *python_thread()
@@ -144,7 +144,7 @@ void halosuit_init()
 	pthread_create(&python_thread_id, NULL, &python_thread, NULL);
 
 	is_initialized = true;
-} 
+}
 
 void halosuit_exit()
 {
@@ -237,7 +237,7 @@ int halosuit_flowrate(int *flow) {
 	return -1;
 }
 
-int halosuit_voltage_value(unsigned int battery, int *value) 
+int halosuit_voltage_value(unsigned int battery, int *value)
 {
 	if (is_initialized) {
 		if (battery == TURNIGY_8_AH) {
@@ -326,7 +326,7 @@ int halosuit_heartrate(int *heart) {
 }
 
 
-void enable_analog() { 
+void enable_analog() {
 	int analog_fd = open("/sys/devices/bone_capemgr.9/slots", O_RDWR);
 	bool analog_set = false;
 	char buffer[1024];
