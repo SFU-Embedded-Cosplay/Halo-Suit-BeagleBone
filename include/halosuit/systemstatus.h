@@ -2,6 +2,7 @@
 #define SYSTEM_STATUS
 
 typedef enum status {
+	NO_STATUS,
 	BLUETOOTH_CONNECTED,
 	BLUETOOTH_ERROR
 } status_t;
