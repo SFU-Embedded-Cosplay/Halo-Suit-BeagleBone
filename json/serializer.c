@@ -12,7 +12,6 @@
 #include <beagleblue/beagleblue.h>
 #include <halosuit/halosuit.h>
 #include <halosuit/stateofcharge.h>
-//#include <testcode/automationtestdata.h>
 #include <halosuit/automation.h>
 #include <halosuit/logger.h>
 

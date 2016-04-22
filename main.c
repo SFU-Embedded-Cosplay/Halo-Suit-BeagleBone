@@ -18,7 +18,6 @@
 #include <json/serializer.h>
 #include <halosuit/halosuit.h>
 #include <halosuit/automation.h>
-//#include <testcode/automationtestdata.h>
 #include <config/config.h>
 #include <halosuit/logger.h>
 #include <halosuit/stateofcharge.h>
