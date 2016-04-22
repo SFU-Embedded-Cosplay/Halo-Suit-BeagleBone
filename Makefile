@@ -12,8 +12,7 @@
 OUTFILE = suitcontroller
 OUTDIR = /usr/bin
 TESTDIR = .
-INFILES = main.c json/serializer.c json/parser.c beagleblue/beagleblue.c json-parser/json.c json-builder/json-builder.c halosuit/halosuit.c halosuit/logger.c config/config.c halosuit/automation.c halosuit/stateofcharge.c mockHardware/mockHalosuit.c
-
+INFILES = main.c json/serializer.c json/parser.c beagleblue/beagleblue.c json-parser/json.c json-builder/json-builder.c halosuit/halosuit.c halosuit/logger.c config/config.c halosuit/automation.c halosuit/stateofcharge.c mockHardware/mockHalosuit.c halosuit/systemstatus.c
 CROSS_COMPILE = arm-linux-gnueabi-
 COMPILER = gcc
 CC_C = $(CROSS_COMPILE)$(COMPILER)
