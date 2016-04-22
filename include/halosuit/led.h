@@ -2,7 +2,7 @@
 #define LED
 
 typedef struct led {
-	int const usr;
+	const int usr;
 } led_t;
 
 void led_init(led_t led);
