@@ -14,6 +14,7 @@ void systemstatus_init() {
 	led_init(led2);
 	led_init(led3);
 
+	systemstatus_set_status(BOOT_SUCCESS);
 }
 
 void systemstatus_set_status(status_t status) {
