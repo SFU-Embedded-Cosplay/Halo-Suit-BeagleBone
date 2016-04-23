@@ -10,6 +10,7 @@
 #-----Macros---------------------
 
 OUTFILE = suitcontroller
+TESTOUTFILE = suitcontrollertest
 OUTDIR = /usr/bin
 TESTDIR = .
 INFILES = main.c json/serializer.c json/parser.c beagleblue/beagleblue.c json-parser/json.c json-builder/json-builder.c halosuit/halosuit.c halosuit/logger.c config/config.c halosuit/automation.c halosuit/stateofcharge.c mockHardware/mockHalosuit.c halosuit/systemstatus.c halosuit/led.c
@@ -22,16 +23,16 @@ INCLUDE = -Iinclude -Ijson-parser -Ijson-builder
 
 all: host
 
-host: 
+host:
 	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(OUTDIR)/$(OUTFILE) -lm -lbluetooth
 	cp python_scripts/readflow.py $(OUTDIR)/
 
 # doesn't work yet
 # this is the monument to my Failure to get cross compiling working
-#target: 
+#target:
 #	$(CC_C) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(OUTDIR)/$(OUTFILE) -lm -lbluetooth
 
-clean: 
+clean:
 	rm $(OUTDIR)/$(OUTFILE)
 	rm $(OUTDIR)/readflow.py
 
@@ -48,10 +49,10 @@ disable:
 	systemctl disable /etc/systemd/system/suitcontrol.service
 	rm /etc/systemd/system/suitcontrol.service
 
-localTest:	
-	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(TESTDIR)/$(OUTFILE) -lm -lbluetooth -D MOCK_HARDWARE
+localTest:
+	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(TESTDIR)/$(TESTOUTFILE) -lm -lbluetooth -D MOCK_HARDWARE
 
-noauto:	
+noauto:
 	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(OUTDIR)/$(OUTFILE) -lm -lbluetooth -DNO_AUTOMATION
 	cp python_scripts/readflow.py $(OUTDIR)/
 
