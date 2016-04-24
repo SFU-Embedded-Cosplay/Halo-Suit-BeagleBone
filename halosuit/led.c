@@ -34,5 +34,10 @@ void led_on(led_t led)
 
 void led_off(led_t led) 
 {
+	char brightness_file_path[80];
+	snprintf(brightness_file_path, sizeof(brightness_file_path), "%s%d%s", LED_FILE_PATH, led.usr, BRIGHTNESS_FILE_PATH_EXTENSION);
 
+	FILE* brightness_file = fopen(brightness_file_path, "w");
+	fprintf(brightness_file, "%s", OFF_VALUE);
+	fclose(brightness_file);
 }
