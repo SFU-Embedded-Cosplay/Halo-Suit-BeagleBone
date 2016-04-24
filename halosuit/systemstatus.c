@@ -51,5 +51,5 @@ void systemstatus_set_status(status_t status) {
 }
 
 status_t systemstatus_get_status() {
-
+	return currentStatus;
 }
