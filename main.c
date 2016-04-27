@@ -21,6 +21,8 @@
 #include <config/config.h>
 #include <halosuit/logger.h>
 #include <halosuit/stateofcharge.h>
+#include <halosuit/systemstatus.h>
+
 
 #define WATCHDOG_PATH "/dev/watchdog"
 
@@ -44,6 +46,7 @@ int main(int argc, char* argv[])
         }
     }
     logger_startup();
+    systemstatus_init();
 
     char buf[1024];
     config_init("/root/beaglebone.conf");
