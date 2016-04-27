@@ -17,6 +17,7 @@
 #include <beagleblue/beagleblue.h>
 #include <config/config.h>
 #include <halosuit/logger.h>
+#include <halosuit/systemstatus.h>
 //this is hard coded on both ends
 #define ANDROID_PORT 3
 #define GLASS_PORT 2
@@ -68,6 +69,8 @@ static void set_bluetooth_mode(uint32_t mode)
 		fprintf(stderr, "Can't set scan mode on hci%d: %s (%d)\n", dev_id, strerror(errno), errno);
 		logger_log("Can't set scan mode on hci%d: %s (%d)", dev_id, strerror(errno), errno);
 		logger_log("WARNING: This is a fatal error that will prevent bluetooth from working\n");
+
+		systemstatus_set_status(BLUETOOTH_ERROR);
 	}
 
 	close(sock);
@@ -128,7 +131,7 @@ static void beagleblue_connect(int *sock, int *client, uint8_t channel)
 	} else {
 		listen(*sock, 1);
 
-	*client = accept(*sock, (struct sockaddr *)&rem_addr, &opt);
+		*client = accept(*sock, (struct sockaddr *)&rem_addr, &opt);
 
 	}
 	ba2str( &rem_addr.rc_bdaddr, buf);
@@ -283,6 +286,8 @@ void beagleblue_init(void (*on_receive)(char *))
 		pthread_create(&android_recv_thread_id, NULL, &android_recv_thread, on_receive);
 		pthread_create(&glass_send_thread_id, NULL, &glass_send_thread, NULL);
 		pthread_create(&glass_recv_thread_id, NULL, &glass_recv_thread, on_receive);
+
+		systemstatus_set_status(BLUETOOTH_CONNECTED);
 	}
 	return;
 }
