@@ -11,6 +11,16 @@
 #define ON_VALUE "1"
 #define OFF_VALUE "0"
 
+void set_brightness_file_value(led_t led, char *value) 
+{
+	char brightness_file_path[80];
+	snprintf(brightness_file_path, sizeof(brightness_file_path), "%s%d%s", LED_FILE_PATH, led.usr, BRIGHTNESS_FILE_PATH_EXTENSION);
+
+	FILE* brightness_file = fopen(brightness_file_path, "w");
+	fprintf(brightness_file, "%s", value);
+	fclose(brightness_file);
+}
+
 void led_init(led_t led) 
 {
 	char file_path[80];
@@ -24,20 +34,10 @@ void led_init(led_t led)
 
 void led_on(led_t led) 
 {
-	char brightness_file_path[80];
-	snprintf(brightness_file_path, sizeof(brightness_file_path), "%s%d%s", LED_FILE_PATH, led.usr, BRIGHTNESS_FILE_PATH_EXTENSION);
-
-	FILE* brightness_file = fopen(brightness_file_path, "w");
-	fprintf(brightness_file, "%s", ON_VALUE);
-	fclose(brightness_file);
+	set_brightness_file_value(led, ON_VALUE);
 }
 
 void led_off(led_t led) 
 {
-	char brightness_file_path[80];
-	snprintf(brightness_file_path, sizeof(brightness_file_path), "%s%d%s", LED_FILE_PATH, led.usr, BRIGHTNESS_FILE_PATH_EXTENSION);
-
-	FILE* brightness_file = fopen(brightness_file_path, "w");
-	fprintf(brightness_file, "%s", OFF_VALUE);
-	fclose(brightness_file);
+	set_brightness_file_value(led, OFF_VALUE);
 }
