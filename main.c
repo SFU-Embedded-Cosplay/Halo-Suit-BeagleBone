@@ -36,6 +36,30 @@ void crash_signal_handler(int signum)
 {
     logger_log("exiting with code: %d", signum);
 
+    if(signum == SIGHUP) {
+        logger_log("crash caused by termination of controlling process, "
+            "possibly because terminal was exited");
+    } else if(signum == SIGINT) {
+        logger_log("crash was from a program interupt: likely from ctrl-c");
+    } else if(signum == SIGABRT) {
+        logger_log("crash was from an abort signal: likely "
+            "because of a library calling abort()");
+    } else if(signum == SIGFPE) {
+        logger_log("crash caused by Floating-Point arithmetic Exception: "
+            "possibly caused by divide by 0 or arithmetic overflow");
+    } else if(signum == SIGILL) {
+        logger_log("crash caused by illegal instruction: " 
+            "possibly caused by corrupted executable or "
+            "passing data to a function that expects a pointer");
+    } else if(signum == SIGSEGV) {
+        logger_log("crash was likely a segfault");
+    } else if(signum == SIGTERM) {
+        logger_log("crash caused by kill command");
+    } else {
+        // this should not happen
+        logger_log("unknown crash signal was handled!");
+    }
+
     systemstatus_set_status(SYSTEM_CRASH);
 
     exit(signum);
