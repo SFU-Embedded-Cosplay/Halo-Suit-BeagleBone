@@ -12,6 +12,8 @@
 #include <fcntl.h>
 #include <string.h>
 #include <stdbool.h>
+#include <signal.h>
+
 
 #include <beagleblue/beagleblue.h>
 #include <json/parser.h>
@@ -30,6 +32,15 @@
 
 bool watchdog_disabled = false;
 
+void crash_signal_handler(int signum) 
+{
+    logger_log("exiting with code: %d", signum);
+
+    systemstatus_set_status(SYSTEM_CRASH);
+
+    exit(signum);
+}
+
 int main(int argc, char* argv[])
 {
     if (argc == 2) {
@@ -47,6 +58,16 @@ int main(int argc, char* argv[])
     }
     logger_startup();
     systemstatus_init();
+
+    // use the bellow link for a good summary of what each signal does
+    // http://www.yolinux.com/TUTORIALS/C++Signals.html
+    signal(SIGINT, crash_signal_handler);
+    signal(SIGABRT, crash_signal_handler);
+    signal(SIGFPE, crash_signal_handler);
+    signal(SIGILL, crash_signal_handler);
+    signal(SIGSEGV, crash_signal_handler);
+    signal(SIGTERM, crash_signal_handler);
+    signal(SIGHUP, crash_signal_handler);
 
     char buf[1024];
     config_init("/root/beaglebone.conf");
