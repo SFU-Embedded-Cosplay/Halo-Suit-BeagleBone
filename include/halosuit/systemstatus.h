@@ -5,7 +5,8 @@ typedef enum status {
 	NO_STATUS,
 	BOOT_SUCCESS,
 	BLUETOOTH_CONNECTED,
-	BLUETOOTH_ERROR
+	BLUETOOTH_ERROR,
+	SYSTEM_CRASH = 15
 } status_t;
 
 void systemstatus_init();
