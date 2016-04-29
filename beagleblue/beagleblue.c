@@ -108,7 +108,7 @@ static void beagleblue_connect(int *sock, int *client, uint8_t channel)
 				fprintf(stdout, "denied connection from %s\n", buf);
 				fflush(stdout);
 
-				logger_log("denied connection\n");
+				logger_log("denied connection");
 			}
 		}
 	} else if (channel == GLASS_PORT && glass_configured) {
@@ -125,7 +125,7 @@ static void beagleblue_connect(int *sock, int *client, uint8_t channel)
 				fprintf(stdout, "denied connection from %s\n", buf);
 				fflush(stdout);
 
-				logger_log("denied connection\n");
+				logger_log("denied connection");
 			}
 		}
 	} else {
@@ -138,7 +138,7 @@ static void beagleblue_connect(int *sock, int *client, uint8_t channel)
 	fprintf(stdout, "accepted connection from %s\n", buf);
 	fflush(stdout);
 
-	logger_log("accepted connection\n");
+	logger_log("accepted connection");
 }
 
 static void *android_connect_thread()
@@ -175,7 +175,7 @@ static void *android_recv_thread(void *callback)
 		}
 	}
 	
-	logger_log("Android  receive thread ended\n");
+	logger_log("Android  receive thread ended");
 	return NULL;
 }
 
@@ -196,7 +196,7 @@ static void *android_send_thread()
 				if (current_time - start_time == TIMEOUT) {
 					printf("Android Timed Out\n");
 					fflush(stdout);
-					logger_log("Android Timed Out\n");
+					logger_log("Android Timed Out");
 					android_is_connected = false;
 					//close(android_sock);
 					close(android_client);
@@ -209,7 +209,7 @@ static void *android_send_thread()
 		}
 	}
 	
-	logger_log("Android send thread ended\n");
+	logger_log("Android send thread ended");
 	return NULL;
 }
 
@@ -227,7 +227,7 @@ static void *glass_recv_thread(void *callback)
 		}
 	}
 	
-	logger_log("Glass receive thread ending\n");
+	logger_log("Glass receive thread ending");
 	return NULL;
 }
 
@@ -251,7 +251,7 @@ static void *glass_send_thread()
 				if (current_time - start_time == TIMEOUT) {
 					printf("Glass Timed Out\n");
 					fflush(stdout);
-					logger_log("Glass Timed Out\n");
+					logger_log("Glass Timed Out");
 					glass_is_connected = false;
 					//close(glass_sock);
 					close(glass_client);
@@ -265,7 +265,7 @@ static void *glass_send_thread()
 		}
 	}
 	
-	logger_log("Glass send thread ending\n");
+	logger_log("Glass send thread ending");
 	return NULL;
 }
 
