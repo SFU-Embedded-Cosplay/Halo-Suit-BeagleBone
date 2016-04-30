@@ -15,6 +15,7 @@
 #include <pthread.h>
 
 #include <beagleblue/beagleblue.h>
+#include <beagleblue/bluetooth.h>
 #include <config/config.h>
 #include <halosuit/logger.h>
 #include <halosuit/systemstatus.h>
@@ -53,28 +54,6 @@ static char glass_mac_addr[MAX_BUF_SIZE] = { 0 };
 
 static bool android_configured;
 static bool glass_configured;
-
-//consider converting to macro
-static void set_bluetooth_mode(uint32_t mode)
-{
-	int sock = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI);
-	int dev_id = hci_get_route(NULL);
-
-	struct hci_dev_req dr;
-
-	dr.dev_id  = dev_id;
-	dr.dev_opt = mode;
-	if (ioctl(sock, HCISETSCAN, (unsigned long) &dr) < 0) {
-		beagleblue_is_done = true;
-		fprintf(stderr, "Can't set scan mode on hci%d: %s (%d)\n", dev_id, strerror(errno), errno);
-		logger_log("Can't set scan mode on hci%d: %s (%d)", dev_id, strerror(errno), errno);
-		logger_log("WARNING: This is a fatal error that will prevent bluetooth from working\n");
-
-		systemstatus_set_status(BLUETOOTH_ERROR);
-	}
-
-	close(sock);
-}
 
 //if sockets are initialized close them before this
 static void beagleblue_connect(int *sock, int *client, uint8_t channel)
@@ -146,7 +125,7 @@ static void *android_connect_thread()
 	beagleblue_connect(&android_sock, &android_client, ANDROID_PORT);
 	android_is_connected = true;
 	if (glass_is_connected) {
-		set_bluetooth_mode(SCAN_DISABLED);
+		bluetooth_set_bluetooth_mode(SCAN_DISABLED, &beagleblue_is_done);
 	}
 	return NULL;
 }
@@ -156,7 +135,7 @@ static void *glass_connect_thread()
 	beagleblue_connect(&glass_sock, &glass_client, GLASS_PORT);
 	glass_is_connected = true;
 	if (android_is_connected) {
-		set_bluetooth_mode(SCAN_DISABLED);
+		bluetooth_set_bluetooth_mode(SCAN_DISABLED, &beagleblue_is_done);
 	}
 	return NULL;
 }
@@ -200,7 +179,7 @@ static void *android_send_thread()
 					android_is_connected = false;
 					//close(android_sock);
 					close(android_client);
-					set_bluetooth_mode(SCAN_PAGE | SCAN_INQUIRY);
+					bluetooth_set_bluetooth_mode(SCAN_PAGE | SCAN_INQUIRY, &beagleblue_is_done);
 					pthread_create(&android_connect_thread_id, NULL, &android_connect_thread, NULL);
 				}
 				android_is_sending = false;
@@ -255,7 +234,7 @@ static void *glass_send_thread()
 					glass_is_connected = false;
 					//close(glass_sock);
 					close(glass_client);
-					set_bluetooth_mode(SCAN_PAGE | SCAN_INQUIRY);
+					bluetooth_set_bluetooth_mode(SCAN_PAGE | SCAN_INQUIRY, &beagleblue_is_done);
 					pthread_create(&glass_connect_thread_id, NULL, &glass_connect_thread, NULL);
 				}
 
@@ -272,7 +251,7 @@ static void *glass_send_thread()
 void beagleblue_init(void (*on_receive)(char *))
 {
 	beagleblue_is_done = false;
-	set_bluetooth_mode(SCAN_INQUIRY | SCAN_PAGE);
+	bluetooth_set_bluetooth_mode(SCAN_INQUIRY | SCAN_PAGE, &beagleblue_is_done);
 	//
 	if (!beagleblue_is_done) {
 		android_configured = config_get_string("Bluetooth", "android", android_mac_addr, MAX_BUF_SIZE) == 0;
