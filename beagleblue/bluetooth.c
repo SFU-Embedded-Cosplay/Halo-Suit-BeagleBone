@@ -34,7 +34,15 @@ void bluetooth_connect_client(connection_t *connection, char* buffer)
 	ba2str( &rem_addr.rc_bdaddr, buffer);
 }
 
+// returns the same values as a call to send() would return
 int bluetooth_send_message(const connection_t connection) 
 {
 	return send(connection.client, connection.send_buffer, strlen(connection.send_buffer), MSG_DONTWAIT);
+}
+
+// returns the same values as a call to recv() would return
+int bluetooth_receive_message(connection_t *connection) 
+{
+	memset(connection->receive_buffer, 0, BUFFER_SIZE); //clear the buffer
+	return recv(connection->client, connection->receive_buffer, BUFFER_SIZE, MSG_DONTWAIT);
 }
