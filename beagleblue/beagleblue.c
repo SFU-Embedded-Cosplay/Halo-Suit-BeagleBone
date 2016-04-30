@@ -3,16 +3,12 @@
 */
 #include <stdio.h>
 #include <unistd.h>
-#include <errno.h>
-#include <sys/socket.h>
-#include <bluetooth/bluetooth.h>
-#include <bluetooth/hci.h>
-#include <bluetooth/hci_lib.h>
-#include <bluetooth/rfcomm.h>
-#include <sys/ioctl.h>
 #include <stdbool.h>
 #include <string.h>
 #include <pthread.h>
+
+#include <bluetooth/bluetooth.h>
+#include <bluetooth/hci.h>
 
 #include <beagleblue/beagleblue.h>
 #include <beagleblue/bluetooth.h>
