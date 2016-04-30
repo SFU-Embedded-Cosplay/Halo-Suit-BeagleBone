@@ -26,7 +26,7 @@ void bluetooth_bind_socket(connection_t *connection)
 		//bind socket to local bluetooth device
 		local_address.rc_family = AF_BLUETOOTH;
 		local_address.rc_bdaddr = *BDADDR_ANY;
-		local_address.rc_channel = connection->channel;
+		local_address.rc_channel = connection->port;
 		bind(connection->server_socket, (struct sockaddr *)&local_address, sizeof(local_address));
 	}
 }

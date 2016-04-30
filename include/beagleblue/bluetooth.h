@@ -6,7 +6,7 @@
 typedef struct connection {
 	int server_socket; // -1
 	int client; // -1
-	uint8_t channel;
+	uint8_t port;
 	bool is_client_connected; // false
 
 	bool is_sending; // false
