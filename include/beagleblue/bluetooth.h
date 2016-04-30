@@ -14,5 +14,5 @@ typedef struct connection {
 	char receive_buffer[BUFFER_SIZE];
 } connection_t;
 
-void bluetooth_connect(connection_t connection);
+void bluetooth_bind_socket(connection_t connection);
 #endif
