@@ -42,6 +42,11 @@ void bluetooth_connect_client(connection_t *connection, char* buffer)
 	ba2str( &remote_address.rc_bdaddr, buffer);
 }
 
+void bluetooth_close_server_socket(connection_t *connection) 
+{
+	close(connection->server_socket);
+}
+
 void bluetooth_disconnect_client(connection_t *connection) 
 {
 	close(connection->client);

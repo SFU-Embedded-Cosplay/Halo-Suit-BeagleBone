@@ -16,6 +16,8 @@ typedef struct connection {
 
 void bluetooth_bind_socket(connection_t *connection);
 void bluetooth_connect_client(connection_t *connection, char* buffer);
+
+void bluetooth_close_server_socket(connection_t *connection);
 void bluetooth_disconnect_client(connection_t *connection);
 
 int bluetooth_send_message(const connection_t connection);
