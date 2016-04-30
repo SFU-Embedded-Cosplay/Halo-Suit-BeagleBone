@@ -3,9 +3,18 @@
 #include <bluetooth/hci_lib.h>
 #include <bluetooth/rfcomm.h>
 #include <stdbool.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <errno.h>
+#include <stdio.h>
+#include <unistd.h>
+
+
 
 
 #include <beagleblue/bluetooth.h>
+#include <halosuit/systemstatus.h>
+#include <halosuit/logger.h>
 
 // bind the connection to a new server socket
 void bluetooth_bind_socket(connection_t *connection) 
@@ -46,4 +55,25 @@ int bluetooth_receive_message(connection_t *connection)
 {
 	memset(connection->receive_buffer, 0, BUFFER_SIZE); //clear the buffer
 	return recv(connection->client, connection->receive_buffer, BUFFER_SIZE, MSG_DONTWAIT);
+}
+
+void bluetooth_set_bluetooth_mode(uint32_t mode, bool *scan_mode_error)
+{
+	int bluetooth_socket = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI);
+	int dev_id = hci_get_route(NULL);
+
+	struct hci_dev_req dr;
+
+	dr.dev_id  = dev_id;
+	dr.dev_opt = mode;
+	if (ioctl(bluetooth_socket, HCISETSCAN, (unsigned long) &dr) < 0) {
+		*scan_mode_error = true;
+		fprintf(stderr, "Can't set scan mode on hci%d: %s (%d)\n", dev_id, strerror(errno), errno);
+		logger_log("Can't set scan mode on hci%d: %s (%d)", dev_id, strerror(errno), errno);
+		logger_log("WARNING: This is a fatal error that will prevent bluetooth from working\n");
+
+		systemstatus_set_status(BLUETOOTH_ERROR);
+	}
+
+	close(bluetooth_socket);
 }
