@@ -22,3 +22,14 @@ void bluetooth_bind_socket(connection_t connection)
 		bind(connection.socket, (struct sockaddr *)&loc_addr, sizeof(loc_addr));
 	}
 }
+
+void bluetooth_connect_client(connection_t connection, char* buffer) 
+{
+	struct sockaddr_rc rem_addr = { 0 };
+	socklen_t opt = sizeof(rem_addr);
+
+	listen(connection.socket, 1);
+
+	connection.client = accept(connection.socket, (struct sockaddr *)&rem_addr, &opt);
+	ba2str( &rem_addr.rc_bdaddr, buffer);
+}
