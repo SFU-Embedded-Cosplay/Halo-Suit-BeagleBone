@@ -33,3 +33,8 @@ void bluetooth_connect_client(connection_t *connection, char* buffer)
 	connection->client = accept(connection->socket, (struct sockaddr *)&rem_addr, &opt);
 	ba2str( &rem_addr.rc_bdaddr, buffer);
 }
+
+int bluetooth_send_message(const connection_t connection) 
+{
+	return send(connection.client, connection.send_buffer, strlen(connection.send_buffer), MSG_DONTWAIT);
+}
