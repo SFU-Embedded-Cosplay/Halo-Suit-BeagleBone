@@ -42,6 +42,11 @@ void bluetooth_connect_client(connection_t *connection, char* buffer)
 	ba2str( &remote_address.rc_bdaddr, buffer);
 }
 
+void bluetooth_disconnect_client(connection_t *connection) 
+{
+	close(connection->client);
+}
+
 // returns the same values as a call to send() would return
 int bluetooth_send_message(const connection_t connection) 
 {
