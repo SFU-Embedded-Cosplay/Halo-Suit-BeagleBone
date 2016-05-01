@@ -38,7 +38,7 @@ void logger_log(const char *message, ...)
 
 		fprintf(log_file, "[%s]  -  ", time_string); // log current time
 		vfprintf(log_file, message, arguments); // log actual message
-		fprintf(log_file, "\n", time_string); // log new line for formatiing purposes
+		fprintf(log_file, "\n"); // log new line for formatiing purposes
 
 		va_end(arguments);
 
