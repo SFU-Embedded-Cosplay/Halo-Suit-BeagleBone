@@ -152,7 +152,7 @@ static void *android_send_thread()
 						break;
 					}
 				}
-				if (current_time - start_time == TIMEOUT) {
+				if (current_time - start_time >= TIMEOUT) {
 					printf("Android Timed Out\n");
 					fflush(stdout);
 					logger_log("Android Timed Out");
@@ -206,7 +206,7 @@ static void *glass_send_thread()
 					}
 				}
 
-				if (current_time - start_time == TIMEOUT) {
+				if (current_time - start_time >= TIMEOUT) {
 					printf("Glass Timed Out\n");
 					fflush(stdout);
 					logger_log("Glass Timed Out");
