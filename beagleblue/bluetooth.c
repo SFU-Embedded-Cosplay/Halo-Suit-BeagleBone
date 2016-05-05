@@ -1,3 +1,4 @@
+#ifndef TCP_CONNECTION
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
 #include <bluetooth/hci_lib.h>
@@ -85,3 +86,5 @@ void bluetooth_set_bluetooth_mode(uint32_t mode, bool *scan_mode_error)
 
 	close(bluetooth_socket);
 }
+
+#endif

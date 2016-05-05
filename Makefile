@@ -13,7 +13,7 @@ OUTFILE = suitcontroller
 TESTOUTFILE = suitcontrollertest
 OUTDIR = /usr/bin
 TESTDIR = .
-INFILES = main.c json/serializer.c json/parser.c beagleblue/beagleblue.c beagleblue/bluetooth.c json-parser/json.c json-builder/json-builder.c halosuit/halosuit.c halosuit/logger.c config/config.c halosuit/automation.c halosuit/stateofcharge.c mockHardware/mockHalosuit.c halosuit/systemstatus.c halosuit/led.c
+INFILES = main.c json/serializer.c json/parser.c beagleblue/beagleblue.c beagleblue/bluetooth.c beagleblue/tcp.c json-parser/json.c json-builder/json-builder.c halosuit/halosuit.c halosuit/logger.c config/config.c halosuit/automation.c halosuit/stateofcharge.c mockHardware/mockHalosuit.c halosuit/systemstatus.c halosuit/led.c
 CROSS_COMPILE = arm-linux-gnueabi-
 COMPILER = gcc
 CC_C = $(CROSS_COMPILE)$(COMPILER)
@@ -50,7 +50,7 @@ disable:
 	rm /etc/systemd/system/suitcontrol.service
 
 localTest:
-	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(TESTDIR)/$(TESTOUTFILE) -lm -lbluetooth -D MOCK_HARDWARE
+	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(TESTDIR)/$(TESTOUTFILE) -lm -lbluetooth -D MOCK_HARDWARE -DTCP_CONNECTION
 
 noauto:
 	$(COMPILER) $(CFLAGS) $(INCLUDE) $(INFILES) -o $(OUTDIR)/$(OUTFILE) -lm -lbluetooth -DNO_AUTOMATION
