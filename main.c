@@ -95,8 +95,8 @@ int main(int argc, char* argv[])
 
     char buf[1024];
     config_init("/root/beaglebone.conf");
-    beagleblue_init(&parser_parse);    
     halosuit_init();  
+    beagleblue_init(&parser_parse);    
     automation_init();
     soc_init();
 
