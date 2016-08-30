@@ -3,7 +3,7 @@ Description=runs a server controls pins via bluetooth commands
 
 [Service]
 ExecStart= echo cape-bone-iio > /sys/devices/bone_capemgr.9/slots
-ExecStart=/usr/bin/suitcontroller
+ExecStart=/root/suitcontroller
 SyslogIdentifier=suitcontroller
 Restart=on-failure
 RestartSec=3

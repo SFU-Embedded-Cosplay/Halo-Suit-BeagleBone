@@ -11,7 +11,7 @@
 
 OUTFILE = suitcontroller
 TESTOUTFILE = suitcontrollertest
-OUTDIR = /usr/bin
+OUTDIR = /root
 TESTDIR = .
 INFILES = main.c json/serializer.c json/parser.c beagleblue/beagleblue.c beagleblue/bluetooth.c json-parser/json.c json-builder/json-builder.c halosuit/halosuit.c halosuit/logger.c config/config.c halosuit/automation.c halosuit/stateofcharge.c mockHardware/mockHalosuit.c halosuit/systemstatus.c halosuit/led.c
 CROSS_COMPILE = arm-linux-gnueabi-
