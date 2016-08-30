@@ -26,7 +26,6 @@
 #define HIGH_CURRENT_LIVE_PIN   65
 #define HIGH_CURRENT_GROUND_PIN 47
 
-
 //current draws for each device
 //plus a base current draw
 #define PELTIER_DRAW            -4300 // milliamps
@@ -53,6 +52,13 @@
 #define HEAD_TEMP_APIN          0
 #define ARMPIT_TEMP_APIN        1
 #define CROTCH_TEMP_APIN        2
+
+#define FLOWRATE_INITIAL_VALUE      0
+#define WATER_TEMP_INITIAL_VALUE    10.0
+// TODO: these defaults need to change when we get data on for them
+#define VOLTAGE_1_INITIAL_VALUE     12.6
+#define VOLTAGE_2_INITIAL_VALUE     12.0
+#define HEARTRATE_INITIAL_VALUE     90
 
 #define TURNIGY_8AH_VOLTAGE     12600
 #define TURNIGY_2AH_VOLTAGE     12000

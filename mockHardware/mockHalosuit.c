@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <string.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -15,6 +16,8 @@
 #include <arpa/inet.h>
 
 #include <json/parser.h>
+#include <json/serializer.h>
+#include <json.h>
 
 #include <halosuit/halosuit.h>
 #include <halosuit/stateofcharge.h>
@@ -25,7 +28,28 @@ typedef union {
 	int intValue;
 	double doubleValue;
 } MockHW_t;
- 
+
+static const char SUIT_HARDWARE_NAMES[18][25] = {
+	"main lights", // different then regular json
+	"main lights auto", // different then regular json
+	"head lights white",
+	"head lights red",
+	"head fans",
+	"water pump",
+	"on button???", //TODO: what is this
+	"peltier",
+	"battery current live", // what is this
+	"battery current ground", // what is this
+	"head temperature",
+	"armpits temperature",
+	"crotch temperature",
+	"water temperature",
+	"voltage 1", // different then regular json
+	"voltage 2", // different then regular json
+	"flow rate",
+	"heart rate"
+};
+
 enum SUIT_HARDWARE_PARAMS {
 	// RELAYS
 	E_RELAYS_FIRST,
@@ -78,42 +102,72 @@ pthread_mutex_t hardwareLock;
 static bool is_initialized = false;
 static pthread_t json_reader_thread_id;
 
-static void get_int_value(MockHW_t hardware, int* storage) 
+static void get_int_value(MockHW_t hardware, int* storage)
 {
 	pthread_mutex_lock(&hardwareLock);
 	*storage = hardware.intValue;
 	pthread_mutex_unlock(&hardwareLock);
 }
 
-static void set_int_value(MockHW_t* hardware, int value) 
+static void set_int_value(MockHW_t* hardware, int value)
 {
 	pthread_mutex_lock(&hardwareLock);
 	hardware->intValue = value;
 	pthread_mutex_unlock(&hardwareLock);
 }
 
-static void get_double_value(MockHW_t hardware, double* storage) 
+static void get_double_value(MockHW_t hardware, double* storage)
 {
 	pthread_mutex_lock(&hardwareLock);
 	*storage = hardware.doubleValue;
 	pthread_mutex_unlock(&hardwareLock);
 }
 
-static void set_double_value(MockHW_t* hardware, double value) 
-{ 
+static void set_double_value(MockHW_t* hardware, double value)
+{
 	pthread_mutex_lock(&hardwareLock);
 	hardware->doubleValue = value;
 	pthread_mutex_unlock(&hardwareLock);
 }
 
-static void *read_JSON() 
+static void set_hardware_values(char *json_text)
 {
+	json_value* object = NULL;
+	int length = 0;
 
+	logger_log(json_text);
+
+	object = json_parse(json_text, strlen(json_text));
+
+	if (object == NULL) {
+		logger_log("ERROR: MESSAGE NOT JSON\n");
+		return;
+	}
+
+	length = object->u.object.length;
+
+	for(int i = 0; i < length; i++) {
+		for(int j = 0; j < E_NUM_HW_PARAMS; j++) {
+			if(strcmp(object->u.object.values[i].name, SUIT_HARDWARE_NAMES[j]) == 0) {
+				int intValue = object->u.object.values[i].value->u.integer;
+				double doubleValue = object->u.object.values[i].value->u.dbl;
+
+				set_int_value(&mock_data[j], intValue);
+				set_double_value(&mock_data[j], doubleValue);
+			}
+		}
+	}
+
+	json_value_free(object);
+}
+
+static void *read_JSON()
+{
 	int socket_descriptor;
 	struct sockaddr_in server;
 
 	const int PORT = 8080;
-	const char* INTERNET_ADDRESS = "127.0.0.1";
+	const char* INTERNET_ADDRESS = "192.168.7.1";
 
 	const int INPUT_BUFFER_LENGTH = 1024;
 	char socket_input_buffer[INPUT_BUFFER_LENGTH];
@@ -123,63 +177,86 @@ static void *read_JSON()
 
 	//setup socket (connect to test server)
 	if ((socket_descriptor = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-        perror("socket in mockHardware failed to get socket descriptor");
-        exit(1);
-    }
+		perror("socket in mockHardware failed to get socket descriptor");
+		exit(1);
+	}
 
-    printf("Trying to connect to test server...\n");
+	printf("Trying to connect to test server through address %s on port %d...\n", INTERNET_ADDRESS, PORT);
+	server.sin_addr.s_addr = inet_addr(INTERNET_ADDRESS);
+	server.sin_family = AF_INET;
+	server.sin_port = htons(PORT);
 
-    server.sin_addr.s_addr = inet_addr(INTERNET_ADDRESS);
-    server.sin_family = AF_INET;
-    server.sin_port = htons(PORT);
+	if (connect(socket_descriptor, (struct sockaddr *)&server, sizeof(server)) != 0) {
+		perror("\nsocket in mockHardware failed to get connect");
+		printf("******************************\n\n"
+			"Make sure that you have started the Halo-Suit-Test-Server on your local machine and clicked the \'wait for connection\' button"
+			"\n\nIf that does confirm that you have access to Inet address 192.168.7.2 through ifconfig"
+			"\n\n******************************\n");
+		exit(1);
+	}
 
-    if (connect(socket_descriptor, (struct sockaddr *)&server, sizeof(server)) < 0) {
-        perror("socket in mockHardware failed to get connect");
-        exit(1);
-    }
-
-    printf("Connected.\n");
+	printf("Connected.\n");
 
 
 	//read in json from local socket.
 	while(is_initialized) {
 		// printf("looping through thread");
-        if (recv(socket_descriptor, socket_input_buffer, INPUT_BUFFER_LENGTH, MSG_DONTWAIT) != -1) {
-        	printf("received socket message: %s \n", socket_input_buffer);
-        	// parse and store json values
-        	parser_parse(socket_input_buffer);
+		if (recv(socket_descriptor, socket_input_buffer, INPUT_BUFFER_LENGTH, MSG_DONTWAIT) != -1) {
+			printf("received socket message: |%s|\n", socket_input_buffer);
+			// parse and store json values
+			parser_parse(socket_input_buffer);
 
-        	printf("\n\nPRINTING HARDWARE STATISTICS %d: \n", E_NUM_HW_PARAMS);
-        	for(int i = 0; i < E_NUM_HW_PARAMS; i++) {
-        		int intValue = 0;
-        		get_int_value(mock_data[i], &intValue);
-        		
-        		double doubleValue = 0.0;
-        		get_double_value(mock_data[i], &doubleValue);
+			set_hardware_values(socket_input_buffer);
 
-        		printf("value for item # %d = %f %d\n", i, doubleValue, intValue);
-        	}
+			printf("\n\nPRINTING HARDWARE STATISTICS %d: \n", E_NUM_HW_PARAMS);
 
-        	sleep(sleep_time_in_seconds);
-        }
+			char message[1024];
+			int index_into_message = 0;
 
-        sleep(sleep_time_in_seconds);
-    }
+			for(int i = 0; i < E_NUM_HW_PARAMS; i++) {
+				int intValue = 0;
+				get_int_value(mock_data[i], &intValue);
 
-    close(socket_descriptor);
+				double doubleValue = 0.0;
+				get_double_value(mock_data[i], &doubleValue);
+
+				printf("value for item: %s = %f %d\n", SUIT_HARDWARE_NAMES[i], doubleValue, intValue);
+
+				index_into_message += sprintf(&message[index_into_message], "value for item: %s = %f %d\n", SUIT_HARDWARE_NAMES[i], doubleValue, intValue);
+				if(index_into_message >= 1024) {
+					perror("the string we are building to send to the server got bigger than its max size.");
+					exit(1);
+				}
+			}
+			printf("sending message of size %d\n", index_into_message);
+			send(socket_descriptor, message, 1024, 0);
+
+			char json_message[1024];
+			serializer_serialize(json_message);
+
+			send(socket_descriptor, json_message, strlen(json_message), 0);
+
+
+			sleep(sleep_time_in_seconds);
+		}
+
+		sleep(sleep_time_in_seconds);
+	}
+
+	close(socket_descriptor);
 
 	return NULL;
 }
 
 // create socket and constantly read values from it and store values
-void halosuit_init() 
+void halosuit_init()
 {
 	assert(!is_initialized);
 
 	// TODO: place constatnts in header file.
 	// initialize values so that they are the same in halosuit.c
 	// static int flowrate = 0;
-	printf("init called");
+	printf("init called\n");
 	set_double_value(&mock_data[E_TEMP_WATER], 10.0);
 	set_double_value(&mock_data[E_VOLTAGE_1], 12.6);
 	set_double_value(&mock_data[E_VOLTAGE_2], 12.0);
@@ -192,7 +269,7 @@ void halosuit_init()
 }
 
 // close socket and kill thread
-void halosuit_exit() 
+void halosuit_exit()
 {
 	assert(is_initialized);
 
@@ -202,7 +279,7 @@ void halosuit_exit()
 	}
 }
 
-// 
+//
 int halosuit_relay_switch(unsigned int relay, int ps) //done
 {
 	int mock_index = relay + E_RELAYS_FIRST;
@@ -239,9 +316,9 @@ int halosuit_temperature_value(unsigned int location, double *value) //half done
 		}
 		int mock_index = location + E_TEMP_FIST;
 		get_double_value(mock_data[mock_index], value);
-	}	
+	}
 
-    return 0;
+	return 0;
 }
 
 int halosuit_flowrate(int *flow) //done
@@ -251,7 +328,7 @@ int halosuit_flowrate(int *flow) //done
 	}
 
 	get_int_value(mock_data[E_FLOWRATE], flow);
-    return 0;
+	return 0;
 }
 
 int halosuit_voltage_value(unsigned int battery, int *value) //done - I think - This assumes battery is not an index but is instead a value around 12000
@@ -259,18 +336,18 @@ int halosuit_voltage_value(unsigned int battery, int *value) //done - I think - 
 	double temp_voltage_value = 0;
 
 	if (is_initialized) {
-        if (battery == TURNIGY_8_AH) {
-        	get_double_value(mock_data[E_VOLTAGE_1], &temp_voltage_value);
-        	*value = (int)(temp_voltage_value * 1000);
-            // get_double_value(mock_data[E_VOLTAGE_1], value) * 1000); //Im not sure if this should be getDoubleValue or get_int_value
-        } 
-        else if (battery == TURNIGY_2_AH) {
-        	get_double_value(mock_data[E_VOLTAGE_2], &temp_voltage_value);
-        	*value = (int)(temp_voltage_value * 1000);
-        } 
-        else {
-            return -1;
-        }
+		if (battery == TURNIGY_8_AH) {
+			get_double_value(mock_data[E_VOLTAGE_1], &temp_voltage_value);
+			*value = (int)(temp_voltage_value * 1000);
+			// get_double_value(mock_data[E_VOLTAGE_1], value) * 1000); //Im not sure if this should be getDoubleValue or get_int_value
+		}
+		else if (battery == TURNIGY_2_AH) {
+			get_double_value(mock_data[E_VOLTAGE_2], &temp_voltage_value);
+			*value = (int)(temp_voltage_value * 1000);
+		}
+		else {
+			return -1;
+		}
 		return 0;
 	}
 	return -1;
@@ -281,63 +358,63 @@ int halosuit_current_draw_value(unsigned int batteryID, int *current)
 {
 	// requires calculations
 	if (batteryID == TURNIGY_2_AH) {
-        int value1 = 0;
-        int value2 = 0;
-        int current_draw = 0;
-        if (halosuit_relay_value(ON_BUTTON, &value1)) {
-            logger_log("WARNING: FAILURE TO READ ON_BUTTON FOR CURRENT DRAW");
-        }
-        else if (value1 == HIGH ){
-            current_draw += LOW_AMP_DRAW;
-        }
-        value1 = 0;
-        value2 = 0;
-        if (halosuit_relay_value(HEADLIGHTS_WHITE, &value1) || halosuit_relay_value(HEADLIGHTS_WHITE, &value2)) {
-            logger_log("WARNING: FAILURE TO READ HEADLIGHTS FOR CURRENT DRAW");
-        }
-        else if (value2 == HIGH) {
-            current_draw += HEAD_LIGHTS_DRAW;
-        }
-        value1 = 0;
-        value2 = 0;
-        if (halosuit_relay_value(LIGHTS, &value1) || halosuit_relay_value(LIGHTS_AUTO, &value2)) {
-            logger_log("WARNING: FAILURE TO READ LIGHTS FOR CURRENT DRAW");
-        }
-        else if (value1 == HIGH || value2 == HIGH) {
-            current_draw += BODY_LIGHTS_DRAW;
-        }
+		int value1 = 0;
+		int value2 = 0;
+		int current_draw = 0;
+		if (halosuit_relay_value(ON_BUTTON, &value1)) {
+			logger_log("WARNING: FAILURE TO READ ON_BUTTON FOR CURRENT DRAW");
+		}
+		else if (value1 == HIGH ){
+			current_draw += LOW_AMP_DRAW;
+		}
+		value1 = 0;
+		value2 = 0;
+		if (halosuit_relay_value(HEADLIGHTS_WHITE, &value1) || halosuit_relay_value(HEADLIGHTS_WHITE, &value2)) {
+			logger_log("WARNING: FAILURE TO READ HEADLIGHTS FOR CURRENT DRAW");
+		}
+		else if (value2 == HIGH) {
+			current_draw += HEAD_LIGHTS_DRAW;
+		}
+		value1 = 0;
+		value2 = 0;
+		if (halosuit_relay_value(LIGHTS, &value1) || halosuit_relay_value(LIGHTS_AUTO, &value2)) {
+			logger_log("WARNING: FAILURE TO READ LIGHTS FOR CURRENT DRAW");
+		}
+		else if (value1 == HIGH || value2 == HIGH) {
+			current_draw += BODY_LIGHTS_DRAW;
+		}
 
-        *current = current_draw; 
-    }
-    else if (batteryID == TURNIGY_8_AH) {
-        int current_draw = 0;
-        int value = 0;
-        if (halosuit_relay_value(PELTIER, &value)) {
-            logger_log("WARNING: FAILURE TO READ PELTIER FOR CURRENT DRAW");
-            return -1; // the peltier current draw is so much greater than the rest that if the current 
-                       // can't be determined then there is no accuracy in the current draw
-        }
-        else if (value == HIGH) {
-             current_draw += PELTIER_DRAW * 2; // multiplied by 2 since there are 2 peltier
-        }
-        value = 0;
-        if (halosuit_relay_value(WATER_PUMP, &value)) {
-            logger_log("WARNING: FAILURE TO READ WATER_PUMP FOR CURRENT DRAW");
-        }
-        else if (value == HIGH) {
-            current_draw += WATER_PUMP_DRAW;
-        }
-        value = 0;
-        if (halosuit_relay_value(HEAD_FANS, &value)) {
-            logger_log("WARNING: FAILURE TO READ HEAD_FANS FOR CURRENT DRAW");
-        }
-        else if (value == HIGH) {
-            current_draw += HEAD_FANS_DRAW;
-        } 
-        *current = current_draw;
-    }
+		*current = current_draw;
+	}
+	else if (batteryID == TURNIGY_8_AH) {
+		int current_draw = 0;
+		int value = 0;
+		if (halosuit_relay_value(PELTIER, &value)) {
+			logger_log("WARNING: FAILURE TO READ PELTIER FOR CURRENT DRAW");
+			return -1; // the peltier current draw is so much greater than the rest that if the current
+					   // can't be determined then there is no accuracy in the current draw
+		}
+		else if (value == HIGH) {
+			 current_draw += PELTIER_DRAW * 2; // multiplied by 2 since there are 2 peltier
+		}
+		value = 0;
+		if (halosuit_relay_value(WATER_PUMP, &value)) {
+			logger_log("WARNING: FAILURE TO READ WATER_PUMP FOR CURRENT DRAW");
+		}
+		else if (value == HIGH) {
+			current_draw += WATER_PUMP_DRAW;
+		}
+		value = 0;
+		if (halosuit_relay_value(HEAD_FANS, &value)) {
+			logger_log("WARNING: FAILURE TO READ HEAD_FANS FOR CURRENT DRAW");
+		}
+		else if (value == HIGH) {
+			current_draw += HEAD_FANS_DRAW;
+		}
+		*current = current_draw;
+	}
 
-    return 0;
+	return 0;
 }
 
 // heart rate is normally gotten from python script and thus I need to look into how to properly do this.
@@ -346,10 +423,10 @@ int halosuit_heartrate(int *heart)
 	assert(is_initialized);
 
 	if (is_initialized){
-        get_int_value(mock_data[E_HEARTRATE], heart);
-        return 0;
-    }
-    return -1;
+		get_int_value(mock_data[E_HEARTRATE], heart);
+		return 0;
+	}
+	return -1;
 }
 
 #endif

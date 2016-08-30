@@ -4,6 +4,7 @@
 *.out
 *.o
 suitcontroller
+suitcontrollertest
 test__*
 
 

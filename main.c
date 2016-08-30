@@ -12,22 +12,58 @@
 #include <fcntl.h>
 #include <string.h>
 #include <stdbool.h>
+#include <signal.h>
+
 
 #include <beagleblue/beagleblue.h>
 #include <json/parser.h>
 #include <json/serializer.h>
 #include <halosuit/halosuit.h>
 #include <halosuit/automation.h>
-//#include <testcode/automationtestdata.h>
 #include <config/config.h>
 #include <halosuit/logger.h>
 #include <halosuit/stateofcharge.h>
+#include <halosuit/systemstatus.h>
+
 
 #define WATCHDOG_PATH "/dev/watchdog"
 
 #define SERIALIZE_DELAY_IN_SECONDS 1
 
 bool watchdog_disabled = false;
+
+void crash_signal_handler(int signum) 
+{
+    logger_log("exiting with code: %d", signum);
+
+    if(signum == SIGHUP) {
+        logger_log("crash caused by termination of controlling process, "
+            "possibly because terminal was exited");
+    } else if(signum == SIGINT) {
+        logger_log("crash was from a program interupt: likely from ctrl-c");
+    } else if(signum == SIGABRT) {
+        logger_log("crash was from an abort signal: likely "
+            "because of a library calling abort()");
+    } else if(signum == SIGFPE) {
+        logger_log("crash caused by Floating-Point arithmetic Exception: "
+            "possibly caused by divide by 0 or arithmetic overflow");
+    } else if(signum == SIGILL) {
+        logger_log("crash caused by illegal instruction: " 
+            "possibly caused by corrupted executable or "
+            "passing data to a function that expects a pointer");
+    } else if(signum == SIGSEGV) {
+        logger_log("crash was likely a segfault");
+    } else if(signum == SIGTERM) {
+        logger_log("crash caused by kill command");
+    } else {
+        // this should not happen
+        logger_log("unknown crash signal was handled!");
+    }
+
+    systemstatus_set_status(SYSTEM_CRASH);
+
+    exit(signum);
+}
 
 int main(int argc, char* argv[])
 {
@@ -45,11 +81,25 @@ int main(int argc, char* argv[])
         }
     }
     logger_startup();
+    systemstatus_init();
+
+    // use the bellow link for a good summary of what each signal does
+    // http://www.yolinux.com/TUTORIALS/C++Signals.html
+    signal(SIGINT, crash_signal_handler);
+    signal(SIGABRT, crash_signal_handler);
+    signal(SIGFPE, crash_signal_handler);
+    signal(SIGILL, crash_signal_handler);
+    signal(SIGSEGV, crash_signal_handler);
+    signal(SIGTERM, crash_signal_handler);
+    signal(SIGHUP, crash_signal_handler);
 
     char buf[1024];
     config_init("/root/beaglebone.conf");
-    beagleblue_init(&parser_parse);    
     halosuit_init();  
+
+    sleep(5);
+
+    beagleblue_init(&parser_parse);    
     automation_init();
     soc_init();
 

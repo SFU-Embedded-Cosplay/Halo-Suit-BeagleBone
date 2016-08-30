@@ -22,6 +22,23 @@ struct _section {
 static FILE* config_file;
 static struct _section* config_tree;
 
+/*
+	configuration files are in the format
+	[section name1]
+	key1=value1
+	key2=value2
+	[section name2]
+	key1=value1
+	key2=value2
+
+	Ex. 
+	[Bluetooth]
+	android=11:22:33:44:55:6A
+	[automation]
+	temp_warn=28
+	temp_max=32
+*/
+
 static void parse_file() {
 	int c;
 	c = fgetc(config_file);
