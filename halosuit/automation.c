@@ -319,6 +319,7 @@ static void check_2AH_voltage()
 	halosuit_voltage_value(TURNIGY_2_AH, &voltage);
 
 	if (voltage < MIN_VOLTAGE || voltage > MAX_VOLTAGE) {
+		logger_log("Shutting down system because 2AH voltage is out of range with the value: %d", voltage);
 		if (halosuit_relay_switch(ON_BUTTON, LOW)) {
 			logger_log("ERROR: SHUTDOWN FAILURE");
 		}
