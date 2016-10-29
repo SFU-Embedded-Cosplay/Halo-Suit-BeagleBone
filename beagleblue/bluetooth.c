@@ -67,6 +67,8 @@ int bluetooth_receive_message(connection_t *connection)
 
 void bluetooth_set_bluetooth_mode(uint32_t mode, bool *scan_mode_error)
 {
+	logger_log("attempting to set bluetooth scan mode to %d", mode);
+
 	int bluetooth_socket = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI);
 	int dev_id = hci_get_route(NULL);
 
