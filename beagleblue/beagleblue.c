@@ -96,7 +96,13 @@ static void beagleblue_connect(connection_t *connection)
 	fprintf(stdout, "accepted connection from %s\n", buf);
 	fflush(stdout);
 
-	logger_log("accepted connection");
+	if(connection->port == ANDROID_PORT) {
+		logger_log("accepted connection from %s on Android port", buf);
+	} else if(connection->port == GLASS_PORT) {
+		logger_log("accepted connection from %s on Glass port", buf);
+	} else {
+		logger_log("accepted connection from %s on unknown port", buf);
+	}
 }
 
 static void *android_connect_thread()
@@ -155,7 +161,7 @@ static void *android_send_thread()
 				if (current_time - start_time >= TIMEOUT) {
 					printf("Android Timed Out\n");
 					fflush(stdout);
-					logger_log("Android Timed Out");
+					logger_log("Android Timed Out because current_time(%d) - start_time(%d) >= TIMEOUT", current_time, start_time, TIMEOUT);
 					android_connection.is_client_connected = false;
 					//close(android_sock);
 					bluetooth_disconnect_client(&android_connection);
@@ -209,7 +215,7 @@ static void *glass_send_thread()
 				if (current_time - start_time >= TIMEOUT) {
 					printf("Glass Timed Out\n");
 					fflush(stdout);
-					logger_log("Glass Timed Out");
+					logger_log("Glass Timed Out because current_time(%d) - start_time(%d) >= TIMEOUT", current_time, start_time, TIMEOUT);
 					glass_connection.is_client_connected = false;
 					//close(glass_sock);
 					bluetooth_disconnect_client(&glass_connection);
