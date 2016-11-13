@@ -25,11 +25,32 @@ static pthread_t soc_thread_id;
 static int calculate_charge(Battery battery);
 static int interpolate(Battery battery);
 
+static pthread_mutex_t battery1_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t battery2_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+
 static void* main_thread()
 {
+
+	int battery1_new_charge;
+	int battery2_new_charge;
+
 	while (1) {
-		battery1.percent_charge = calculate_charge(battery1);
-		battery2.percent_charge = calculate_charge(battery2);
+		pthread_mutex_lock(&battery1_mutex);
+		{
+			battery1_new_charge = calculate_charge(battery1);
+		}
+		pthread_mutex_unlock(&battery1_mutex);
+
+		pthread_mutex_lock(&battery2_mutex);
+		{
+			battery2_new_charge = calculate_charge(battery2);
+		}
+		pthread_mutex_unlock(&battery2_mutex);
+
+		battery1.percent_charge = battery1_new_charge;
+		battery2.percent_charge = battery2_new_charge;
+
 		sleep(1);
 	}
 
@@ -78,11 +99,26 @@ void soc_init()
 int soc_getcharge(int batteryID)
 {
 	if (batteryID == TURNIGY_8_AH) {
-		return battery1.percent_charge;
+		int battery1_percent_charge;
+
+		pthread_mutex_lock(&battery1_mutex);
+		{
+			battery1_percent_charge = battery1.percent_charge;
+		}
+		pthread_mutex_unlock(&battery1_mutex);
+
+		return battery1_percent_charge;
 	}
 	else if (batteryID == TURNIGY_2_AH) {
-		return battery2.percent_charge;
-	}
+		int battery2_percent_charge;
+
+		pthread_mutex_lock(&battery2_mutex);
+		{
+			battery2_percent_charge = battery2.percent_charge;
+		}
+		pthread_mutex_unlock(&battery2_mutex);
+
+		return battery2_percent_charge;	}
 	else if (batteryID == GLASS_BATTERY) {
 		return glass_soc;
 	}
