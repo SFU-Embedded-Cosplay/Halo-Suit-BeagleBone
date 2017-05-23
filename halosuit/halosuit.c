@@ -17,12 +17,14 @@
 
 #define NUMBER_OF_RELAYS 16
 #define NUMBER_OF_TEMP_SENSORS 4
+#define NUMBER_OF_ULTRASONIC_SENSORS 1
 
 //file descriptors
 static int relays[NUMBER_OF_RELAYS];
 
 //analog in file descriptors
 static int temperature[NUMBER_OF_TEMP_SENSORS - 1]; //water temperature is taken care of separately
+static int ultrasonic[NUMBER_OF_ULTRASONIC_SENSORS];
 
 static int current_draw = 0;  //TODO: need to calculate current value`
 
@@ -49,6 +51,16 @@ static double analog_to_temperature(char *string)
 	double millivolts = (value / 4096.0) * 1800;
 	double temp = (millivolts - 500.0) / 10.0;
 	return temp;
+}
+
+// Returns distance in inches
+static double analog_to_distance(char *string)
+{
+	int value = atoi(string);
+	const double millivolts_per_inch = 1800.0 / 512.0;
+	double millivolts = (value / 4096.0) * 1800;
+	double distance = (millivolts) / (millivolts_per_inch);
+	return distance;
 }
 
 static void *python_thread()
@@ -141,6 +153,8 @@ void halosuit_init()
 	temperature[CROTCH] = open("/sys/bus/iio/devices/iio:device0/in_voltage2_raw", O_RDONLY);
 	//temperature[WATER] = open("/sys/bus/iio/devices/iio:device0/in_voltage3_raw", O_RDONLY);
 
+	ultrasonic[CENTER] = open("/sys/bus/iio/devices/iio:device0/in_voltage3_raw", O_RDONLY);
+
 	pthread_create(&python_thread_id, NULL, &python_thread, NULL);
 
 	is_initialized = true;
@@ -181,6 +195,8 @@ void halosuit_exit()
 		close(temperature[ARMPITS]);
 		close(temperature[CROTCH]);
 		close(temperature[WATER]);
+
+		close(ultrasonic[CENTER]);
 	}
 }
 
@@ -316,8 +332,8 @@ int halosuit_current_draw_value(unsigned int batteryID, int *current)  //this is
 	return 0;
 }
 
-
-int halosuit_heartrate(int *heart) {
+int halosuit_heartrate(int *heart)
+{
 	if (is_initialized){
 		*heart = heartrate;
 		return 0;
@@ -325,8 +341,20 @@ int halosuit_heartrate(int *heart) {
 	return -1;
 }
 
+int halosuit_ultrasonic_value(unsigned int sensor, int *value)
+{
+	if (is_initialized && sensor < NUMBER_OF_ULTRASONIC_SENSORS) {
+		char buf[5] = { 0 };
+		read(ultrasonic[sensor], buf, 4);
+		*value = analog_to_distance(buf);
+		lseek(ultrasonic[sensor], 0, 0);
+		return 0;
+	}
+	return -1;
+}
 
-void enable_analog() {
+void enable_analog()
+{
 	int analog_fd = open("/sys/devices/bone_capemgr.9/slots", O_RDWR);
 	bool analog_set = false;
 	char buffer[1024];

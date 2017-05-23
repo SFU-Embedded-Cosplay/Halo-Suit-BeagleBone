@@ -38,6 +38,9 @@
 #define CROTCH				2
 #define WATER 				3
 
+//for ultrasonic sensors
+#define CENTER 0
+
 #define FLOWRATE_INITIAL_VALUE      0
 #define WATER_TEMP_INITIAL_VALUE    10.0
 // TODO: these defaults need to change when we get data on for them

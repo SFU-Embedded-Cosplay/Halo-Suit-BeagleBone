@@ -3,7 +3,7 @@
 */
 
 #include <stdlib.h>
-#include <stdio.h> 
+#include <stdio.h>
 #include <string.h>
 
 #include <json/serializer.h>
@@ -280,6 +280,15 @@ static void serializer_buildjson(json_value *object)
 		json_object_push(object, "heart rate", json_integer_new(heartrate));
 	}
 
+	//ultrasonic
+	int ultrasonic;
+	if (halosuit_ultrasonic_value(CENTER, &ultrasonic)) {
+		logger_log("ERROR: ULTRASONIC READ FAILURE\n");
+	}
+	else {
+		json_object_push(object, "ultrasonic", json_integer_new(ultrasonic));
+	}
+
 	//json_object_push(object, "play sound", json_string_new(sound_buffer));
 
 
@@ -292,9 +301,9 @@ static void serializer_buildjson(json_value *object)
 	// Warnings
 	get_warnings(object);
 
-} 
+}
 void serializer_serialize(char *buf)
-{ 
+{
 	json_value *object = json_object_new(0);
 
 	// push suit status values into object
