@@ -54,12 +54,13 @@ static double analog_to_temperature(char *string)
 }
 
 // Returns distance in inches
+// http://www.maxbotix.com/articles/032.htm
 static double analog_to_distance(char *string)
 {
 	int value = atoi(string);
 	const double millivolts_per_inch = 1800.0 / 512.0;
-	double millivolts = (value / 4096.0) * 1800;
-	double distance = (millivolts) / (millivolts_per_inch);
+	double millivolts = (value / 4096.0) * 1800.0;
+	double distance = ((millivolts) / (millivolts_per_inch)) / 2.0;
 	return distance;
 }
 
