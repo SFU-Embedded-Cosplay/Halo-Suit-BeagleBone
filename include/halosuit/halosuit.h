@@ -73,4 +73,6 @@ int halosuit_current_draw_value(unsigned int battery, int *value);
 
 int halosuit_heartrate(int *heart);
 
+int halosuit_ultrasonic_value(unsigned int sensor, int *value);
+
 #endif
