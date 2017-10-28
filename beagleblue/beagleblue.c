@@ -19,20 +19,20 @@
 #define ANDROID_PORT 3
 #define GLASS_PORT 2
 
-static connection_t android_connection = { 
-	.server_socket = -1, 
-	.client = -1, 
+static connection_t android_connection = {
+	.server_socket = -1,
+	.client = -1,
 	.port = ANDROID_PORT,
-	.is_client_connected = false, 
-	.is_sending = false 
+	.is_client_connected = false,
+	.is_sending = false
 };
 
-static connection_t glass_connection = { 
-	.server_socket = -1, 
-	.client = -1, 
+static connection_t glass_connection = {
+	.server_socket = -1,
+	.client = -1,
 	.port = GLASS_PORT,
-	.is_client_connected = false, 
-	.is_sending = false 
+	.is_client_connected = false,
+	.is_sending = false
 };
 
 static bool beagleblue_is_done;
@@ -133,7 +133,7 @@ static void *android_recv_thread(void *callback)
 			}
 		}
 	}
-	
+
 	logger_log("Android  receive thread ended");
 	return NULL;
 }
@@ -167,7 +167,7 @@ static void *android_send_thread()
 			}
 		}
 	}
-	
+
 	logger_log("Android send thread ended");
 	return NULL;
 }
@@ -184,7 +184,7 @@ static void *glass_recv_thread(void *callback)
 			}
 		}
 	}
-	
+
 	logger_log("Glass receive thread ending");
 	return NULL;
 }
@@ -222,15 +222,47 @@ static void *glass_send_thread()
 			}
 		}
 	}
-	
+
 	logger_log("Glass send thread ending");
 	return NULL;
+}
+
+static void resetUSBPort() {
+	const size_t page_size_in_bytes = getpagesize();
+	const size_t address_gpio3_13   = 0x47401c60; // see comment below
+	const size_t address_start      = address_gpio3_13 / page_size_in_bytes * page_size_in_bytes;
+	const size_t address_offset     = address_gpio3_13 - address_start;
+
+	int fd = open("/dev/mem", O_RDWR);
+	void *addr = mmap( 0, page_size_in_bytes, PROT_READ | PROT_WRITE, MAP_SHARED, fd, address_start );
+
+	uint8_t *byte_ptr = reinterpret_cast<uint8_t*>(addr);
+
+	byte_ptr[address_offset] = 0x00;    // turn off USB
+	std::this_thread::sleep_for( std::chrono::milliseconds(500) );
+	byte_ptr[address_offset] = 0x01;    // turn on USB
+
+	munmap( addr, page_size_in_bytes );
+
+	close(fd);
 }
 
 void beagleblue_init(void (*on_receive)(char *))
 {
 	beagleblue_is_done = false;
+
 	bluetooth_set_bluetooth_mode(SCAN_INQUIRY | SCAN_PAGE, &beagleblue_is_done);
+
+	if(beagleblue_is_done) {
+		systemstatus_set_status(BLUETOOTH_RESETTING);
+		logger_log("Bluetooth is resetting because it could not set scan mode on initialization.");
+		resetUSBPort();
+		beagleblue_is_done = false;
+	}
+
+	bluetooth_set_bluetooth_mode(SCAN_INQUIRY | SCAN_PAGE, &beagleblue_is_done);
+
+
 	//
 	if (!beagleblue_is_done) {
 		android_configured = config_get_string("Bluetooth", "android", android_mac_addr, MAX_BUF_SIZE) == 0;

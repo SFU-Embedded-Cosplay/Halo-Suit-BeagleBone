@@ -6,6 +6,7 @@ typedef enum status {
 	BOOT_SUCCESS = 1,
 	BLUETOOTH_CONNECTED = 2,
 	BLUETOOTH_ERROR = 3,
+	BLUETOOTH_RESETTING = 4,
 	SYSTEM_CRASH = 15
 } status_t;
 
