@@ -1,42 +1,57 @@
 /*
     halosuit.h
 */
-#ifndef HALOSUIT
-#define HALOSUIT
+#pragma once
 
-#define	LIGHTS            	0	//GPIO 66
-#define	LIGHTS_AUTO       	1 	//GPIO 67
-#define	HEADLIGHTS_WHITE  	2   //GPIO 68
-#define	HEADLIGHTS_RED 	  	3	//GPIO 69
-#define	HEAD_FANS 		  	4   //GPIO 44
-#define	WATER_PUMP 			5   //GPIO 45
-#define	ON_BUTTON 		    6	//GPIO 26
-#define	PELTIER			    7	//GPIO 46
-#define HIGH_CURRENT_LIVE   8   //GPIO 65
-#define HIGH_CURRENT_GROUND 9   //GPIO 47
+// index in array to access each relay
+#define	LIGHTS                  0
+#define	LIGHTS_AUTO             1
+#define	HEADLIGHTS_WHITE        2
+#define	HEADLIGHTS_RED          3
+#define	HEAD_FANS               4
+#define	WATER_PUMP              5
+#define	ON_BUTTON               6
+#define	PELTIER                 7
+#define HIGH_CURRENT_LIVE       8
+#define HIGH_CURRENT_GROUND     9
+
+#define	LIGHTS_PIN              66
+#define	LIGHTS_AUTO_PIN         67
+#define	HEADLIGHTS_WHITE_PIN    68  
+#define	HEADLIGHTS_RED_PIN      69
+#define	HEAD_FANS_PIN           44
+#define	WATER_PUMP_PIN          45
+#define	ON_BUTTON_PIN           26
+#define	PELTIER_PIN             46
+#define HIGH_CURRENT_LIVE_PIN   65
+#define HIGH_CURRENT_GROUND_PIN 47
 
 //current draws for each device
 //plus a base current draw
-#define PELTIER_DRAW        -4300 // milliamps
-#define WATER_PUMP_DRAW     -250
-#define HEAD_FANS_DRAW      -50
+#define PELTIER_DRAW            -4300 // milliamps
+#define WATER_PUMP_DRAW         -250
+#define HEAD_FANS_DRAW          -50
 
-#define LOW_AMP_DRAW        -450
-#define HEAD_LIGHTS_DRAW    -100
-#define BODY_LIGHTS_DRAW    -500 // we need to firm this number up
+#define LOW_AMP_DRAW            -450
+#define HEAD_LIGHTS_DRAW        -100
+#define BODY_LIGHTS_DRAW        -500 // we need to firm this number up      
 
-#define VOLTAGE_1           1
-#define VOLTAGE_2           2
+#define VOLTAGE_1               1
+#define VOLTAGE_2               2
 
 
-#define HIGH 				1
-#define LOW					0
+#define HIGH                    1
+#define LOW                     0
 
 //for temperatures
-#define HEAD 				0
-#define ARMPITS				1
-#define CROTCH				2
-#define WATER 				3
+#define HEAD                    0
+#define ARMPITS                 1
+#define CROTCH                  2
+#define WATER                   3
+
+#define HEAD_TEMP_APIN          0
+#define ARMPIT_TEMP_APIN        1
+#define CROTCH_TEMP_APIN        2
 
 #define FLOWRATE_INITIAL_VALUE      0
 #define WATER_TEMP_INITIAL_VALUE    10.0
@@ -69,5 +84,3 @@ int halosuit_voltage_value(unsigned int battery, int *value);
 int halosuit_current_draw_value(unsigned int battery, int *value);
 
 int halosuit_heartrate(int *heart);
-
-#endif
